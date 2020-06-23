@@ -4,9 +4,6 @@
 #include "constants.h"
 #include "vec3.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-
 
 namespace LNF
 {
@@ -44,6 +41,12 @@ namespace LNF
         double  m_dPositionOnRay;
         Vec     m_position;
     };
+
+
+    inline Vec reflect(const Vec &_vec, const Vec _normal) {
+        // refl = ray - nhit * 2 * (ray . nhit)
+        return _vec - _normal * 2 * (_vec * _normal);
+    }
 
 
 };  // namespace LNF

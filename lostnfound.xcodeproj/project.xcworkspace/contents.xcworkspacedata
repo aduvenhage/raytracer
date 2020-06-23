@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:Raytracer.xcodeproj">
+      location = "self:/Users/arno.duvenhage/wok/lostnfound/lostnfound.xcodeproj">
    </FileRef>
 </Workspace>

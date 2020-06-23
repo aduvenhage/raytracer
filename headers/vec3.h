@@ -2,9 +2,7 @@
 #ifndef LIBS_HEADER_VEC3_H
 #define LIBS_HEADER_VEC3_H
 
-
-#define _USE_MATH_DEFINES
-#include <cmath>
+#include "constants.h"
 
 
 namespace LNF
@@ -47,6 +45,7 @@ namespace LNF
                        m_dZ - _vec.m_dZ);
         }
         
+        /// dot product
         double operator*(const Vec &_vec) const {
             return m_dX * _vec.m_dX +
                    m_dY * _vec.m_dY +
@@ -70,20 +69,18 @@ namespace LNF
             return Vec(-1 * m_dX, -1 * m_dY, -1 * m_dZ);
         }
         
-        double heading() const {
-            return atan2(m_dZ, m_dX);
-        }
-         
-        double pitch() const {
-            double r = sqrt(m_dX * m_dX + m_dZ * m_dZ);
-            return atan2(m_dY, r);
-        }
-        
         double      m_dX;
         double      m_dY;
         double      m_dZ;
     };
 
+
+    inline Vec operator*(double _dScale, const Vec &_vec) {
+        return Vec(_vec.m_dX*_dScale,
+                   _vec.m_dY*_dScale,
+                   _vec.m_dZ*_dScale);
+    }
+    
 };  // namespace LNF
 
 #endif  // #ifndef LIBS_HEADER_VEC3_H

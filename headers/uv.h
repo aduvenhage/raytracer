@@ -1,8 +1,7 @@
 #ifndef LIBS_HEADER_UV_H
 #define LIBS_HEADER_UV_H
 
-#define _USE_MATH_DEFINES
-#include <cmath>
+#include "color.h"
 
 
 namespace LNF
@@ -21,6 +20,13 @@ namespace LNF
         
         double  m_dU;
         double  m_dV;
+    };
+
+
+    struct Material
+    {
+        Color   m_diffuse;
+        
     };
 
 

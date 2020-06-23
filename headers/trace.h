@@ -17,7 +17,7 @@ namespace LNF
 {
     MandleBrot mb(1, 1);
 
-    Color trace(const Ray &_ray, const std::vector<Sphere> &_spheres, int count = 0)
+    Color trace(const Ray &_ray, const std::vector<Sphere> &_spheres, int _max_depth)
     {
         double dOnRayMin = 0;
         int si = -1;
@@ -40,23 +40,21 @@ namespace LNF
             auto normal = sphere.normal(intersect.m_position);
             auto color = sphere.m_color;
             
-            double shade = fabs(_ray.m_direction.inverse() * normal * 0.2);
-            
             if (si == 0) {
-                shade += (((int)(uv.m_dU * 24) + (int)(uv.m_dV * 24)) % 2) * 0.8;
+                color *= (((int)(uv.m_dU * 16) + (int)(uv.m_dV * 16)) % 2) * 0.5 + 0.5;
             }
             else {
-                shade += (double)mb.value(uv.m_dU, uv.m_dV) / (double)mb.max_iterations() * 0.8;
+                color *= ((Color(0.1, 0.2, 0.3) * mb.value(uv.m_dU, uv.m_dV)).wrap() + Color(0.1, 0.1, 0.1)).clamp();
             }
             
-            color = color * shade;
-            
-            // Vec3f refldir = raydir - nhit * 2 * raydir.dot(nhit);
-            if (count < 10) {
-                auto reflectedRay = Ray(intersect.m_position, normal);
-                auto reflectedColor = trace(reflectedRay, _spheres, count + 1);
+            if (_max_depth > 0) {
                 
-                color = color * 0.4 + reflectedColor * 0.8;
+                if (sphere.m_dReflection > 0) {
+                    auto reflectedRay = Ray(intersect.m_position + 1e-4 * normal, reflect(_ray.m_direction, normal));
+                    auto reflectedColor = trace(reflectedRay, _spheres, _max_depth - 1);
+                    
+                    color = color * (1 - sphere.m_dReflection) + reflectedColor * sphere.m_dReflection;
+                }
             }
             
             return color;
