@@ -35,7 +35,7 @@ namespace LNF
         return 0;
     }
     
-    /**
+    /*
         Mandlebrot fractal rendering.
         Use `setView(...) to set position and zoom level.
         Use `render(...)` and `writeToJpeg(...)` to render fractal and write to disk.

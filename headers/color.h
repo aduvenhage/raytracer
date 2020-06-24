@@ -6,7 +6,7 @@
 
 namespace LNF
 {
-    /**
+    /*
        R-G-B color class.
        Color components are floats [0..1].
      */

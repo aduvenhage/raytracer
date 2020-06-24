@@ -44,17 +44,28 @@ namespace LNF
                 color *= (((int)(uv.m_dU * 16) + (int)(uv.m_dV * 16)) % 2) * 0.5 + 0.5;
             }
             else {
-                color *= ((Color(0.1, 0.2, 0.3) * mb.value(uv.m_dU, uv.m_dV)).wrap() + Color(0.1, 0.1, 0.1)).clamp();
+                color *= ((Color(0.1, 0.2, 0.3) * 0.3 * mb.value(uv.m_dU, uv.m_dV)).wrap() + Color(0.1, 0.1, 0.1)).clamp();
             }
             
             if (_max_depth > 0) {
+                // NOTE: moves ray start away from shape by a very small amount
+                auto rayStart = intersect.m_position + 1e-4 * normal;
                 
                 if (sphere.m_dReflection > 0) {
-                    auto reflectedRay = Ray(intersect.m_position + 1e-4 * normal, reflect(_ray.m_direction, normal));
+                    auto reflectedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
                     auto reflectedColor = trace(reflectedRay, _spheres, _max_depth - 1);
                     
                     color = color * (1 - sphere.m_dReflection) + reflectedColor * sphere.m_dReflection;
                 }
+                
+                if (sphere.m_dTransperancy > 0) {
+                    auto refractedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
+                    auto refractedColor = trace(refractedRay, _spheres, _max_depth - 1);
+                    
+                    color = color * (1 - sphere.m_dTransperancy) + refractedColor * sphere.m_dTransperancy;
+                }
+
+                
             }
             
             return color;

@@ -10,7 +10,7 @@
 
 namespace LNF
 {
-    /**
+    /*
      Write out JPEG file to disk.
      _pImageData: raw RGB (8:8:8) image data.
      */

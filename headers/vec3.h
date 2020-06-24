@@ -7,7 +7,7 @@
 
 namespace LNF
 {
-    /**
+    /*
         X-Y-Z cartesian coordinate class.
      */
     struct Vec
