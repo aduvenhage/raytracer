@@ -8,7 +8,6 @@
 #include "sphere.h"
 #include "uv.h"
 #include "vec3.h"
-#include "mandlebrot.h"
 
 #include <vector>
 
@@ -17,61 +16,58 @@ namespace LNF
 {
     MandleBrot mb(1, 1);
 
-    Color trace(const Ray &_ray, const std::vector<Sphere> &_spheres, int _max_depth)
+    Color trace(const Ray &_ray, const std::vector<std::shared_ptr<Shape>> &_shapes, int _max_depth)
     {
         double dOnRayMin = 0;
-        int si = -1;
+        Shape *pHitShape = nullptr;
         
-        for (auto i = 0; i < _spheres.size(); i++) {
-            auto &sphere = _spheres[i];
-            
-            double dPositionOnRay = sphere.intersect(_ray);
+        for (auto &pShape : _shapes) {
+            double dPositionOnRay = pShape->intersect(_ray);
             if ( (dPositionOnRay > 0) &&
-                 ((si < 0) || (dPositionOnRay < dOnRayMin)) ) {
-                si = i;
+                 ((pHitShape == nullptr) || (dPositionOnRay < dOnRayMin)) ) {
+                pHitShape = pShape.get();
                 dOnRayMin = dPositionOnRay;
             }
         }
 
-        if ( (si >= 0) && (dOnRayMin > 0) ) {
-            auto &sphere = _spheres[si];
+        if ( (pHitShape != nullptr) && (dOnRayMin > 0) ) {
             auto intersect = Intersect(_ray, dOnRayMin);
-            auto uv = sphere.uv(intersect.m_position);
-            auto normal = sphere.normal(intersect.m_position);
-            auto color = sphere.m_color;
-            
-            if (si == 0) {
-                color *= (((int)(uv.m_dU * 16) + (int)(uv.m_dV * 16)) % 2) * 0.5 + 0.5;
-            }
-            else {
-                color *= ((Color(0.1, 0.2, 0.3) * 0.3 * mb.value(uv.m_dU, uv.m_dV)).wrap() + Color(0.1, 0.1, 0.1)).clamp();
-            }
-            
-            if (_max_depth > 0) {
-                // NOTE: moves ray start away from shape by a very small amount
-                auto rayStart = intersect.m_position + 1e-4 * normal;
-                
-                if (sphere.m_dReflection > 0) {
-                    auto reflectedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
-                    auto reflectedColor = trace(reflectedRay, _spheres, _max_depth - 1);
-                    
-                    color = color * (1 - sphere.m_dReflection) + reflectedColor * sphere.m_dReflection;
-                }
-                
-                if (sphere.m_dTransperancy > 0) {
-                    auto refractedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
-                    auto refractedColor = trace(refractedRay, _spheres, _max_depth - 1);
-                    
-                    color = color * (1 - sphere.m_dTransperancy) + refractedColor * sphere.m_dTransperancy;
-                }
+            auto color = Color(1.0, 1.0, 1.0);
 
-                
+            auto pMaterial = pHitShape->material();
+            if (pMaterial != nullptr) {
+                auto uv = pHitShape->uv(intersect.m_position);
+                color = pHitShape->material()->color(uv);
+            
+                if (_max_depth > 0) {
+                    // NOTE: moves ray start away from shape by a very small amount
+                    auto normal = pHitShape->normal(intersect.m_position);
+                    auto rayStart = intersect.m_position + 1e-4 * normal;
+                    
+                    double reflection = pMaterial->reflection(uv);
+                    if (reflection > 0) {
+                        auto reflectedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
+                        auto reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1);
+                        
+                        color = color * (1 - reflection) + reflectedColor * reflection;
+                    }
+                    
+                    double transparency = pMaterial->transparancy(uv);
+                    if (transparency > 0) {
+                        auto refractedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
+                        auto refractedColor = trace(refractedRay, _shapes, _max_depth - 1);
+                        
+                        color = color * (1 - transparency) + refractedColor * transparency;
+                    }
+
+                    
+                }
             }
             
             return color;
         }
         else {
-            return Color();
+            return Color(0, 0, 0);  // background color
         }
     }
 

@@ -6,6 +6,7 @@
 
 namespace LNF
 {
+    /* UV/Texture coordinates */
     struct Uv
     {
         Uv()
@@ -23,12 +24,25 @@ namespace LNF
     };
 
 
-    struct Material
+    /* Diffuse material/texture base class */
+    class Material
     {
-        Color   m_diffuse;
+     public:
+        virtual ~Material() = default;
         
-    };
+        /* Returns the diffuse color at the given surface position */
+        virtual Color color(const Uv &_uv) const = 0;
+        
+        /* Returns material property [0..1] */
+        virtual double reflection(const Uv &_uv) = 0;
+        
+        /* Returns material property [0..1] */
+        virtual double transparancy(const Uv &_uv) = 0;
+        
+        /* Returns material property */
+        virtual double indexOfRefraction() = 0;
 
+    };
 
 };  // namespace LNF
 
