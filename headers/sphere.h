@@ -25,16 +25,29 @@ namespace LNF
              m_dRadiusSqr(_dRadius * _dRadius)
         {}
         
-        /* Returns the point (t) on the ray where it intersects this shape. */
+        /*
+         Returns the point (t) on the ray where it intersects this shape.
+         Returns 0.0 if there is no intersect possible.
+         */
         virtual double intersect(const Ray &_ray) const {
             auto vecRaySphere = m_origin - _ray.m_origin;
             double dRayLength = vecRaySphere * _ray.m_direction;
-            if (dRayLength <= 0) return Intersect();
+            if (dRayLength <= 0){
+                return 0.0;
+            }
             
             double dIntersectRadiusSqr = vecRaySphere.sizeSqr() - dRayLength*dRayLength;
-            if (dIntersectRadiusSqr > m_dRadiusSqr) return Intersect();
+            if (dIntersectRadiusSqr > m_dRadiusSqr){
+                return 0.0;
+            }
             
-            return dRayLength - sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
+            double dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
+            if (dt <= dRayLength) {
+                return dRayLength - dt;
+            }
+            else {
+                return dRayLength + dt;
+            }
         }
         
         /* Returns the shape normal vector at the given surface position. */

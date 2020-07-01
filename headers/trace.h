@@ -24,51 +24,56 @@ namespace LNF
         for (auto &pShape : _shapes) {
             double dPositionOnRay = pShape->intersect(_ray);
             if ( (dPositionOnRay > 0) &&
-                 ((pHitShape == nullptr) || (dPositionOnRay < dOnRayMin)) ) {
+                 ((pHitShape == nullptr) || (dPositionOnRay < dOnRayMin)) )
+            {
                 pHitShape = pShape.get();
                 dOnRayMin = dPositionOnRay;
             }
         }
 
-        if ( (pHitShape != nullptr) && (dOnRayMin > 0) ) {
-            auto intersect = Intersect(_ray, dOnRayMin);
-            auto color = Color(1.0, 1.0, 1.0);
-
+        if ( (pHitShape != nullptr) &&
+             (dOnRayMin > 0) &&
+             (_max_depth > 0) )
+        {
             auto pMaterial = pHitShape->material();
             if (pMaterial != nullptr) {
+                auto intersect = Intersect(_ray, dOnRayMin);
+                auto normal = pHitShape->normal(intersect.m_position);
                 auto uv = pHitShape->uv(intersect.m_position);
-                color = pHitShape->material()->color(uv);
-            
-                if (_max_depth > 0) {
-                    // NOTE: moves ray start away from shape by a very small amount
-                    auto normal = pHitShape->normal(intersect.m_position);
-                    auto rayStart = intersect.m_position + 1e-4 * normal;
-                    
-                    double reflection = pMaterial->reflection(uv);
-                    if (reflection > 0) {
-                        auto reflectedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
-                        auto reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1);
-                        
-                        color = color * (1 - reflection) + reflectedColor * reflection;
-                    }
-                    
-                    double transparency = pMaterial->transparancy(uv);
-                    if (transparency > 0) {
-                        auto refractedRay = Ray(rayStart, reflect(_ray.m_direction, normal));
-                        auto refractedColor = trace(refractedRay, _shapes, _max_depth - 1);
-                        
-                        color = color * (1 - transparency) + refractedColor * transparency;
-                    }
-
-                    
+                auto color = pHitShape->material()->color(uv);
+                double kt = pMaterial->transparancy(uv);
+                double kr = pMaterial->reflection(uv);
+                
+                if ( (kt > 0.00001) && (kr > 0.00001) ) {
+                    kr *= fresnel(_ray.m_direction, normal, pMaterial->indexOfRefraction());
+                    kt *= (1.0 - kr);
                 }
+                
+                auto reflectedColor = Color();
+                auto refractedColor = Color();
+
+                if (kr > 0.00001) {
+                    auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
+                    reflectedRay.m_origin = reflectedRay.position(1e-4);  // move slighly to avoid self collision
+                    
+                    reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1) * kr;
+                }
+                
+                if (kt > 0.00001) {
+                    auto refractedRay = Ray(intersect.m_position, refract(_ray.m_direction, normal, pMaterial->indexOfRefraction()));
+                    refractedRay.m_origin = refractedRay.position(1e-4);  // move slighly to avoid self collision
+                    
+                    refractedColor = color * trace(refractedRay, _shapes, _max_depth - 1) * kt;
+                }
+                
+                return (color * (1 - kt) * (1 - kr) + refractedColor + reflectedColor).clamp();
             }
-            
-            return color;
+            else {
+                return Color(1.0, 1.0, 1.0);
+            }
         }
-        else {
-            return Color(0, 0, 0);  // background color
-        }
+        
+        return Color(0, 0, 0);  // background color
     }
 
 };  // namespace LNF

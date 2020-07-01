@@ -86,7 +86,7 @@ namespace LNF
            _dPixelX and _dPixelY are the image pixel positions, but allows for special case
            where image size is 1 x 1 (i.e. pixel coordinates normalised [0..1]).
          */
-        int value(double _dPixelX, double _dPixelY)
+        int value(double _dPixelX, double _dPixelY) const
         {
             return madlebrot(_dPixelX * m_dScale + m_dPosX,
                              _dPixelY * m_dScale + m_dPosY,
@@ -114,7 +114,7 @@ namespace LNF
         }
         
         /* Write last render to disk */
-        void writeToJpeg(const char *_pszFilename)
+        void writeToJpeg(const char *_pszFilename) const
         {
             writeJpegFile(_pszFilename, m_iWidth, m_iHeight, m_image.data(), 100);
         }

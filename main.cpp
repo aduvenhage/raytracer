@@ -22,9 +22,10 @@ using namespace LNF;
 class SolidColor : public Material
 {
  public:
-    SolidColor(const Color &_color, double _dReflection)
+    SolidColor(const Color &_color, double _dReflection, double _dTransparancy)
         :m_color(_color),
-         m_dReflection(_dReflection)
+         m_dReflection(_dReflection),
+         m_dTransparancy(_dTransparancy)
     {}
     
     /* Returns the diffuse color at the given surface position */
@@ -34,23 +35,25 @@ class SolidColor : public Material
     virtual double reflection(const Uv &_uv) {return m_dReflection;}
     
     /* Returns material property [0..1] */
-    virtual double transparancy(const Uv &_uv) {return 0;}
+    virtual double transparancy(const Uv &_uv) {return m_dTransparancy;}
     
     /* Returns material property */
-    virtual double indexOfRefraction() {return 1;}
+    virtual double indexOfRefraction() {return 1.5;}
     
  private:
     Color     m_color;
     double    m_dReflection;
+    double    m_dTransparancy;
 };
 
 
 class Checkered : public Material
 {
  public:
-    Checkered(const Color &_color, double _dReflection)
+    Checkered(const Color &_color, double _dReflection, double _dTransparancy)
         :m_color(_color),
-         m_dReflection(_dReflection)
+         m_dReflection(_dReflection),
+         m_dTransparancy(_dTransparancy)
     {}
     
     /* Returns the diffuse color at the given surface position */
@@ -62,14 +65,15 @@ class Checkered : public Material
     virtual double reflection(const Uv &_uv) {return m_dReflection;}
     
     /* Returns material property [0..1] */
-    virtual double transparancy(const Uv &_uv) {return 0;}
-    
+    virtual double transparancy(const Uv &_uv) {return m_dTransparancy;}
+
     /* Returns material property */
-    virtual double indexOfRefraction() {return 1;}
+    virtual double indexOfRefraction() {return 1.5;}
     
  private:
     Color     m_color;
     double    m_dReflection;
+    double    m_dTransparancy;
 };
 
 
@@ -78,30 +82,33 @@ class Checkered : public Material
 class MandleBrotMat : public Material
 {
  public:
-    MandleBrotMat(const Color &_color, double _dReflection)
-        :m_color(_color),
+    MandleBrotMat(const Color &_color, double _dReflection, double _dTransparancy)
+        :m_mandlebrot(1, 1),
+         m_color(_color),
          m_dReflection(_dReflection),
-         m_mandlebrot(1, 1)
+         m_dTransparancy(_dTransparancy)
     {}
     
     /* Returns the diffuse color at the given surface position */
     virtual Color color(const Uv &_uv) const {
-        return m_color * m_mandlebrot.;
+        Uv uv(_uv.m_dV - 0.5, _uv.m_dU - 0.5);
+        return m_color * (m_mandlebrot.value(uv.m_dU, uv.m_dV) * 0.1 + 0.1);
     }
     
     /* Returns material property [0..1] */
     virtual double reflection(const Uv &_uv) {return m_dReflection;}
     
     /* Returns material property [0..1] */
-    virtual double transparancy(const Uv &_uv) {return 0;}
-    
+    virtual double transparancy(const Uv &_uv) {return m_dTransparancy;}
+
     /* Returns material property */
-    virtual double indexOfRefraction() {return 1;}
+    virtual double indexOfRefraction() {return 1.5;}
     
  private:
     MandleBrot  m_mandlebrot;
     Color       m_color;
     double      m_dReflection;
+    double      m_dTransparancy;
 };
 
 
@@ -114,9 +121,9 @@ int raytracer()
     
     std::vector<unsigned char> image(width * height * 3);
     std::vector<std::shared_ptr<Shape>> shapes{
-        std::make_shared<Sphere>(Vec(0, 5, -40), 10, std::make_unique<Checkered>(Color(1.0, 0.8, 0.8), 0.8)),
-        std::make_shared<Sphere>(Vec(-8, 6, -32), 5, std::make_unique<SolidColor>(Color(0.8, 1.0, 0.8), 0.8)),
-        std::make_shared<Sphere>(Vec(10, 5, -25), 5, std::make_unique<SolidColor>(Color(0.8, 0.8, 1.0), 0.8)),
+        std::make_shared<Sphere>(Vec(0, 5, -40), 10, std::make_unique<Checkered>(Color(1.0, 0.1, 0.1), 0.0, 0.0)),
+        std::make_shared<Sphere>(Vec(-10, 3, -30), 5, std::make_unique<SolidColor>(Color(1.0, 1.0, 1.0), 1.0, 1.0)),
+        std::make_shared<Sphere>(Vec(10, 5, -30), 5, std::make_unique<MandleBrotMat>(Color(0.1, 0.1, 1.0), 0.8, 0.0)),
     };
     
     int ipx = 0;
@@ -125,7 +132,7 @@ int raytracer()
     for (auto j = 0; j < height; j++) {
         for (auto i = 0; i < width; i++) {
             auto ray = view.getRay(i, j);
-            auto color = LNF::trace(ray, shapes, 20);
+            auto color = LNF::trace(ray, shapes, 10);
             
             pImage[ipx++] = (int)(255 * color.m_fRed);
             pImage[ipx++] = (int)(255 * color.m_fGreen);

@@ -6,7 +6,7 @@
 
 namespace LNF
 {
-    /* UV/Texture coordinates */
+    /* UV/Texture coordinates. [u, v] = [0..1, 0..1]*/
     struct Uv
     {
         Uv()
@@ -18,6 +18,24 @@ namespace LNF
             :m_dU(_dU),
              m_dV(_dV)
         {}
+        
+        /// set color values to 0 if smaller and 1 if larger.
+        Uv &clamp() {
+            if (m_dU > 1.0) m_dU = 1.0;
+            else if (m_dV < 0) m_dV = 0.0;
+            
+            if (m_dU > 1.0) m_dU = 1.0;
+            else if (m_dV < 0) m_dV = 0.0;
+            
+            return *this;
+        }
+        
+        /// wrap color values and keep range [0...1]
+        Uv &wrap() {
+            m_dU -= trunc(m_dU);
+            m_dV -= trunc(m_dV);
+            return *this;
+        }
         
         double  m_dU;
         double  m_dV;

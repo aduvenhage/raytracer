@@ -36,6 +36,20 @@ namespace LNF
                          m_fBlue - _color.m_fBlue);
         }
         
+        Color &operator+=(const Color &_color) {
+            m_fRed += _color.m_fRed;
+            m_fGreen += _color.m_fGreen;
+            m_fBlue += _color.m_fBlue;
+            return *this;
+        }
+        
+        Color &operator-=(const Color &_color) {
+            m_fRed -= _color.m_fRed;
+            m_fGreen -= _color.m_fGreen;
+            m_fBlue -= _color.m_fBlue;
+            return *this;
+        }
+        
         Color operator*(double _dScale) const {
             return Color(m_fRed * _dScale,
                          m_fGreen * _dScale,
@@ -64,6 +78,7 @@ namespace LNF
             return *this;
         }
         
+        /// set color values to 0 if smaller and 1 if larger.
         Color &clamp() {
             if (m_fRed > 1.0) m_fRed = 1.0;
             else if (m_fRed < 0) m_fRed = 0.0;
@@ -77,6 +92,7 @@ namespace LNF
             return *this;
         }
         
+        /// wrap color values and keep range [0...1]
         Color &wrap() {
             m_fRed -= trunc(m_fRed);
             m_fGreen -= trunc(m_fGreen);
