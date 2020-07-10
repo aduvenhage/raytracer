@@ -3,6 +3,9 @@
 
 #include "constants.h"
 #include "vec3.h"
+#include "uv.h"
+
+#include <algorithm>
 
 
 namespace LNF
@@ -20,26 +23,6 @@ namespace LNF
 
         Vec     m_origin;
         Vec     m_direction;
-    };
-
-
-    struct Intersect
-    {
-        Intersect()
-            :m_dPositionOnRay(0)
-        {}
-
-        Intersect(const Ray &_ray, double _dPositionOnRay)
-            :m_dPositionOnRay(_dPositionOnRay),
-             m_position(_ray.position(_dPositionOnRay))
-        {}
-        
-        operator bool () const {
-            return m_dPositionOnRay > 0;
-        }
-
-        double  m_dPositionOnRay;
-        Vec     m_position;
     };
 
 

@@ -26,8 +26,17 @@ namespace LNF
         /* Returns texture coordinates on given surface position. */
         virtual Uv uv(const Vec &_pos) const = 0;
             
-        /* Returns the shape material */
-        virtual Material *material() const = 0;
+        /* Returns the diffuse color at the given surface position */
+        virtual Color color(const Uv &_uv) const = 0;
+        
+        /* Returns material property [0..1] = [diffuse .. mirror] */
+        virtual double reflection() = 0;
+        
+        /* Returns material property [0..1] = [opaque .. clear] */
+        virtual double transparancy() = 0;
+        
+        /* Returns material property */
+        virtual double indexOfRefraction() = 0;
     };
 
 };  // namespace LNF

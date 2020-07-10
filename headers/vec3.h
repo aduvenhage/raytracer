@@ -80,6 +80,12 @@ namespace LNF
                    _vec.m_dY*_dScale,
                    _vec.m_dZ*_dScale);
     }
+
+    inline Vec crossProduct(const Vec &_a, const Vec &_b) {
+        return Vec(_a.m_dY * _b.m_dZ - _a.m_dZ * _b.m_dY,
+                   _a.m_dZ * _b.m_dX - _a.m_dX * _b.m_dZ,
+                   _a.m_dX * _b.m_dY - _a.m_dY * _b.m_dX);
+    }
     
 };  // namespace LNF
 

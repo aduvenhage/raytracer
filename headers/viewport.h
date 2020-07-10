@@ -22,9 +22,9 @@ namespace LNF
             m_dViewAspect = (double)m_iWidth / (double)m_iHeight;
         }
         
-        Ray getRay(int _iX, int _iY) {
-            double x = (2 * (_iX + 0.5) / (double)m_iWidth - 1) * m_dViewAspect * m_dScale;
-            double y = (1 - 2 * (_iY + 0.5) / (double)m_iHeight) * m_dScale;
+        Ray getRay(int _iX, int _iY, double _dX = 0.5, double _dY = 0.5) {
+            double x = (2 * (_iX + _dX) / (double)m_iWidth - 1) * m_dViewAspect * m_dScale;
+            double y = (1 - 2 * (_iY + _dY) / (double)m_iHeight) * m_dScale;
                 
             return Ray(Vec(), Vec(x, y, -1).normalize());
         }

@@ -63,6 +63,19 @@ namespace LNF
             return *this;
         }
         
+        Color operator/(double _dScale) const {
+            return Color(m_fRed / _dScale,
+                         m_fGreen / _dScale,
+                         m_fBlue / _dScale);
+        }
+        
+        Color &operator/=(double _dScale) {
+            m_fRed /= _dScale;
+            m_fGreen /= _dScale;
+            m_fBlue /= _dScale;
+            return *this;
+        }
+        
         /// 3 element scale
         Color operator*(const Color &_color) const {
             return Color(m_fRed * _color.m_fRed,
@@ -94,9 +107,9 @@ namespace LNF
         
         /// wrap color values and keep range [0...1]
         Color &wrap() {
-            m_fRed -= trunc(m_fRed);
-            m_fGreen -= trunc(m_fGreen);
-            m_fBlue -= trunc(m_fBlue);
+            m_fRed -= floor(m_fRed);
+            m_fGreen -= floor(m_fGreen);
+            m_fBlue -= floor(m_fBlue);
             return *this;
         }
         

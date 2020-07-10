@@ -1,8 +1,9 @@
-#ifndef LIBS_HEADER_SPHERE_H
-#define LIBS_HEADER_SPHERE_H
+#ifndef LIBS_HEADER_PLANE_H
+#define LIBS_HEADER_PLANE_H
 
 #include "constants.h"
 #include "shape.h"
+#include "material.h"
 
 #include <memory>
 
@@ -10,59 +11,48 @@
 namespace LNF
 {
     /* Spehere class */
-    class Sphere        : public Shape
+    class Plane        : public Shape
     {
      public:
-        Sphere()
-            :m_dRadius(0),
-             m_dRadiusSqr(0)
+        Plane()
         {}
         
-        Sphere(const Vec &_origin, double _dRadius, std::unique_ptr<Material> _pMaterial)
+        Plane(const Vec &_origin, const Vec &_normal, std::unique_ptr<Material> _pMaterial)
             :m_origin(_origin),
-             m_pMaterial(std::move(_pMaterial)),
-             m_dRadius(_dRadius),
-             m_dRadiusSqr(_dRadius * _dRadius)
-        {}
+             m_normal(_normal),
+             m_pMaterial(std::move(_pMaterial))
+        {
+            m_e1 = crossProduct(m_normal, Vec(0.0, 0.0, 1.0));
+            m_e2 = crossProduct(m_normal, m_e1);
+        }
         
         /*
          Returns the point (t) on the ray where it intersects this shape.
          Returns 0.0 if there is no intersect possible.
          */
         virtual double intersect(const Ray &_ray) const {
-            auto vecRaySphere = m_origin - _ray.m_origin;
-            double dRayLength = vecRaySphere * _ray.m_direction;
-            if (dRayLength <= 0){
-                return 0.0;
+            double denom = m_normal * _ray.m_direction;
+            if (denom < -0.0000001) {
+                auto vecRayPlane = m_origin - _ray.m_origin;
+                double t = (vecRayPlane * m_normal) / denom;
+                if (t > 0) {
+                    return t;
+                }
             }
             
-            double dIntersectRadiusSqr = vecRaySphere.sizeSqr() - dRayLength*dRayLength;
-            if (dIntersectRadiusSqr > m_dRadiusSqr){
-                return 0.0;
-            }
-            
-            double dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
-            if (dt <= dRayLength) {
-                return dRayLength - dt;
-            }
-            else {
-                return dRayLength + dt;
-            }
+            return 0;
         }
         
         /* Returns the shape normal vector at the given surface position. */
-        virtual Vec normal(const Vec &_pos) const
-        {
-            return (_pos - m_origin).normalize();
+        virtual Vec normal(const Vec &_pos) const {
+            return m_normal;
         }
 
         /* Returns texture coordinates on given surface position. */
         virtual Uv uv(const Vec &_pos) const {
             auto vec = _pos - m_origin;
-            double phi = atan2(vec.m_dZ, vec.m_dX);
-            double theta = acos(vec.m_dY / m_dRadius);
 
-            return Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
+            return Uv(m_e1 * vec * 0.02, m_e2 * vec * 0.02).wrap();
         }
         
         /* Returns the diffuse color at the given surface position */
@@ -87,13 +77,14 @@ namespace LNF
 
      private:
         Vec                         m_origin;
+        Vec                         m_normal;
+        Vec                         m_e1;
+        Vec                         m_e2;
         std::unique_ptr<Material>   m_pMaterial;
-        double                      m_dRadius;
-        double                      m_dRadiusSqr;
     };
 
 
 };  // namespace LNF
 
-#endif  // #ifndef LIBS_HEADER_SPHERE_H
+#endif  // #ifndef LIBS_HEADER_PLANE_H
 

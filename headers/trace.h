@@ -4,17 +4,27 @@
 
 #include "color.h"
 #include "constants.h"
+#include "intersect.h"
 #include "ray.h"
 #include "sphere.h"
 #include "uv.h"
 #include "vec3.h"
 
 #include <vector>
+#include <random>
 
 
 namespace LNF
 {
     MandleBrot mb(1, 1);
+    std::default_random_engine rand_gen;
+std::uniform_real_distribution<double> uniform_11(-1.0, 1.0);
+
+
+    double randomOffset() {
+        return uniform_11(rand_gen);
+    }
+
 
     Color trace(const Ray &_ray, const std::vector<std::shared_ptr<Shape>> &_shapes, int _max_depth)
     {
@@ -35,45 +45,59 @@ namespace LNF
              (dOnRayMin > 0) &&
              (_max_depth > 0) )
         {
-            auto pMaterial = pHitShape->material();
-            if (pMaterial != nullptr) {
-                auto intersect = Intersect(_ray, dOnRayMin);
-                auto normal = pHitShape->normal(intersect.m_position);
-                auto uv = pHitShape->uv(intersect.m_position);
-                auto color = pHitShape->material()->color(uv);
-                double kt = pMaterial->transparancy(uv);
-                double kr = pMaterial->reflection(uv);
-                
-                if ( (kt > 0.00001) && (kr > 0.00001) ) {
-                    kr *= fresnel(_ray.m_direction, normal, pMaterial->indexOfRefraction());
-                    kt *= (1.0 - kr);
-                }
-                
-                auto reflectedColor = Color();
-                auto refractedColor = Color();
+            auto intersect = Intersect(pHitShape, _ray, dOnRayMin);
+            auto normal = pHitShape->normal(intersect.m_position);
+            auto uv = pHitShape->uv(intersect.m_position);
+            auto color = pHitShape->color(uv);
+            double kr = pHitShape->reflection();
 
-                if (kr > 0.00001) {
-                    auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
-                    reflectedRay.m_origin = reflectedRay.position(1e-4);  // move slighly to avoid self collision
+            auto reflectedColor = Color();
+            
+            if (kr > 0.0) {
+                auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
+                if (kr < 1.0) {
+                    reflectedRay.m_direction.m_dX += randomOffset() * (1 - kr);
+                    reflectedRay.m_direction.m_dY += randomOffset() * (1 - kr);
+                    reflectedRay.m_direction.m_dZ += randomOffset() * (1 - kr);
                     
-                    reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1) * kr;
+                    reflectedRay.m_direction = reflectedRay.m_direction.normalize();
                 }
                 
-                if (kt > 0.00001) {
-                    auto refractedRay = Ray(intersect.m_position, refract(_ray.m_direction, normal, pMaterial->indexOfRefraction()));
-                    refractedRay.m_origin = refractedRay.position(1e-4);  // move slighly to avoid self collision
-                    
-                    refractedColor = color * trace(refractedRay, _shapes, _max_depth - 1) * kt;
-                }
+                reflectedColor = color * trace(reflectedRay, _shapes, _max_depth - 1);
+            }
+            
+            return (color * (1.0 - kr) + reflectedColor * kr).clamp();
+            
+            
+            /*
+            if ( (kt > 0.00001) && (kr > 0.00001) ) {
+                kr *= fresnel(_ray.m_direction, normal, pHitShape->indexOfRefraction());
+                kt *= (1.0 - kr);
+            }
+            
+            auto reflectedColor = Color();
+            auto refractedColor = Color();
+
+            if (kr > 0.00001) {
+                auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
+                reflectedRay.m_origin = reflectedRay.position(1e-4);  // move slighly to avoid self collision
                 
-                return (color * (1 - kt) * (1 - kr) + refractedColor + reflectedColor).clamp();
+                reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1) * kr;
             }
-            else {
-                return Color(1.0, 1.0, 1.0);
+            
+            if (kt > 0.00001) {
+                auto refractedRay = Ray(intersect.m_position, refract(_ray.m_direction, normal, pHitShape->indexOfRefraction()));
+                refractedRay.m_origin = refractedRay.position(1e-4);  // move slighly to avoid self collision
+                
+                refractedColor = color * trace(refractedRay, _shapes, _max_depth - 1) * kt;
             }
+            
+            return (color * (1 - kt) * (1 - kr) + refractedColor + reflectedColor).clamp();
+            */
+            
         }
         
-        return Color(0, 0, 0);  // background color
+        return Color(0.2, 0.2, 0.2);  // background color
     }
 
 };  // namespace LNF

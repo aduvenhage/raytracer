@@ -1,8 +1,6 @@
 #ifndef LIBS_HEADER_UV_H
 #define LIBS_HEADER_UV_H
 
-#include "color.h"
-
 
 namespace LNF
 {
@@ -32,34 +30,13 @@ namespace LNF
         
         /// wrap color values and keep range [0...1]
         Uv &wrap() {
-            m_dU -= trunc(m_dU);
-            m_dV -= trunc(m_dV);
+            m_dU -= floor(m_dU);
+            m_dV -= floor(m_dV);
             return *this;
         }
         
         double  m_dU;
         double  m_dV;
-    };
-
-
-    /* Diffuse material/texture base class */
-    class Material
-    {
-     public:
-        virtual ~Material() = default;
-        
-        /* Returns the diffuse color at the given surface position */
-        virtual Color color(const Uv &_uv) const = 0;
-        
-        /* Returns material property [0..1] */
-        virtual double reflection(const Uv &_uv) = 0;
-        
-        /* Returns material property [0..1] */
-        virtual double transparancy(const Uv &_uv) = 0;
-        
-        /* Returns material property */
-        virtual double indexOfRefraction() = 0;
-
     };
 
 };  // namespace LNF
