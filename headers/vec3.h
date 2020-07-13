@@ -58,7 +58,7 @@ namespace LNF
                        m_dZ*_dScale);
         }
         
-        Vec normalize() const {
+        Vec normalized() const {
             double r = size();
             return Vec(m_dX / r,
                        m_dY / r,

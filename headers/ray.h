@@ -2,6 +2,7 @@
 #define LIBS_HEADER_RAY_H
 
 #include "constants.h"
+#include "color.h"
 #include "vec3.h"
 #include "uv.h"
 
@@ -12,9 +13,12 @@ namespace LNF
 {
     struct Ray
     {
-        Ray(const Vec &_origin, const Vec &_direction)
+        Ray() = default;
+        
+        Ray(const Vec &_origin, const Vec &_direction, double _dAttenuation = 0.0)
             :m_origin(_origin),
-             m_direction(_direction)
+             m_direction(_direction),
+             m_dAttenuation(_dAttenuation)
         {}
         
         Vec position(double _dt) const {
@@ -23,6 +27,21 @@ namespace LNF
 
         Vec     m_origin;
         Vec     m_direction;
+        double  m_dAttenuation;
+    };
+
+
+    struct ScatteredRay
+    {
+        ScatteredRay() = default;
+        
+        ScatteredRay(const Ray &_ray, const Color &_color)
+            :m_ray(_ray),
+             m_color(_color)
+        {}
+            
+        Ray     m_ray;
+        Color   m_color;
     };
 
 

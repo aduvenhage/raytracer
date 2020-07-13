@@ -25,6 +25,11 @@ namespace LNF
              m_dRadiusSqr(_dRadius * _dRadius)
         {}
         
+        /* Returns the material used for rendering, etc. */
+        const Material *material() const {
+            return m_pMaterial.get();
+        }
+        
         /*
          Returns the point (t) on the ray where it intersects this shape.
          Returns 0.0 if there is no intersect possible.
@@ -53,7 +58,7 @@ namespace LNF
         /* Returns the shape normal vector at the given surface position. */
         virtual Vec normal(const Vec &_pos) const
         {
-            return (_pos - m_origin).normalize();
+            return (_pos - m_origin).normalized();
         }
 
         /* Returns texture coordinates on given surface position. */
@@ -65,26 +70,6 @@ namespace LNF
             return Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
         }
         
-        /* Returns the diffuse color at the given surface position */
-        virtual Color color(const Uv &_uv) const {
-            return m_pMaterial->color(_uv);
-        }
-        
-        /* Returns material property [0..1] */
-        virtual double reflection() {
-            return m_pMaterial->reflection();
-        }
-
-        /* Returns material property [0..1] */
-        virtual double transparancy() {
-            return m_pMaterial->transparancy();
-        }
-
-        /* Returns material property */
-        virtual double indexOfRefraction() {
-            return m_pMaterial->indexOfRefraction();
-        }
-
      private:
         Vec                         m_origin;
         std::unique_ptr<Material>   m_pMaterial;

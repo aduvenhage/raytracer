@@ -5,6 +5,7 @@
 #include "color.h"
 #include "constants.h"
 #include "intersect.h"
+#include "material.h"
 #include "ray.h"
 #include "sphere.h"
 #include "uv.h"
@@ -16,58 +17,72 @@
 
 namespace LNF
 {
-    MandleBrot mb(1, 1);
-    std::default_random_engine rand_gen;
-std::uniform_real_distribution<double> uniform_11(-1.0, 1.0);
-
-
-    double randomOffset() {
-        return uniform_11(rand_gen);
-    }
-
-
-    Color trace(const Ray &_ray, const std::vector<std::shared_ptr<Shape>> &_shapes, int _max_depth)
-    {
+    Intersect hit(const Ray &_ray, const std::vector<std::shared_ptr<Shape>> &_shapes) {
+        Intersect ret;
         double dOnRayMin = 0;
         Shape *pHitShape = nullptr;
         
         for (auto &pShape : _shapes) {
             double dPositionOnRay = pShape->intersect(_ray);
-            if ( (dPositionOnRay > 0) &&
+            if ( (dPositionOnRay > 0.00000001) &&
                  ((pHitShape == nullptr) || (dPositionOnRay < dOnRayMin)) )
             {
                 pHitShape = pShape.get();
                 dOnRayMin = dPositionOnRay;
             }
         }
-
+        
         if ( (pHitShape != nullptr) &&
-             (dOnRayMin > 0) &&
-             (_max_depth > 0) )
+             (dOnRayMin > 0) )
         {
-            auto intersect = Intersect(pHitShape, _ray, dOnRayMin);
-            auto normal = pHitShape->normal(intersect.m_position);
-            auto uv = pHitShape->uv(intersect.m_position);
+            ret = Intersect(pHitShape, _ray, dOnRayMin);
+            ret.m_normal = pHitShape->normal(ret.m_position);
+            ret.m_uv = pHitShape->uv(ret.m_position);
+        }
+        
+        return ret;
+    }
+
+
+    Color trace(const Ray &_ray,
+                const std::vector<std::shared_ptr<Shape>> &_shapes,
+                const std::default_random_engine &_randomGen,
+                int _max_depth)
+    {
+        // create hit
+        if (_max_depth > 0) {
+            auto intersect = hit(_ray, _shapes);
+            if (intersect == true) {
+                // trace through shape
+                auto pMaterial = intersect.m_pShape->material();
+                auto scatteredRay = pMaterial->scatter(intersect, _ray, _randomGen);
+                
+                scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);  // move slighly to avoid self collision
+                
+                return scatteredRay.m_color * trace(scatteredRay.m_ray, _shapes, _randomGen, _max_depth - 1);
+            }
+        }
+        
+        return Color(0.8, 0.8, 0.8);  // background color
+    }
+            
+            /*
             auto color = pHitShape->color(uv);
             double kr = pHitShape->reflection();
 
             auto reflectedColor = Color();
             
             if (kr > 0.0) {
-                auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
                 if (kr < 1.0) {
-                    reflectedRay.m_direction.m_dX += randomOffset() * (1 - kr);
-                    reflectedRay.m_direction.m_dY += randomOffset() * (1 - kr);
-                    reflectedRay.m_direction.m_dZ += randomOffset() * (1 - kr);
-                    
-                    reflectedRay.m_direction = reflectedRay.m_direction.normalize();
+                    normal = (normal + randomCubeVec() * (1 - kr) * 0.4).normalized();
                 }
                 
-                reflectedColor = color * trace(reflectedRay, _shapes, _max_depth - 1);
+                auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
+                reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1);
             }
             
             return (color * (1.0 - kr) + reflectedColor * kr).clamp();
-            
+            */
             
             /*
             if ( (kt > 0.00001) && (kr > 0.00001) ) {
@@ -94,11 +109,6 @@ std::uniform_real_distribution<double> uniform_11(-1.0, 1.0);
             
             return (color * (1 - kt) * (1 - kr) + refractedColor + reflectedColor).clamp();
             */
-            
-        }
-        
-        return Color(0.2, 0.2, 0.2);  // background color
-    }
 
 };  // namespace LNF
 

@@ -2,7 +2,10 @@
 #define LIBS_HEADER_MATERIAL_H
 
 #include "color.h"
-#include "uv.h"
+#include "intersect.h"
+#include "ray.h"
+
+#include <random>
 
 
 namespace LNF
@@ -14,17 +17,14 @@ namespace LNF
         virtual ~Material() = default;
         
         /* Returns the diffuse color at the given surface position */
-        virtual Color color(const Uv &_uv) const = 0;
+        virtual Color color(const Intersect &_hit) const = 0;
         
-        /* Returns material property [0..1] = [diffuse .. mirror] */
-        virtual double reflection() = 0;
+        /* Returns the emitted color at the given surface position */
+        virtual Color emitted(const Intersect &_hit) const = 0;
         
-        /* Returns material property [0..1 = [opaque .. clear] */
-        virtual double transparancy() = 0;
+        /* Returns the scattered ray at the intersection point. */
+        virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, const std::default_random_engine &_randomGen) const = 0;
         
-        /* Returns material property */
-        virtual double indexOfRefraction() = 0;
-
     };
 
 };  // namespace LNF

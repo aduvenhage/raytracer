@@ -26,6 +26,11 @@ namespace LNF
             m_e2 = crossProduct(m_normal, m_e1);
         }
         
+        /* Returns the material used for rendering, etc. */
+        const Material *material() const {
+            return m_pMaterial.get();
+        }
+        
         /*
          Returns the point (t) on the ray where it intersects this shape.
          Returns 0.0 if there is no intersect possible.
@@ -40,7 +45,7 @@ namespace LNF
                 }
             }
             
-            return 0;
+            return 0.0;
         }
         
         /* Returns the shape normal vector at the given surface position. */
@@ -55,26 +60,6 @@ namespace LNF
             return Uv(m_e1 * vec * 0.02, m_e2 * vec * 0.02).wrap();
         }
         
-        /* Returns the diffuse color at the given surface position */
-        virtual Color color(const Uv &_uv) const {
-            return m_pMaterial->color(_uv);
-        }
-        
-        /* Returns material property [0..1] */
-        virtual double reflection() {
-            return m_pMaterial->reflection();
-        }
-
-        /* Returns material property [0..1] */
-        virtual double transparancy() {
-            return m_pMaterial->transparancy();
-        }
-
-        /* Returns material property */
-        virtual double indexOfRefraction() {
-            return m_pMaterial->indexOfRefraction();
-        }
-
      private:
         Vec                         m_origin;
         Vec                         m_normal;
