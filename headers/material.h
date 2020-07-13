@@ -23,7 +23,7 @@ namespace LNF
         virtual Color emitted(const Intersect &_hit) const = 0;
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, const std::default_random_engine &_randomGen) const = 0;
+        virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, std::default_random_engine &_randomGen) const = 0;
         
     };
 

@@ -46,7 +46,7 @@ namespace LNF
 
     Color trace(const Ray &_ray,
                 const std::vector<std::shared_ptr<Shape>> &_shapes,
-                const std::default_random_engine &_randomGen,
+                std::default_random_engine &_randomGen,
                 int _max_depth)
     {
         // create hit

@@ -22,7 +22,7 @@ namespace LNF
             m_dViewAspect = (double)m_iWidth / (double)m_iHeight;
         }
         
-        Ray getRay(int _iX, int _iY, double _dX = 0.5, double _dY = 0.5) {
+        Ray getRay(int _iX, int _iY, double _dX = 0.5, double _dY = 0.5) const {
             double x = (2 * (_iX + _dX) / (double)m_iWidth - 1) * m_dViewAspect * m_dScale;
             double y = (1 - 2 * (_iY + _dY) / (double)m_iHeight) * m_dScale;
                 
