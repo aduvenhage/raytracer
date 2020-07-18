@@ -11,14 +11,14 @@
 
 namespace LNF
 {
+    /* ray with origin and direction */
     struct Ray
     {
         Ray() = default;
         
-        Ray(const Vec &_origin, const Vec &_direction, double _dAttenuation = 0.0)
+        Ray(const Vec &_origin, const Vec &_direction)
             :m_origin(_origin),
-             m_direction(_direction),
-             m_dAttenuation(_dAttenuation)
+             m_direction(_direction)
         {}
         
         Vec position(double _dt) const {
@@ -27,10 +27,10 @@ namespace LNF
 
         Vec     m_origin;
         Vec     m_direction;
-        double  m_dAttenuation;
     };
 
 
+    /* ray with origin, direction and color */
     struct ScatteredRay
     {
         ScatteredRay() = default;
@@ -45,12 +45,13 @@ namespace LNF
     };
 
 
+    /* reflect vector around normal */
     inline Vec reflect(const Vec &_vec, const Vec _normal) {
-        // refl = ray - nhit * 2 * (ray . nhit)
         return _vec - _normal * 2 * (_vec * _normal);
     }
 
     
+    /* bend vector around normal with specific refraction index */
     inline Vec refract(const Vec &_vec, const Vec &_normal, double _dIndexOfRefraction)
     {
         double cosi = _vec * _normal;
@@ -77,6 +78,7 @@ namespace LNF
     }
 
 
+    /* calculate color mixing ration for glass */
     inline double fresnel(const Vec &_vec, const Vec &_normal, double _dIndexOfRefraction)
     {
         double cosi = _vec * _normal;

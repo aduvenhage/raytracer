@@ -13,19 +13,30 @@
 
 #include <vector>
 #include <random>
+#include <atomic>
 
 
 namespace LNF
 {
-    Intersect hit(const Ray &_ray, const std::vector<std::shared_ptr<Shape>> &_shapes) {
+    /* Ray miss handler */
+    class RayMiss
+    {
+     public:
+        virtual ~RayMiss() = default;
+        
+        virtual Color color(const Ray &_ray) const = 0;
+    };
+
+
+    /* Intersect ray with all shapes in scene */
+    Intersect hit(const Ray &_ray, double _dMinDist, double _dMaxDist, const std::vector<std::shared_ptr<Shape>> &_shapes) {
         Intersect ret;
-        double dOnRayMin = 0;
+        double dOnRayMin = _dMaxDist;
         Shape *pHitShape = nullptr;
         
         for (auto &pShape : _shapes) {
-            double dPositionOnRay = pShape->intersect(_ray);
-            if ( (dPositionOnRay > 0.00000001) &&
-                 ((pHitShape == nullptr) || (dPositionOnRay < dOnRayMin)) )
+            double dPositionOnRay = pShape->intersect(_ray, _dMinDist, _dMaxDist);
+            if ( (dPositionOnRay < dOnRayMin) && (dPositionOnRay > _dMinDist) )
             {
                 pHitShape = pShape.get();
                 dOnRayMin = dPositionOnRay;
@@ -43,72 +54,37 @@ namespace LNF
         return ret;
     }
 
+    std::atomic<uint64_t> uTraceCount(0);
 
+
+    /* Trace ray (recursively) through scene */
     Color trace(const Ray &_ray,
+                double _dMinDist, double _dMaxDist,
                 const std::vector<std::shared_ptr<Shape>> &_shapes,
-                std::default_random_engine &_randomGen,
+                const std::shared_ptr<RayMiss> &_missHandler,
+                RandomGen &_randomGen,
                 int _max_depth)
     {
+        uTraceCount++;
+        
         // create hit
         if (_max_depth > 0) {
-            auto intersect = hit(_ray, _shapes);
+            auto intersect = hit(_ray, _dMinDist, _dMaxDist, _shapes);
             if (intersect == true) {
-                // trace through shape
+                // create scattered, reflected, reftracted, etc. ray
                 auto pMaterial = intersect.m_pShape->material();
                 auto scatteredRay = pMaterial->scatter(intersect, _ray, _randomGen);
                 
-                scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);  // move slighly to avoid self collision
+                // move slighly to avoid self collision
+                scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
                 
-                return scatteredRay.m_color * trace(scatteredRay.m_ray, _shapes, _randomGen, _max_depth - 1);
+                // trace through shape
+                return scatteredRay.m_color * trace(scatteredRay.m_ray, _dMinDist, _dMaxDist, _shapes, _missHandler, _randomGen, _max_depth - 1);
             }
         }
         
-        return Color(0.8, 0.8, 0.8);  // background color
+        return _missHandler->color(_ray);  // background color
     }
-            
-            /*
-            auto color = pHitShape->color(uv);
-            double kr = pHitShape->reflection();
-
-            auto reflectedColor = Color();
-            
-            if (kr > 0.0) {
-                if (kr < 1.0) {
-                    normal = (normal + randomCubeVec() * (1 - kr) * 0.4).normalized();
-                }
-                
-                auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
-                reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1);
-            }
-            
-            return (color * (1.0 - kr) + reflectedColor * kr).clamp();
-            */
-            
-            /*
-            if ( (kt > 0.00001) && (kr > 0.00001) ) {
-                kr *= fresnel(_ray.m_direction, normal, pHitShape->indexOfRefraction());
-                kt *= (1.0 - kr);
-            }
-            
-            auto reflectedColor = Color();
-            auto refractedColor = Color();
-
-            if (kr > 0.00001) {
-                auto reflectedRay = Ray(intersect.m_position, reflect(_ray.m_direction, normal));
-                reflectedRay.m_origin = reflectedRay.position(1e-4);  // move slighly to avoid self collision
-                
-                reflectedColor = trace(reflectedRay, _shapes, _max_depth - 1) * kr;
-            }
-            
-            if (kt > 0.00001) {
-                auto refractedRay = Ray(intersect.m_position, refract(_ray.m_direction, normal, pHitShape->indexOfRefraction()));
-                refractedRay.m_origin = refractedRay.position(1e-4);  // move slighly to avoid self collision
-                
-                refractedColor = color * trace(refractedRay, _shapes, _max_depth - 1) * kt;
-            }
-            
-            return (color * (1 - kt) * (1 - kr) + refractedColor + reflectedColor).clamp();
-            */
 
 };  // namespace LNF
 

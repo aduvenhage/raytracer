@@ -23,6 +23,10 @@ namespace LNF
              m_pMaterial(std::move(_pMaterial))
         {
             m_e1 = crossProduct(m_normal, Vec(0.0, 0.0, 1.0));
+            if (m_e1.sizeSqr() < 0.0001) {
+                m_e1 = crossProduct(m_normal, Vec(0.0, 1.0, 0.0));
+            }
+            
             m_e2 = crossProduct(m_normal, m_e1);
         }
         
@@ -35,12 +39,12 @@ namespace LNF
          Returns the point (t) on the ray where it intersects this shape.
          Returns 0.0 if there is no intersect possible.
          */
-        virtual double intersect(const Ray &_ray) const {
+        virtual double intersect(const Ray &_ray, double _dMin, double _dMax) const {
             double denom = m_normal * _ray.m_direction;
             if (denom < -0.0000001) {
                 auto vecRayPlane = m_origin - _ray.m_origin;
                 double t = (vecRayPlane * m_normal) / denom;
-                if (t > 0) {
+                if ( (t > _dMin) && (t < _dMax) ) {
                     return t;
                 }
             }
