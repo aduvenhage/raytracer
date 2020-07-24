@@ -29,14 +29,14 @@ namespace LNF
 
 
     /* Intersect ray with all shapes in scene */
-    Intersect hit(const Ray &_ray, double _dMinDist, double _dMaxDist, const std::vector<std::shared_ptr<Shape>> &_shapes) {
+    Intersect hit(const Ray &_ray, const std::vector<std::shared_ptr<Shape>> &_shapes) {
         Intersect ret;
-        double dOnRayMin = _dMaxDist;
+        double dOnRayMin = _ray.m_dMaxDist;
         Shape *pHitShape = nullptr;
         
         for (auto &pShape : _shapes) {
-            double dPositionOnRay = pShape->intersect(_ray, _dMinDist, _dMaxDist);
-            if ( (dPositionOnRay < dOnRayMin) && (dPositionOnRay > _dMinDist) )
+            double dPositionOnRay = pShape->intersect(_ray);
+            if ( (dPositionOnRay < dOnRayMin) && (dPositionOnRay > _ray.m_dMinDist) )
             {
                 pHitShape = pShape.get();
                 dOnRayMin = dPositionOnRay;
@@ -48,7 +48,8 @@ namespace LNF
         {
             ret = Intersect(pHitShape, _ray, dOnRayMin);
             ret.m_normal = pHitShape->normal(ret.m_position);
-            ret.m_uv = pHitShape->uv(ret.m_position);
+            ret.m_uv = pHitShape->uv(ret.m_position);            
+            ret.m_bInside = ret.m_normal * _ray.m_direction > 0;
         }
         
         return ret;
@@ -59,31 +60,34 @@ namespace LNF
 
     /* Trace ray (recursively) through scene */
     Color trace(const Ray &_ray,
-                double _dMinDist, double _dMaxDist,
                 const std::vector<std::shared_ptr<Shape>> &_shapes,
                 const std::shared_ptr<RayMiss> &_missHandler,
                 RandomGen &_randomGen,
-                int _max_depth)
+                int _maxTraceDepth)
     {
         uTraceCount++;
         
         // create hit
-        if (_max_depth > 0) {
-            auto intersect = hit(_ray, _dMinDist, _dMaxDist, _shapes);
-            if (intersect == true) {
-                // create scattered, reflected, reftracted, etc. ray
-                auto pMaterial = intersect.m_pShape->material();
-                auto scatteredRay = pMaterial->scatter(intersect, _ray, _randomGen);
-                
-                // move slighly to avoid self collision
-                scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
-                
-                // trace through shape
-                return scatteredRay.m_color * trace(scatteredRay.m_ray, _dMinDist, _dMaxDist, _shapes, _missHandler, _randomGen, _max_depth - 1);
+        auto intersect = hit(_ray, _shapes);
+        
+        if (intersect == true) {
+            auto pMaterial = intersect.m_pShape->material();
+            
+            // create scattered, reflected, reftracted, etc. color
+            auto scatteredRay = pMaterial->scatter(intersect, _ray, _randomGen);
+            scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
+
+            if ( (_maxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
+                return scatteredRay.m_emitted +
+                       scatteredRay.m_color * trace(scatteredRay.m_ray, _shapes, _missHandler, _randomGen, _maxTraceDepth - 1);
+            }
+            else {
+                return scatteredRay.m_emitted;
             }
         }
-        
-        return _missHandler->color(_ray);  // background color
+        else {
+            return _missHandler->color(_ray);  // background color
+        }
     }
 
 };  // namespace LNF

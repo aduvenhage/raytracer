@@ -22,7 +22,7 @@ namespace LNF
         virtual const Material *material() const = 0;
         
         /* Returns the point (t) on the ray where it intersects this shape. */
-        virtual double intersect(const Ray &_ray, double _dMin, double _dMax) const = 0;
+        virtual double intersect(const Ray &_ray) const = 0;
         
         /* Returns the shape normal vector at the given surface position. */
         virtual Vec normal(const Vec &_pos) const = 0;

@@ -30,32 +30,21 @@ class Diffuse : public Material
 {
  public:
     Diffuse(const Color &_color)
-        :m_color(_color),
-         m_distribution(-1, 1)
+        :m_color(_color)
     {}
     
-    /* Returns the diffuse color at the given surface position */
-    virtual Color color(const Intersect &_hit) const override {return m_color;}
-    
-    /* Returns the emitted color at the given surface position */
-    virtual Color emitted(const Intersect &_hit) const override {return Color();}
-
     /* Returns the scattered ray at the intersection point. */
     virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
-        auto scatteredDirection = (_hit.m_normal + randomUnitCube(_randomGen)*0.8).normalized();
-        return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color(_hit));
+        auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
+        return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color(_hit), Color());
     }
-
- private:
-    Vec randomUnitCube(RandomGen &_randomGen) const {
-        return Vec(m_distribution(_randomGen),
-                   m_distribution(_randomGen),
-                   m_distribution(_randomGen));
-    }
-
+    
+ protected:
+    /* Returns the diffuse color at the given surface position */
+    virtual Color color(const Intersect &_hit) const {return m_color;}
+    
  private:
     Color                                          m_color;
-    mutable std::uniform_real_distribution<double> m_distribution;
 };
 
 
@@ -104,41 +93,70 @@ class DiffuseCheckered : public Diffuse
 };
 
 
+// light emitting material
+class Light : public Material
+{
+ public:
+   Light(const Color &_color)
+       :m_color(_color)
+   {}
+   
+   /* Returns the scattered ray at the intersection point. */
+   virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+       return ScatteredRay(_ray, Color(), m_color);
+   }
+   
+ private:
+   Color                                          m_color;
+};
+
+
 // shiny metal material
 class Metal : public Material
 {
  public:
     Metal(const Color &_color, double _dScatter)
         :m_color(_color),
-         m_dScatter(_dScatter),
-         m_distribution(-1, 1)
+         m_dScatter(_dScatter)
     {}
     
-    /* Returns the diffuse color at the given surface position */
-    virtual Color color(const Intersect &_hit) const override {return m_color;}
-    
-    /* Returns the emitted color at the given surface position */
-    virtual Color emitted(const Intersect &_hit) const override {return Color();}
-
     /* Returns the scattered ray at the intersection point. */
     virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
-        auto normal = (_hit.m_normal + randomUnitCube(_randomGen) * m_dScatter).normalized();
+        auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_dScatter).normalized();
         auto reflectedRay = Ray(_hit.m_position, reflect(_ray.m_direction, normal));
         
-        return ScatteredRay(reflectedRay, color(_hit));
+        return ScatteredRay(reflectedRay, m_color, Color());
     }
 
- private:
-    Vec randomUnitCube(RandomGen &_randomGen) const {
-        return Vec(m_distribution(_randomGen),
-                   m_distribution(_randomGen),
-                   m_distribution(_randomGen));
-    }
-    
  private:
     Color                                          m_color;
     double                                         m_dScatter;
-    mutable std::uniform_real_distribution<double> m_distribution;
+};
+
+
+// glass material
+class Glass : public Material
+{
+ public:
+    Glass(const Color &_color, double _dScatter, double _dIndexOfRefraction)
+        :m_color(_color),
+         m_dScatter(_dScatter),
+         m_dIndexOfRefraction(_dIndexOfRefraction)
+    {}
+    
+    /* Returns the scattered ray at the intersection point. */
+    virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+        auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_dScatter).normalized();
+        double dEtaiOverEtat = _hit.m_bInside ? m_dIndexOfRefraction : 1.0/m_dIndexOfRefraction;
+        auto refractedRay = Ray(_hit.m_position, refract(_ray.m_direction, normal, dEtaiOverEtat, _randomGen));
+        
+        return ScatteredRay(refractedRay, m_color, Color());
+    }
+
+ private:
+    Color               m_color;
+    double              m_dScatter;
+    double              m_dIndexOfRefraction;
 };
 
 
@@ -147,10 +165,10 @@ class Background : public RayMiss
 {
  public:
     virtual Color color(const Ray &_ray) const {
-        return Color(0.8, 0.8, 0.7);
+        double shift = _ray.m_direction.m_dY * _ray.m_direction.m_dY * 0.3 + 0.3;
+        return Color(shift, shift, 0.6);
     }
 };
-
 
 
 /* Wrapper class for output image raw buffer */
@@ -176,13 +194,11 @@ class OutputImage
 };
 
 
-/* Ratracing job (block of pixels on output image) */
+/* Raytracing job (block of pixels on output image) */
 class PixelJob
 {
  protected:
-    static constexpr double    PIXEL_VARIANCE = 0.05;
-    static constexpr double    MIN_RAY_DIST = 0.00001;
-    static constexpr double    MAX_RAY_DIST = 100;
+    static constexpr double    PIXEL_VARIANCE = 0.4;
 
  public:
     PixelJob()
@@ -232,11 +248,11 @@ class PixelJob
                                             m_pixelDistribution(_generator));
 
                     // trace ray and add color result
-                    color += LNF::trace(ray, MIN_RAY_DIST, MAX_RAY_DIST, _shapes, _missHandler, _generator, _iMaxDepth);
+                    color += LNF::trace(ray, _shapes, _missHandler, _generator, _iMaxDepth);
                 }
                                 
                 // write averaged color to output image
-                color /= _iRaysPerPixel;
+                color = (color / _iRaysPerPixel).clamp();
                 pImage[ipx++] = (int)(255 * color.m_fRed);
                 pImage[ipx++] = (int)(255 * color.m_fGreen);
                 pImage[ipx++] = (int)(255 * color.m_fBlue);
@@ -261,22 +277,22 @@ std::mutex                              jobMutex;
 /* Ratracing worker thread */
 class PixelWorker
 {
- private:
-    static const int SAMPLES_PER_PIXEL = 64;
-    static const int MAX_DEPTH = 16;
-
  public:
     PixelWorker(std::vector<std::unique_ptr<PixelJob>> &_jobs, std::mutex &_jobMutex,
                 OutputImage &_image,
                 const Viewport &_view,
                 const std::vector<std::shared_ptr<Shape>> &_scene,
-                const std::shared_ptr<RayMiss> &_missHandler)
+                const std::shared_ptr<RayMiss> &_missHandler,
+                int _iSamplesPerPixel,
+                int _iMaxTraceDepth)
         :m_image(_image),
          m_view(_view),
          m_scene(_scene),
          m_missHandler(_missHandler),
          m_jobs(_jobs),
          m_mutex(_jobMutex),
+         m_iSamplesPerPixel(_iSamplesPerPixel),
+         m_iMaxTraceDepth(_iMaxTraceDepth),
          m_bFinished(false)
     {
         m_thread = std::thread(&PixelWorker::run, this);
@@ -310,7 +326,8 @@ class PixelWorker
         {
             auto pJob = getJob();
             if (pJob != nullptr) {
-                pJob->run(m_image, m_view, m_scene, m_missHandler, m_generator, SAMPLES_PER_PIXEL, MAX_DEPTH);
+                pJob->run(m_image, m_view, m_scene, m_missHandler,
+                          m_generator, m_iSamplesPerPixel, m_iMaxTraceDepth);
             }
             else {
                 m_bFinished = true;
@@ -327,6 +344,8 @@ class PixelWorker
     std::shared_ptr<RayMiss>                    m_missHandler;
     std::vector<std::unique_ptr<PixelJob>>      &m_jobs;
     std::mutex                                  &m_mutex;
+    const int                                   m_iSamplesPerPixel;
+    const int                                   m_iMaxTraceDepth;
     std::thread                                 m_thread;
     std::atomic<bool>                           m_bFinished;
 };
@@ -341,6 +360,8 @@ int raytracer()
     int height = 960;
     int fov = 60;
     int numWorkers = 16;
+    int samplesPerPixel = 32;
+    int maxTraceDepth = 8;
 
     // init
     HighPrecisionScopeTimer timer;
@@ -349,10 +370,14 @@ int raytracer()
     
     // create scene
     std::vector<std::shared_ptr<Shape>> shapes{
-        std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.0), Color(1.0, 0.2, 0.0), 8)),
-        std::make_shared<Sphere>(Vec(0, 5, -40), 10, std::make_unique<Diffuse>(Color(1.0, 1.0, 1.0))),
+        std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)),
+        std::make_shared<Sphere>(Vec(0, 2, -40), 10, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.0, 1.5)),
         std::make_shared<Sphere>(Vec(-10, 3, -30), 5, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))),
-        std::make_shared<Sphere>(Vec(10, 5, -30), 5, std::make_unique<Metal>(Color(0.2, 0.2, 1.0), 0.02)),
+        std::make_shared<Sphere>(Vec(10, 5, -30), 5, std::make_unique<Metal>(Color(0.3, 0.3, 1.0), 0.05)),
+        std::make_shared<Sphere>(Vec(-8, -4, -20), 3, std::make_unique<Metal>(Color(1.0, 1.0, 1.0), 0.05)),
+        std::make_shared<Sphere>(Vec(10, -4, -25), 3, std::make_unique<DiffuseCheckered>(Color(1.0, 0.1, 0.1), Color(0.1, 0.1, 1.0), 16)),
+        std::make_shared<Sphere>(Vec(0, -3, -10), 2, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.0, 1.5)),
+        std::make_shared<Sphere>(Vec(-20, 40, -30), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))),
     };
     
     auto background = std::make_shared<Background>();
@@ -379,7 +404,10 @@ int raytracer()
     // start workers
     std::unique_lock<std::mutex> lock(jobMutex);
     for (int i = 0; i < numWorkers; i++) {
-        workers.push_back(std::make_unique<PixelWorker>(jobs, jobMutex, image, view, shapes, background));
+        workers.push_back(std::make_unique<PixelWorker>(jobs, jobMutex,
+                                                        image, view,
+                                                        shapes, background,
+                                                        samplesPerPixel, maxTraceDepth));
     }
     
     lock.unlock();
@@ -392,6 +420,7 @@ int raytracer()
             workers.pop_back();
         }
              
+        printf("%d\n", (int)jobs.size());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 

@@ -76,14 +76,14 @@ namespace LNF
             return *this;
         }
         
-        /// 3 element scale
+        // 3 element scale
         Color operator*(const Color &_color) const {
             return Color(m_fRed * _color.m_fRed,
                          m_fGreen * _color.m_fGreen,
                          m_fBlue * _color.m_fBlue);
         }
         
-        /// 3 element scale
+        // 3 element scale
         Color &operator*=(const Color &_color) {
             m_fRed *= _color.m_fRed;
             m_fGreen *= _color.m_fGreen;
@@ -91,7 +91,7 @@ namespace LNF
             return *this;
         }
         
-        /// set color values to 0 if smaller and 1 if larger.
+        // set color values to 0 if smaller and 1 if larger.
         Color &clamp() {
             if (m_fRed > 1.0) m_fRed = 1.0;
             else if (m_fRed < 0) m_fRed = 0.0;
@@ -105,12 +105,16 @@ namespace LNF
             return *this;
         }
         
-        /// wrap color values and keep range [0...1]
+        // wrap color values and keep range [0...1]
         Color &wrap() {
             m_fRed -= floor(m_fRed);
             m_fGreen -= floor(m_fGreen);
             m_fBlue -= floor(m_fBlue);
             return *this;
+        }
+        
+        bool isBlack() {
+            return m_fRed + m_fGreen + m_fBlue < 0.00001;
         }
         
         float      m_fRed;

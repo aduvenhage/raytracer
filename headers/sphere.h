@@ -34,7 +34,7 @@ namespace LNF
          Returns the point (t) on the ray where it intersects this shape.
          Returns 0.0 if there is no intersect possible.
          */
-        virtual double intersect(const Ray &_ray, double _dMin, double _dMax) const {
+        virtual double intersect(const Ray &_ray) const {
             auto vecRaySphere = m_origin - _ray.m_origin;
             double dRayLength = vecRaySphere * _ray.m_direction;
             double dIntersectRadiusSqr = vecRaySphere.sizeSqr() - dRayLength*dRayLength;
@@ -52,7 +52,7 @@ namespace LNF
                 dRayLength += dt;
             }
             
-            if ( (dRayLength < _dMin) || (dRayLength > _dMax) ) {
+            if ( (dRayLength < _ray.m_dMinDist) || (dRayLength > _ray.m_dMaxDist) ) {
                 return 0.0;
             }
             else {

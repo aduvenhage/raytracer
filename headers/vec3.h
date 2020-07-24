@@ -45,6 +45,10 @@ namespace LNF
                        m_dZ - _vec.m_dZ);
         }
         
+        Vec operator-() const {
+            return inverse();
+        }
+        
         /// dot product
         double operator*(const Vec &_vec) const {
             return m_dX * _vec.m_dX +
@@ -66,7 +70,7 @@ namespace LNF
         }
         
         Vec inverse() const {
-            return Vec(-1 * m_dX, -1 * m_dY, -1 * m_dZ);
+            return Vec(-m_dX, -m_dY, -m_dZ);
         }
         
         double      m_dX;
@@ -81,12 +85,32 @@ namespace LNF
                    _vec.m_dZ*_dScale);
     }
 
+
     inline Vec crossProduct(const Vec &_a, const Vec &_b) {
         return Vec(_a.m_dY * _b.m_dZ - _a.m_dZ * _b.m_dY,
                    _a.m_dZ * _b.m_dX - _a.m_dX * _b.m_dZ,
                    _a.m_dX * _b.m_dY - _a.m_dY * _b.m_dX);
     }
+
     
+    Vec randomUnitCube(RandomGen &_randomGen) {
+        std::uniform_real_distribution<double> dist(-1.0, 1.0);
+        return Vec(dist(_randomGen),
+                   dist(_randomGen),
+                   dist(_randomGen));
+    }
+
+    
+    Vec randomUnitSphere(RandomGen &_randomGen) {
+        Vec ret = randomUnitCube(_randomGen);
+        
+        while (ret.sizeSqr() > 1) {
+            ret = randomUnitCube(_randomGen);
+        }
+        
+        return ret;
+    }
+
 };  // namespace LNF
 
 #endif  // #ifndef LIBS_HEADER_VEC3_H

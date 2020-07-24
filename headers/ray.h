@@ -7,6 +7,8 @@
 #include "uv.h"
 
 #include <algorithm>
+#include <limits>
+#include <random>
 
 
 namespace LNF
@@ -18,7 +20,9 @@ namespace LNF
         
         Ray(const Vec &_origin, const Vec &_direction)
             :m_origin(_origin),
-             m_direction(_direction)
+             m_direction(_direction),
+             m_dMinDist(0.00001),
+             m_dMaxDist(std::numeric_limits<double>::max())
         {}
         
         Vec position(double _dt) const {
@@ -27,6 +31,8 @@ namespace LNF
 
         Vec     m_origin;
         Vec     m_direction;
+        double  m_dMinDist;
+        double  m_dMaxDist;
     };
 
 
@@ -35,77 +41,51 @@ namespace LNF
     {
         ScatteredRay() = default;
         
-        ScatteredRay(const Ray &_ray, const Color &_color)
+        ScatteredRay(const Ray &_ray, const Color &_color, const Color &_emitted)
             :m_ray(_ray),
-             m_color(_color)
+             m_color(_color),
+             m_emitted(_emitted)
         {}
             
         Ray     m_ray;
         Color   m_color;
+        Color   m_emitted;
     };
 
 
     /* reflect vector around normal */
     inline Vec reflect(const Vec &_vec, const Vec _normal) {
+        // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
         return _vec - _normal * 2 * (_vec * _normal);
     }
 
-    
-    /* bend vector around normal with specific refraction index */
-    inline Vec refract(const Vec &_vec, const Vec &_normal, double _dIndexOfRefraction)
-    {
-        double cosi = _vec * _normal;
 
-        // ray entering object
-        if (cosi < 0) {
-            double eta = 1.0 / _dIndexOfRefraction;
-            double k = 1.0 - eta * eta * (1 - cosi * cosi);
-            if (k > 0.0) {
-                return eta * _vec - (eta * cosi + sqrt(k)) * _normal;
-            }
-        }
-        
-        // ray exiting object
-        else {
-            double eta = _dIndexOfRefraction;
-            double k = 1.0 - eta * eta * (1 - cosi * cosi);
-            if (k > 0.0) {
-                return eta * _vec - (eta * cosi - sqrt(k)) * _normal;
-            }
-        }
-        
-        return _vec;
+    /* Schlick’s approximation to Fresnel */
+    double schlick(double cosi, double _dEtaiOverEtat) {
+        // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
+        auto r0 = sqr((1 - _dEtaiOverEtat) / (1 + _dEtaiOverEtat));
+        return r0 + (1 - r0) * pow((1 - cosi), 5);
     }
 
 
-    /* calculate color mixing ration for glass */
-    inline double fresnel(const Vec &_vec, const Vec &_normal, double _dIndexOfRefraction)
+    /* bend vector around normal with specific refraction index */
+    inline Vec refract(const Vec &_vec, const Vec &_normal, double _dEtaiOverEtat, RandomGen &_randomGen)
     {
-        double cosi = _vec * _normal;
-        double etai = 1.0;
-        double etat = _dIndexOfRefraction;
-
-        // check for ray exiting object
-        if (cosi > 0.0) {
-            std::swap(etai, etat);
-        }
-        else {
-            cosi *= -1.0;
-        }
-
-        double sint = etai / etat * sqrt(std::max(0.0, 1.0 - cosi * cosi));
+        // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
+        double cosi = -_vec * _normal;
+        double k = sqr(_dEtaiOverEtat) * (1 - sqr(cosi));
+        std::uniform_real_distribution<double> uniform01(0, 1);
         
-        // check for total internal reflection
-        if (sint >= 1.0) {
-            return 1.0;
+        // k > 1 ==> total internal reflection
+        if ( (k > 1) ||
+             (uniform01(_randomGen) < schlick(cosi, _dEtaiOverEtat)) )
+        {
+            // total internal reflection
+            return _vec - _normal * 2 * cosi;
         }
         else {
-            double cost = sqrt(std::max(0.0, 1.0 - sint * sint));
-            
-            float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
-            float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
-            
-            return (Rs * Rs + Rp * Rp) / 2;
+            // refraction
+            return _dEtaiOverEtat * _vec + (_dEtaiOverEtat * cosi - sqrt(1 - k)) * _normal;
         }
     }
 

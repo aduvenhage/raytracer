@@ -11,6 +11,11 @@ constexpr double deg2rad(double _dDeg) {
 }
 
 
+constexpr double sqr(double _a) {
+    return _a * _a;
+}
+
+
 namespace LNF
 {
     using RandomGen = std::mt19937_64;

@@ -39,12 +39,12 @@ namespace LNF
          Returns the point (t) on the ray where it intersects this shape.
          Returns 0.0 if there is no intersect possible.
          */
-        virtual double intersect(const Ray &_ray, double _dMin, double _dMax) const {
+        virtual double intersect(const Ray &_ray) const {
             double denom = m_normal * _ray.m_direction;
             if (denom < -0.0000001) {
                 auto vecRayPlane = m_origin - _ray.m_origin;
                 double t = (vecRayPlane * m_normal) / denom;
-                if ( (t > _dMin) && (t < _dMax) ) {
+                if ( (t > _ray.m_dMinDist) && (t < _ray.m_dMaxDist) ) {
                     return t;
                 }
             }
