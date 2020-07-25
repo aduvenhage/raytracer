@@ -44,7 +44,7 @@ class Diffuse : public Material
     virtual Color color(const Intersect &_hit) const {return m_color;}
     
  private:
-    Color                                          m_color;
+    Color           m_color;
 };
 
 
@@ -64,8 +64,8 @@ class DiffuseMandlebrot : public Diffuse
     }
     
  private:
-    MandleBrot                                      m_mandlebrot;
-    Color                                           m_baseColor;
+    MandleBrot      m_mandlebrot;
+    Color           m_baseColor;
 };
 
 
@@ -87,9 +87,9 @@ class DiffuseCheckered : public Diffuse
     }
     
  private:
-    Color                                           m_colorA;
-    Color                                           m_colorB;
-    int                                             m_iBlockSize;
+    Color           m_colorA;
+    Color           m_colorB;
+    int             m_iBlockSize;
 };
 
 
@@ -107,7 +107,7 @@ class Light : public Material
    }
    
  private:
-   Color                                          m_color;
+   Color            m_color;
 };
 
 
@@ -124,13 +124,13 @@ class Metal : public Material
     virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
         auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_dScatter).normalized();
         auto reflectedRay = Ray(_hit.m_position, reflect(_ray.m_direction, normal));
-        
+    
         return ScatteredRay(reflectedRay, m_color, Color());
     }
 
  private:
-    Color                                          m_color;
-    double                                         m_dScatter;
+    Color           m_color;
+    double          m_dScatter;
 };
 
 
@@ -147,16 +147,21 @@ class Glass : public Material
     /* Returns the scattered ray at the intersection point. */
     virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
         auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_dScatter).normalized();
-        double dEtaiOverEtat = _hit.m_bInside ? m_dIndexOfRefraction : 1.0/m_dIndexOfRefraction;
-        auto refractedRay = Ray(_hit.m_position, refract(_ray.m_direction, normal, dEtaiOverEtat, _randomGen));
+        double dEtaiOverEtat = 1.0/m_dIndexOfRefraction;
         
+        if (_hit.m_bInside == true) {
+            normal = -normal;
+            dEtaiOverEtat = m_dIndexOfRefraction;
+        }
+        
+        auto refractedRay = Ray(_hit.m_position, refract(_ray.m_direction, normal, dEtaiOverEtat, _randomGen));
         return ScatteredRay(refractedRay, m_color, Color());
     }
 
  private:
-    Color               m_color;
-    double              m_dScatter;
-    double              m_dIndexOfRefraction;
+    Color           m_color;
+    double          m_dScatter;
+    double          m_dIndexOfRefraction;
 };
 
 
@@ -360,8 +365,8 @@ int raytracer()
     int height = 960;
     int fov = 60;
     int numWorkers = 16;
-    int samplesPerPixel = 32;
-    int maxTraceDepth = 8;
+    int samplesPerPixel = 16;
+    int maxTraceDepth = 32;
 
     // init
     HighPrecisionScopeTimer timer;
@@ -371,13 +376,14 @@ int raytracer()
     // create scene
     std::vector<std::shared_ptr<Shape>> shapes{
         std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)),
-        std::make_shared<Sphere>(Vec(0, 2, -40), 10, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.0, 1.5)),
-        std::make_shared<Sphere>(Vec(-10, 3, -30), 5, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))),
-        std::make_shared<Sphere>(Vec(10, 5, -30), 5, std::make_unique<Metal>(Color(0.3, 0.3, 1.0), 0.05)),
+        std::make_shared<Sphere>(Vec(-10, 3, -35), 5, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))),
+        std::make_shared<Sphere>(Vec(10, -4, -15), 3, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))),
+        std::make_shared<Sphere>(Vec(10, 5, -35), 5, std::make_unique<Metal>(Color(0.3, 0.3, 1.0), 0.05)),
         std::make_shared<Sphere>(Vec(-8, -4, -20), 3, std::make_unique<Metal>(Color(1.0, 1.0, 1.0), 0.05)),
         std::make_shared<Sphere>(Vec(10, -4, -25), 3, std::make_unique<DiffuseCheckered>(Color(1.0, 0.1, 0.1), Color(0.1, 0.1, 1.0), 16)),
-        std::make_shared<Sphere>(Vec(0, -3, -10), 2, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.0, 1.5)),
-        std::make_shared<Sphere>(Vec(-20, 40, -30), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))),
+        std::make_shared<Sphere>(Vec(0, -2, -18), 4, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.02, 1.5)),
+        std::make_shared<Sphere>(Vec(-2, -6, -15), 1.5, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.02, 1.5)),
+        std::make_shared<Sphere>(Vec(-20, 40, -20), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))),
     };
     
     auto background = std::make_shared<Background>();
