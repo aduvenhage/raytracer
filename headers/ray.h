@@ -78,10 +78,10 @@ namespace LNF
         
         // k > 1 ==> total internal reflection
         if ( (k > 1) ||
-             (uniform01(_randomGen) < schlick(cosi, _dEtaiOverEtat)) )
+            (uniform01(_randomGen) < schlick(cosi, _dEtaiOverEtat)) )
         {
             // total internal reflection
-            return _vec - _normal * 2 * cosi;
+            return _vec + _normal * 2 * cosi;
         }
         else {
             // refraction
