@@ -1,11 +1,12 @@
 #include "headers/color.h"
 #include "headers/constants.h"
 #include "headers/jpeg.h"
-#include "headers/light.h"
 #include "headers/mandlebrot.h"
+#include "headers/outputimage.h"
 #include "headers/plane.h"
 #include "headers/profile.h"
 #include "headers/ray.h"
+#include "headers/scene.h"
 #include "headers/sphere.h"
 #include "headers/trace.h"
 #include "headers/uv.h"
@@ -165,113 +166,67 @@ class Glass : public Material
 };
 
 
-// solid color background
-class Background : public RayMiss
+// simple scene with a linear search for object hits
+class SimpleScene   : public Scene
 {
  public:
-    virtual Color color(const Ray &_ray) const {
+    virtual Intersect hit(const Ray &_ray) const override {
+        double dOnRayMin = _ray.m_dMaxDist;
+        Shape *pHitShape = nullptr;
+        
+        for (auto &pShape : m_shapes) {
+            double dPositionOnRay = pShape->intersect(_ray);
+            if ( (dPositionOnRay < dOnRayMin) && (dPositionOnRay > _ray.m_dMinDist) )
+            {
+                pHitShape = pShape.get();
+                dOnRayMin = dPositionOnRay;
+            }
+        }
+        
+        if ( (pHitShape != nullptr) &&
+             (dOnRayMin > 0) )
+        {
+            return Intersect(pHitShape, _ray, dOnRayMin);
+        }
+        
+        return Intersect();
+    }
+    
+    virtual Color missColor(const Ray &_ray) const override {
         double shift = _ray.m_direction.m_dY * _ray.m_direction.m_dY * 0.3 + 0.3;
         return Color(shift, shift, 0.6);
     }
-};
-
-
-/* Wrapper class for output image raw buffer */
-class OutputImage
-{
- public:
-    OutputImage(int _iWidth, int _iHeight)
-        :m_iWidth(_iWidth),
-         m_iHeight(_iHeight),
-         m_image(_iWidth * _iHeight * 3)
-    {}
     
-    int width() const {return m_iWidth;}
-    int height() const {return m_iHeight;}
+    void addShape(const std::shared_ptr<Shape> &_pShape) {
+        m_shapes.push_back(_pShape);
+    }
     
-    unsigned char *data() {return m_image.data();}
-    const unsigned char *data() const {return m_image.data();}
-
- private:
-    int                         m_iWidth;
-    int                         m_iHeight;
-    std::vector<unsigned char>  m_image;
+ protected:
+    std::vector<std::shared_ptr<Shape>>   m_shapes;
 };
 
 
 /* Raytracing job (block of pixels on output image) */
 class PixelJob
 {
- protected:
-    static constexpr double    PIXEL_VARIANCE = 0.4;
-
  public:
-    PixelJob()
-        :m_bValid(false),
-         m_iStartX(0),
-         m_iStartY(0),
-         m_iWidth(0),
-         m_iHeight(0)
-    {}
-    
-    PixelJob(int _iStartX, int _iStartY, int _iWidth, int _iHeight)
-        :m_bValid(true),
-         m_iStartX(_iStartX),
-         m_iStartY(_iStartY),
-         m_iWidth(_iWidth),
-         m_iHeight(_iHeight),
-         m_pixelDistribution(0.5-PIXEL_VARIANCE, 0.5+PIXEL_VARIANCE)
+    PixelJob(std::unique_ptr<OutputImage> &_pOutput, std::unique_ptr<Viewport> &_pView)
+        :m_pOutput(std::move(_pOutput)),
+         m_pView(std::move(_pView))
     {}
     
     bool isValid() const {
-        return m_bValid;
+        return m_pOutput != nullptr;
     }
     
-    void run(OutputImage &_output,
-             const Viewport &_view,
-             const std::vector<std::shared_ptr<Shape>> &_shapes,
-             const std::shared_ptr<RayMiss> &_missHandler,
-             RandomGen &_generator,
-             int _iRaysPerPixel, int _iMaxDepth) const
+    void run(const std::shared_ptr<Scene> &_scene, RandomGen &_generator, int _iRaysPerPixel, int _iMaxDepth) const
     {
-        unsigned char *pImage = _output.data();
-        const int iOutputWidth = _output.width();
-
-        // create rays and trace them for all pixels in block
-        for (auto j = 0; j < m_iHeight; j++)
-        {
-            int ipx = ((m_iStartY + j) * iOutputWidth + m_iStartX) * 3;
-            for (auto i = 0; i < m_iWidth; i++)
-            {
-                auto color = Color();
-                
-                for (int k = 0; k < _iRaysPerPixel; k++)
-                {
-                    // get ray with some fuzziness around pixel center
-                    auto ray = _view.getRay(i + m_iStartX, j + m_iStartY,
-                                            m_pixelDistribution(_generator),
-                                            m_pixelDistribution(_generator));
-
-                    // trace ray and add color result
-                    color += LNF::trace(ray, _shapes, _missHandler, _generator, _iMaxDepth);
-                }
-                                
-                // write averaged color to output image
-                color = (color / _iRaysPerPixel).clamp();
-                pImage[ipx++] = (int)(255 * color.m_fRed);
-                pImage[ipx++] = (int)(255 * color.m_fGreen);
-                pImage[ipx++] = (int)(255 * color.m_fBlue);
-            }
-        }
+        renderImage(m_pOutput, m_pView, _scene, _generator, _iRaysPerPixel, _iMaxDepth);
     }
 
  private:
-    bool                                            m_bValid;
-    int                                             m_iStartX;
-    int                                             m_iStartY;
-    int                                             m_iWidth;
-    int                                             m_iHeight;
-    mutable std::uniform_real_distribution<double>  m_pixelDistribution;
+    std::unique_ptr<OutputImage>        m_pOutput;
+    std::unique_ptr<Viewport>           m_pView;
 };
 
 
@@ -279,23 +234,27 @@ std::vector<std::unique_ptr<PixelJob>>  jobs;
 std::mutex                              jobMutex;
 
 
+// take one job from back of job list
+std::unique_ptr<PixelJob> getJob() {
+    std::lock_guard<std::mutex> lock(jobMutex);
+    if (jobs.empty() == false) {
+        auto job = std::move(jobs.back());
+        jobs.pop_back();
+        return job;
+    }
+    
+    return nullptr;
+}
+
+
 /* Ratracing worker thread */
 class PixelWorker
 {
  public:
-    PixelWorker(std::vector<std::unique_ptr<PixelJob>> &_jobs, std::mutex &_jobMutex,
-                OutputImage &_image,
-                const Viewport &_view,
-                const std::vector<std::shared_ptr<Shape>> &_scene,
-                const std::shared_ptr<RayMiss> &_missHandler,
+    PixelWorker(const std::shared_ptr<Scene> &_scene,
                 int _iSamplesPerPixel,
                 int _iMaxTraceDepth)
-        :m_image(_image),
-         m_view(_view),
-         m_scene(_scene),
-         m_missHandler(_missHandler),
-         m_jobs(_jobs),
-         m_mutex(_jobMutex),
+        :m_scene(_scene),
          m_iSamplesPerPixel(_iSamplesPerPixel),
          m_iMaxTraceDepth(_iMaxTraceDepth),
          m_bFinished(false)
@@ -312,18 +271,6 @@ class PixelWorker
     }
     
  private:
-    // take one job from back of job list
-    std::unique_ptr<PixelJob> getJob() {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        if (m_jobs.empty() == false) {
-            auto job = std::move(m_jobs.back());
-            m_jobs.pop_back();
-            return job;
-        }
-        
-        return nullptr;
-    }
-    
     // thread entry point
     void run() {
         // run thread until all jobs have been executed
@@ -331,8 +278,7 @@ class PixelWorker
         {
             auto pJob = getJob();
             if (pJob != nullptr) {
-                pJob->run(m_image, m_view, m_scene, m_missHandler,
-                          m_generator, m_iSamplesPerPixel, m_iMaxTraceDepth);
+                pJob->run(m_scene, m_generator, m_iSamplesPerPixel, m_iMaxTraceDepth);
             }
             else {
                 m_bFinished = true;
@@ -343,12 +289,7 @@ class PixelWorker
     
  protected:
     RandomGen                                   m_generator;
-    OutputImage                                 &m_image;
-    const Viewport                              &m_view;
-    const std::vector<std::shared_ptr<Shape>>   &m_scene;
-    std::shared_ptr<RayMiss>                    m_missHandler;
-    std::vector<std::unique_ptr<PixelJob>>      &m_jobs;
-    std::mutex                                  &m_mutex;
+    std::shared_ptr<Scene>                      m_scene;
     const int                                   m_iSamplesPerPixel;
     const int                                   m_iMaxTraceDepth;
     std::thread                                 m_thread;
@@ -361,32 +302,30 @@ std::vector<std::unique_ptr<PixelWorker>> workers;
 
 int raytracer()
 {
-    int width = 1280;
-    int height = 960;
+    int width = 1920;
+    int height = 1080;
     int fov = 60;
     int numWorkers = 16;
-    int samplesPerPixel = 4096;
+    int samplesPerPixel = 16;
     int maxTraceDepth = 32;
 
     // init
     HighPrecisionScopeTimer timer;
-    OutputImage image(width, height);
-    Viewport view(width, height, fov);
+    OutputImageBuffer image(width, height);
+    ViewportScreen view(width, height, fov);
+    auto pScene = std::make_shared<SimpleScene>();
     
     // create scene
-    std::vector<std::shared_ptr<Shape>> shapes{
-        std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)),
-        std::make_shared<Sphere>(Vec(-10, 3, -35), 5, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))),
-        std::make_shared<Sphere>(Vec(10, -4, -15), 3, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))),
-        std::make_shared<Sphere>(Vec(10, 5, -35), 5, std::make_unique<Metal>(Color(0.3, 0.3, 1.0), 0.05)),
-        std::make_shared<Sphere>(Vec(-8, -4, -20), 3, std::make_unique<Metal>(Color(1.0, 1.0, 1.0), 0.05)),
-        std::make_shared<Sphere>(Vec(10, -4, -25), 3, std::make_unique<DiffuseCheckered>(Color(1.0, 0.1, 0.1), Color(0.1, 0.1, 1.0), 16)),
-        std::make_shared<Sphere>(Vec(0, -2, -18), 4, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.02, 1.5)),
-        std::make_shared<Sphere>(Vec(-2, -6, -15), 1.5, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.02, 1.5)),
-        std::make_shared<Sphere>(Vec(-20, 40, -20), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))),
-    };
-    
-    auto background = std::make_shared<Background>();
+    pScene->addShape(std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
+    pScene->addShape(std::make_shared<Sphere>(Vec(10, -4, -25), 3, std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
+    pScene->addShape(std::make_shared<Sphere>(Vec(0, 4, -35), 4, std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
+    pScene->addShape(std::make_shared<Sphere>(Vec(-10, 3, -35), 5, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))));
+    pScene->addShape(std::make_shared<Sphere>(Vec(10, -4, -15), 3, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))));
+    pScene->addShape(std::make_shared<Sphere>(Vec(10, 5, -35), 5, std::make_unique<Metal>(Color(0.3, 0.3, 1.0), 0.05)));
+    pScene->addShape(std::make_shared<Sphere>(Vec(-8, -4, -20), 3, std::make_unique<Metal>(Color(1.0, 1.0, 1.0), 0.05)));
+    pScene->addShape(std::make_shared<Sphere>(Vec(0, -2, -18), 4, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5)));
+    pScene->addShape(std::make_shared<Sphere>(Vec(-2, -6, -15), 1.5, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5)));
+    pScene->addShape(std::make_shared<Sphere>(Vec(-20, 40, -20), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))));
     
     // create jobs (chop output image into smaller blocks)
     int iPixelBlockSize = 32;
@@ -403,17 +342,17 @@ int raytracer()
                 iBlockWidth = width - i;
             }
             
-            jobs.push_back(std::make_unique<PixelJob>(i, j, iBlockWidth, iBlockHeight));
+            std::unique_ptr<OutputImage> pImage = std::make_unique<OutputImageBlock>(image, i, j, iBlockWidth, iBlockHeight);
+            std::unique_ptr<Viewport> pView = std::make_unique<ViewportBlock>(view, i, j);
+
+            jobs.push_back(std::make_unique<PixelJob>(pImage, pView));
         }
     }
     
     // start workers
     std::unique_lock<std::mutex> lock(jobMutex);
     for (int i = 0; i < numWorkers; i++) {
-        workers.push_back(std::make_unique<PixelWorker>(jobs, jobMutex,
-                                                        image, view,
-                                                        shapes, background,
-                                                        samplesPerPixel, maxTraceDepth));
+        workers.push_back(std::make_unique<PixelWorker>(pScene, samplesPerPixel, maxTraceDepth));
     }
     
     lock.unlock();
