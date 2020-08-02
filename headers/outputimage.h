@@ -15,9 +15,17 @@ namespace LNF
         virtual int bytesPerPixel() const = 0;
         virtual int width() const = 0;
         virtual int height() const = 0;
+        
+        /* returns pointer to start of image data */
         virtual unsigned char *data() = 0;
+        
+        /* returns pointer to start of image data */
         virtual const unsigned char *data() const = 0;
+        
+        /* returns pointer to start of given row */
         virtual unsigned char *row(int _iY) = 0;
+        
+        /* returns pointer to start of given row */
         virtual const unsigned char *row(int _iY) const = 0;
     };
 
@@ -39,13 +47,18 @@ namespace LNF
         virtual int width() const override {return m_iWidth;}
         virtual int height() const override {return m_iHeight;}
         
+        /* returns pointer to start of image data */
         virtual unsigned char *data() override {return m_image.data();}
+        
+        /* returns pointer to start of image data */
         virtual const unsigned char *data() const override {return m_image.data();}
         
+        /* returns pointer to start of given row */
         virtual unsigned char *row(int _iY) override {
             return m_image.data() + BYTES_PER_PIXEL * m_iWidth * _iY;
         }
         
+        /* returns pointer to start of given row */
         virtual const unsigned char *row(int _iY) const override {
             return m_image.data() + BYTES_PER_PIXEL * m_iWidth * _iY;
         }
@@ -57,7 +70,7 @@ namespace LNF
     };
 
 
-    /* Sub-image reference for a larger base image */
+    /* Sub-image pointing a section in a larger image */
     class OutputImageBlock  : public OutputImage
     {
      public:
@@ -72,13 +85,19 @@ namespace LNF
         virtual int bytesPerPixel() const override {return m_buffer.bytesPerPixel();}
         virtual int width() const override {return m_iWidth;}
         virtual int height() const override {return m_iHeight;}
+        
+        /* returns pointer to start of image data */
         virtual unsigned char *data() override {return row(0);}
+        
+        /* returns pointer to start of image data */
         virtual const unsigned char *data() const override {return row(0);}
         
+        /* returns pointer to start of given row */
         virtual unsigned char *row(int _iY) override {
             return m_buffer.row(_iY + m_iY) + bytesPerPixel() * m_iX;
         }
          
+        /* returns pointer to start of given row */
         virtual const unsigned char *row(int _iY) const override {
             return m_buffer.row(_iY + m_iY) + bytesPerPixel() * m_iX;
         }

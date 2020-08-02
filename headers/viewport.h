@@ -48,7 +48,7 @@ namespace LNF
     class ViewportBlock    : public Viewport
     {
      public:
-        ViewportBlock(ViewportScreen &_viewport, int _iStartX, int _iStartY)
+        ViewportBlock(const ViewportScreen &_viewport, int _iStartX, int _iStartY)
             :m_viewport(_viewport),
              m_iStartX(_iStartX),
              m_iStartY(_iStartY)

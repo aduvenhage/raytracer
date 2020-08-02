@@ -1,5 +1,6 @@
 #include "headers/color.h"
 #include "headers/constants.h"
+#include "headers/jobs.h"
 #include "headers/jpeg.h"
 #include "headers/mandlebrot.h"
 #include "headers/outputimage.h"
@@ -170,10 +171,20 @@ class Glass : public Material
 class SimpleScene   : public Scene
 {
  public:
+    SimpleScene()
+        :m_iNumTraces(0),
+         m_iNumHits(0)
+    {}
+    
+    /*
+       Checks for an intersect with a scene object.
+       Could be accessed by multiple worker threads concurrently.
+     */
     virtual Intersect hit(const Ray &_ray) const override {
         double dOnRayMin = _ray.m_dMaxDist;
         Shape *pHitShape = nullptr;
-        
+        m_iNumTraces++;
+
         for (auto &pShape : m_shapes) {
             double dPositionOnRay = pShape->intersect(_ray);
             if ( (dPositionOnRay < dOnRayMin) && (dPositionOnRay > _ray.m_dMinDist) )
@@ -186,119 +197,122 @@ class SimpleScene   : public Scene
         if ( (pHitShape != nullptr) &&
              (dOnRayMin > 0) )
         {
+            m_iNumHits++;
             return Intersect(pHitShape, _ray, dOnRayMin);
         }
         
         return Intersect();
     }
     
+    /*
+     Checks for the background color (miss handler).
+     Could be accessed by multiple worker threads concurrently.
+     */
     virtual Color missColor(const Ray &_ray) const override {
         double shift = _ray.m_direction.m_dY * _ray.m_direction.m_dY * 0.3 + 0.3;
         return Color(shift, shift, 0.6);
     }
-    
-    void addShape(const std::shared_ptr<Shape> &_pShape) {
+
+    /*
+     Add a new shape to the scene.
+     The scene is expected to be static (thread-safe).  Only do this when not rendering.
+     */
+    virtual void addShape(const std::shared_ptr<Shape> &_pShape) override {
         m_shapes.push_back(_pShape);
     }
     
+    virtual int numTraces() const override {return m_iNumTraces;}
+    virtual int numHits() const override {return m_iNumHits;}
+
  protected:
     std::vector<std::shared_ptr<Shape>>   m_shapes;
+    mutable std::atomic<int>              m_iNumTraces;
+    mutable std::atomic<int>              m_iNumHits;
 };
 
 
 /* Raytracing job (block of pixels on output image) */
-class PixelJob
+class PixelJob  : public Job
 {
  public:
-    PixelJob(std::unique_ptr<OutputImage> &_pOutput, std::unique_ptr<Viewport> &_pView)
+    PixelJob(std::unique_ptr<OutputImage> &&_pOutput,
+             std::unique_ptr<Viewport> &&_pView,
+             const std::shared_ptr<Scene> &_pScene,
+             int _iRaysPerPixel, int _iMaxDepth)
         :m_pOutput(std::move(_pOutput)),
-         m_pView(std::move(_pView))
+         m_pView(std::move(_pView)),
+         m_pScene(_pScene),
+         m_iRaysPerPixel(_iRaysPerPixel),
+         m_iMaxDepth(_iMaxDepth)
     {}
     
-    bool isValid() const {
-        return m_pOutput != nullptr;
-    }
-    
-    void run(const std::shared_ptr<Scene> &_scene, RandomGen &_generator, int _iRaysPerPixel, int _iMaxDepth) const
+    void run() const
     {
-        renderImage(m_pOutput, m_pView, _scene, _generator, _iRaysPerPixel, _iMaxDepth);
+        thread_local static RandomGen generator;
+        renderImage(m_pOutput, m_pView, m_pScene, generator, m_iRaysPerPixel, m_iMaxDepth);
     }
 
  private:
     std::unique_ptr<OutputImage>        m_pOutput;
     std::unique_ptr<Viewport>           m_pView;
+    std::shared_ptr<Scene>              m_pScene;
+    int                                 m_iRaysPerPixel;
+    int                                 m_iMaxDepth;
 };
 
 
-std::vector<std::unique_ptr<PixelJob>>  jobs;
-std::mutex                              jobMutex;
-
-
-// take one job from back of job list
-std::unique_ptr<PixelJob> getJob() {
-    std::lock_guard<std::mutex> lock(jobMutex);
-    if (jobs.empty() == false) {
-        auto job = std::move(jobs.back());
-        jobs.pop_back();
-        return job;
-    }
-    
-    return nullptr;
-}
-
-
-/* Ratracing worker thread */
-class PixelWorker
+void renderFrame(OutputImageBuffer &_image, const ViewportScreen &_view,
+                 const std::shared_ptr<Scene> &_pScene,
+                 int _iMaxTraceDepth,
+                 int _iSamplesPerPixel,
+                 int _iNumWorkers)
 {
- public:
-    PixelWorker(const std::shared_ptr<Scene> &_scene,
-                int _iSamplesPerPixel,
-                int _iMaxTraceDepth)
-        :m_scene(_scene),
-         m_iSamplesPerPixel(_iSamplesPerPixel),
-         m_iMaxTraceDepth(_iMaxTraceDepth),
-         m_bFinished(false)
-    {
-        m_thread = std::thread(&PixelWorker::run, this);
-    }
-    
-    ~PixelWorker() {
-        m_thread.join();
-    }
+    // create jobs (chop output image into smaller blocks)
+    auto pJobQueue = std::make_shared<JobQueue>();
+    int iPixelBlockSize = 32;
+    int width = _image.width();
+    int height = _image.height();
 
-    bool finished() const {
-        return m_bFinished;
-    }
-    
- private:
-    // thread entry point
-    void run() {
-        // run thread until all jobs have been executed
-        for (;;)
-        {
-            auto pJob = getJob();
-            if (pJob != nullptr) {
-                pJob->run(m_scene, m_generator, m_iSamplesPerPixel, m_iMaxTraceDepth);
+    for (int j = 0; j < height; j += iPixelBlockSize) {
+        int iBlockHeight = iPixelBlockSize;
+        if (iBlockHeight > height - j) {
+            iBlockHeight = height - j;
+        }
+
+        for (int i = 0; i < width; i += iPixelBlockSize) {
+            int iBlockWidth = iPixelBlockSize;
+            if (iBlockWidth > width - i) {
+                iBlockWidth = width - i;
             }
-            else {
-                m_bFinished = true;
-                break;
-            }
+            
+           pJobQueue->push(std::make_unique<PixelJob>(std::make_unique<OutputImageBlock>(_image, i, j, iBlockWidth, iBlockHeight),
+                                                      std::make_unique<ViewportBlock>(_view, i, j),
+                                                      _pScene,
+                                                      _iSamplesPerPixel, _iMaxTraceDepth));
         }
     }
     
- protected:
-    RandomGen                                   m_generator;
-    std::shared_ptr<Scene>                      m_scene;
-    const int                                   m_iSamplesPerPixel;
-    const int                                   m_iMaxTraceDepth;
-    std::thread                                 m_thread;
-    std::atomic<bool>                           m_bFinished;
-};
+    // start workers
+    std::vector<std::unique_ptr<Worker>> workers;
+    for (int i = 0; i < _iNumWorkers; i++) {
+        workers.push_back(std::make_unique<Worker>(pJobQueue, 4));
+    }
 
-std::vector<std::unique_ptr<PixelWorker>> workers;
+    // wait for all workers to finish
+    while (workers.empty() == false) {
+        auto &pWorker = workers.back();
+        if ( (pWorker == nullptr) ||
+             (pWorker->busy() == false) ) {
+            workers.pop_back();
+        }
+             
+        printf("%d\n", (int)pJobQueue->size());
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
-
+    // stats
+    printf("Frame done. num rays = %lu, num hits = %lu.\n", (unsigned long)_pScene->numTraces(), (unsigned long)_pScene->numHits());
+}
 
 int raytracer()
 {
@@ -306,7 +320,7 @@ int raytracer()
     int height = 1080;
     int fov = 60;
     int numWorkers = 16;
-    int samplesPerPixel = 16;
+    int samplesPerPixel = 256;
     int maxTraceDepth = 32;
 
     // init
@@ -327,53 +341,11 @@ int raytracer()
     pScene->addShape(std::make_shared<Sphere>(Vec(-2, -6, -15), 1.5, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5)));
     pScene->addShape(std::make_shared<Sphere>(Vec(-20, 40, -20), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))));
     
-    // create jobs (chop output image into smaller blocks)
-    int iPixelBlockSize = 32;
+    // render frame
+    renderFrame(image, view, pScene, maxTraceDepth, samplesPerPixel, numWorkers);
     
-    for (int j = 0; j < height; j += iPixelBlockSize) {
-        int iBlockHeight = iPixelBlockSize;
-        if (iBlockHeight > height - j) {
-            iBlockHeight = height - j;
-        }
-
-        for (int i = 0; i < width; i += iPixelBlockSize) {
-            int iBlockWidth = iPixelBlockSize;
-            if (iBlockWidth > width - i) {
-                iBlockWidth = width - i;
-            }
-            
-            std::unique_ptr<OutputImage> pImage = std::make_unique<OutputImageBlock>(image, i, j, iBlockWidth, iBlockHeight);
-            std::unique_ptr<Viewport> pView = std::make_unique<ViewportBlock>(view, i, j);
-
-            jobs.push_back(std::make_unique<PixelJob>(pImage, pView));
-        }
-    }
-    
-    // start workers
-    std::unique_lock<std::mutex> lock(jobMutex);
-    for (int i = 0; i < numWorkers; i++) {
-        workers.push_back(std::make_unique<PixelWorker>(pScene, samplesPerPixel, maxTraceDepth));
-    }
-    
-    lock.unlock();
-    
-    // wait for all workers to finish
-    while (workers.empty() == false) {
-        auto &pWorker = workers.back();
-        if ( (pWorker == nullptr) ||
-             (pWorker->finished() == true) ) {
-            workers.pop_back();
-        }
-             
-        printf("%d\n", (int)jobs.size());
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-
     // write output
     writeJpegFile("raytraced.jpeg", image.width(), image.height(), image.data(), 100);
-    
-    // stats
-    printf("num rays = %lu\n", (unsigned long)uTraceCount);
     
     return 0;
 }

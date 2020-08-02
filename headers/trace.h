@@ -20,15 +20,12 @@
 
 namespace LNF
 {
-    std::atomic<uint64_t> uTraceCount(0);
-
     /* Trace ray (recursively) through scene */
     Color trace(const Ray &_ray,
                 const std::shared_ptr<Scene> &_pScene,
                 RandomGen &_randomGen,
                 int _maxTraceDepth)
     {
-        uTraceCount++;
         auto intersect = _pScene->hit(_ray);
         if (intersect == true) {
             auto pHitShape = intersect.m_pShape;
