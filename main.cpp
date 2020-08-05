@@ -299,17 +299,22 @@ void renderFrame(OutputImageBuffer &_image, const ViewportScreen &_view,
     }
 
     // wait for all workers to finish
-    while (workers.empty() == false) {
-        auto &pWorker = workers.back();
-        if ( (pWorker == nullptr) ||
-             (pWorker->busy() == false) ) {
-            workers.pop_back();
+    for (;;)
+    {
+        int numJobs = (int)pJobQueue->size();
+        for (const auto &pWorker : workers) {
+            numJobs += pWorker->activeJobs();
         }
-             
-        printf("%d\n", (int)pJobQueue->size());
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        
+        if (numJobs == 0) {
+            break;
+        }
+        else {
+            printf("%d\n", numJobs);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
     }
-
+    
     // stats
     printf("Frame done. num rays = %lu, num hits = %lu.\n", (unsigned long)_pScene->numTraces(), (unsigned long)_pScene->numHits());
 }
