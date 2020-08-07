@@ -7,6 +7,7 @@
 
 namespace LNF
 {
+
     template <typename clock_type>
     class ScopeTimer
     {

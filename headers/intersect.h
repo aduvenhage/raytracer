@@ -13,6 +13,9 @@ namespace LNF
 {
     class Shape;
 
+    /*
+     Container for intersect attributes and products.
+     */
     struct Intersect
     {
         Intersect()

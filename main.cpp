@@ -325,7 +325,7 @@ int raytracer()
     int height = 1080;
     int fov = 60;
     int numWorkers = 16;
-    int samplesPerPixel = 256;
+    int samplesPerPixel = 16;
     int maxTraceDepth = 32;
 
     // init

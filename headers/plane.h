@@ -10,7 +10,7 @@
 
 namespace LNF
 {
-    /* Spehere class */
+    /* Plane shape class */
     class Plane        : public Shape
     {
      public:

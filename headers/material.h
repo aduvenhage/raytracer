@@ -8,7 +8,7 @@
 
 namespace LNF
 {
-    /* Diffuse material/texture base class */
+    /* Material/texture base class */
     class Material
     {
      public:

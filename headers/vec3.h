@@ -49,7 +49,21 @@ namespace LNF
             return inverse();
         }
         
-        /// dot product
+        Vec &operator-=(const Vec &_vec) {
+            m_dX -= _vec.m_dX;
+            m_dY -= _vec.m_dY;
+            m_dZ -= _vec.m_dZ;
+            return *this;
+        }
+        
+        Vec &operator+=(const Vec &_vec) {
+            m_dX += _vec.m_dX;
+            m_dY += _vec.m_dY;
+            m_dZ += _vec.m_dZ;
+            return *this;
+        }
+        
+        // dot product
         double operator*(const Vec &_vec) const {
             return m_dX * _vec.m_dX +
                    m_dY * _vec.m_dY +
@@ -57,11 +71,31 @@ namespace LNF
         }
 
         Vec operator*(double _dScale) const {
-            return Vec(m_dX*_dScale,
-                       m_dY*_dScale,
-                       m_dZ*_dScale);
+            return Vec(m_dX * _dScale,
+                       m_dY * _dScale,
+                       m_dZ * _dScale);
         }
         
+        Vec operator/(double _dScale) const {
+            return Vec(m_dX / _dScale,
+                       m_dY / _dScale,
+                       m_dZ / _dScale);
+        }
+        
+        Vec &operator*=(double _dScale) {
+            m_dX *= _dScale;
+            m_dY *= _dScale;
+            m_dZ *= _dScale;
+            return *this;
+        }
+        
+        Vec &operator/=(double _dScale) {
+            m_dX /= _dScale;
+            m_dY /= _dScale;
+            m_dZ /= _dScale;
+            return *this;
+        }
+
         Vec normalized() const {
             double r = size();
             return Vec(m_dX / r,
@@ -93,6 +127,7 @@ namespace LNF
     }
 
     
+    // returns a vector within the unit cube (-1..1, -1..1, -1..1)
     Vec randomUnitCube(RandomGen &_randomGen) {
         std::uniform_real_distribution<double> dist(-1.0, 1.0);
         return Vec(dist(_randomGen),
@@ -101,6 +136,7 @@ namespace LNF
     }
 
     
+    // returns a vector within the unit sphere (radius of 1)
     Vec randomUnitSphere(RandomGen &_randomGen) {
         Vec ret = randomUnitCube(_randomGen);
         
