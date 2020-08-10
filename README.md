@@ -1,5 +1,5 @@
 # lost-n-found
-I have been coding in C++ for a long long long time.  I made some colourful patterns, fire and starfields in sweet 320x240 and I was hooked!!
+I have been coding in C++ for a long long long time.  Remember 'Second Reality' by Future Crew? I made some colourful patterns, fire and starfields in sweet 320x240 and I was hooked!!
 
 This project is an effort to stir up some ghosts and get back to what really made me want to be a programmer in the first place.
 
