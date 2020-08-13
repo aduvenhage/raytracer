@@ -1,3 +1,4 @@
+#include "headers/algorithms_playground.h"
 #include "headers/color.h"
 #include "headers/constants.h"
 #include "headers/jobs.h"
@@ -22,9 +23,11 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-
+#include <algorithm>
+#include <iostream>
 
 using namespace LNF;
+using namespace LNF_DO_NOT_USE;
 
 
 // diffuse material
@@ -325,7 +328,7 @@ int raytracer()
     int height = 1080;
     int fov = 60;
     int numWorkers = 16;
-    int samplesPerPixel = 16;
+    int samplesPerPixel = 4096;
     int maxTraceDepth = 32;
 
     // init
@@ -370,7 +373,8 @@ int mandlebrot()
 
 int main()
 {
-    raytracer();
+    //raytracer();
     //mandlebrot();
+    testAlgorithms();
     return 0;
 }
