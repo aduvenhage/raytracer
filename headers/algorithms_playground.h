@@ -112,31 +112,10 @@ namespace LNF_DO_NOT_USE
         }
     }
 
-    // cannot get this to work :-(
-    int *quickpartition_hoare(int *_pA, int *_pB)
+    // my own flavour of partitioning -- take last element
+    int *quickpartition1(int *_pA, int *_pB)
     {
-        auto pivot = *(_pA + (_pB - _pA)/2);
-
-        for (;;) {
-            while (*_pA < pivot) {
-                _pA += 1;
-            }
-            
-            do {
-                _pB -= 1;
-            } while (*_pB > pivot);
-
-            if (_pA >= _pB) {
-                return _pB;
-            }
-            
-            swap(*_pA, *_pB);
-        }
-    }
-
-    // my own flavour of partitioning
-    int *quickpartition(int *_pA, int *_pB)
-    {
+        // selects last element as pivot point and then parition
         if (_pB-1 > _pA) {
             auto v = *(_pB - 1);
             
@@ -163,12 +142,76 @@ namespace LNF_DO_NOT_USE
     }
 
 
+    // my own flavour of partitioning -- too many swaps
+    int *quickpartition2(int *_pA, int *_pB)
+    {
+        // selects middle element as pivot point and then parition
+        if (_pB-1 > _pA) {
+            auto *pV = _pA + (_pB - _pA) / 2;
+            
+            for (;;) {
+                if ( (_pA < pV) &&
+                     (*_pA > *pV) ) {
+                    swap(*_pA, *(pV-1));
+                    swap(*pV, *(pV-1));
+                    pV--;
+                }
+                else if ( (_pA > pV) &&
+                          (*_pA < *pV) ) {
+                    swap(*_pA, *(pV+1));
+                    swap(*pV, *(pV+1));
+                    pV++;
+                }
+                else {
+                    _pA++;
+                }
+                
+                if (_pA >= _pB)
+                {
+                    return pV;
+                }
+            }
+        }
+        else {
+            return _pB;
+        }
+    }
+
+
+    // cannot get this to work :-(
+    int *quickpartition_hoare(int *_pA, int *_pB)
+    {
+        auto pivot = *(_pA + (_pB - _pA)/2);
+
+        for (;;) {
+            while (*_pA < pivot) {
+                _pA += 1;
+            }
+            
+            do {
+                _pB -= 1;
+            } while (*_pB > pivot);
+
+            if (_pA >= _pB) {
+                return _pB;
+            }
+            
+            swap(*_pA, *_pB);
+        }
+    }
+
+
     // very fast sorting
     void quicksort(int *_pBegin, int *_pEnd)
     {
         if (_pEnd - _pBegin > 1)
         {
-            auto p = quickpartition(_pBegin, _pEnd);
+            //auto p = quickpartition1(_pBegin, _pEnd);
+            auto p = quickpartition2(_pBegin, _pEnd);
+            //auto p = quickpartition_hoare(_pBegin, _pEnd);
+            
+            //print(_pBegin, _pEnd);
+            
             quicksort(_pBegin, p);
             quicksort(p, _pEnd);
         }
@@ -186,6 +229,8 @@ namespace LNF_DO_NOT_USE
         for (int i = 0; i < 400000; i++) {
             data.push_back(numbers(rand));
         }
+        
+        //data = {6, 7, 3, 5, 2, 1, 8, 9, 0, 4};
         
         // profile sorting
         {

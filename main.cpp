@@ -373,8 +373,8 @@ int mandlebrot()
 
 int main()
 {
-    //raytracer();
-    //mandlebrot();
     testAlgorithms();
+    raytracer();
+    //mandlebrot();
     return 0;
 }

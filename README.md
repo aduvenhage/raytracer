@@ -1,14 +1,19 @@
 # lost-n-found
-I have been coding in C++ for a long long long time.  Remember 'Second Reality' by Future Crew? I made some colourful patterns, fire and starfields in sweet 320x240 and I was hooked!!
+I have been coding in C++ for a long long long time.
+Remember 'Second Reality' by Future Crew? That was awesome.
+After seeing that I made some colourful patterns, fire and starfields in sweet 320x240 and I was hooked!!
 
-This project is an effort to stir up some ghosts and get back to what really made me want to be a programmer in the first place.
+Currently by day I'm a python web backend programmer and this project is an effort to stir up some ghosts and get back to what really made me want to be a programmer in the first place.
 
 ## General
 For now the project is mainly just a set of header files thrown into a single namespace.
 
 Done:
 - create JPEG image writer for seeing what I created
-- generic job/worker system (multi-theading)
+- generic job/worker system (multi-theading) -- using all of my CPU now :-)
+
+Busy:
+- get into the weeds with some algorithm investigations (quicksort, breadth first searches with heuristics, etc.)
 
 Todo:
 - add namespace hyrarchy for different components and sub-systems

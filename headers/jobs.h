@@ -46,7 +46,7 @@ namespace LNF
         virtual void push(std::unique_ptr<Job> &&_pJob) {
             std::lock_guard<std::mutex> lock(m_mutex);
             m_jobs.push(std::move(_pJob));
-            m_iSize = m_jobs.size();
+            m_iSize = (int)m_jobs.size();
         }
         
         /* take jobs from pool */
@@ -59,7 +59,7 @@ namespace LNF
             while (m_jobs.empty() == false) {
                 ret.push_back(std::move(m_jobs.front()));
                 m_jobs.pop();
-                m_iSize = m_jobs.size();
+                m_iSize = (int)m_jobs.size();
 
                 if (++count >= _uNumJobs) {
                     break;
@@ -112,14 +112,14 @@ namespace LNF
                 // grab new jobs if local list is empty
                 if (m_localJobs.empty() == true) {
                     m_localJobs = m_pJobs->pop(m_iJobChunkSize);
-                    m_iActiveJobs = m_localJobs.size();
+                    m_iActiveJobs = (int)m_localJobs.size();
                 }
 
                 // work on first job in local list
                 if (m_localJobs.empty() == false) {
                     auto pJobPtr = std::move(m_localJobs.back());
                     m_localJobs.pop_back();
-                    m_iActiveJobs = m_localJobs.size();
+                    m_iActiveJobs = (int)m_localJobs.size();
 
                     pJobPtr->run();
                 }
