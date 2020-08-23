@@ -44,6 +44,8 @@ Done:
 - generic materials: diffuse, metal, glass, checkered diffuse
 
 Todo:
+- textured objects
+- textured area lights
 - axis aligned box intersections
 - add bounding volume hyrarchy to scene
 - camera position and orientation
