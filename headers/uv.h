@@ -17,6 +17,13 @@ namespace LNF
              m_dV(_dV)
         {}
         
+        Uv(const Uv &) = default;
+        Uv(Uv &&) = default;
+        Uv(Uv &) = default;
+        
+        Uv &operator=(const Uv &) = default;
+        Uv &operator=(Uv &&) = default;
+
         /// set color values to 0 if smaller and 1 if larger.
         Uv &clamp() {
             if (m_dU > 1.0) m_dU = 1.0;

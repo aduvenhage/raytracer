@@ -33,7 +33,8 @@ namespace LNF
             double x = (2 * (_iX + _dX) / (double)m_iWidth - 1) * m_dViewAspect * m_dScale;
             double y = (1 - 2 * (_iY + _dY) / (double)m_iHeight) * m_dScale;
                 
-            return Ray(Vec(), Vec(x, y, -1).normalized());
+            // NOTE: not using a normalised ray direction here for higher performance
+            return Ray(Vec(x, y, -1).normalized());
         }
         
      protected:

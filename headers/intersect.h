@@ -30,6 +30,13 @@ namespace LNF
              m_bInside(false)
         {}
 
+        Intersect(const Intersect &) = default;
+        Intersect(Intersect &&) = default;
+        Intersect(Intersect &) = default;
+
+        Intersect &operator=(const Intersect &) = default;
+        Intersect &operator=(Intersect &&) = default;
+
         operator bool () const {
             return m_dPositionOnRay > 0;
         }

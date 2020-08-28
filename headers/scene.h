@@ -38,9 +38,6 @@ namespace LNF
          The scene is expected to be thread-safe.
          */
         virtual void addShape(const std::shared_ptr<Shape> &_pShape) = 0;
-        
-        virtual int numTraces() const = 0;
-        virtual int numHits() const = 0;
     };
     
 

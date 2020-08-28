@@ -10,7 +10,7 @@
 namespace LNF
 {
     /* Returns mandlebrot escape iteration count or 0 if it reached max iterations. */
-    inline int madlebrot(double _dCx, double _dCy, unsigned int _uMaxIterations)
+    inline int mandlebrot(double _dCx, double _dCy, unsigned int _uMaxIterations)
     {
         double fZx = 0;
         double fZy = 0;
@@ -88,9 +88,9 @@ namespace LNF
          */
         int value(double _dPixelX, double _dPixelY) const
         {
-            return madlebrot(_dPixelX * m_dScale + m_dPosX,
-                             _dPixelY * m_dScale + m_dPosY,
-                             m_iMaxIterations);
+            return mandlebrot(_dPixelX * m_dScale + m_dPosX,
+                              _dPixelY * m_dScale + m_dPosY,
+                              m_iMaxIterations);
         }
         
         /* Render fractal to internal buffer. */

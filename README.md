@@ -13,7 +13,7 @@ Done:
 - generic job/worker system (multi-theading) -- using all of my CPU now :-)
 
 Busy:
-- get into the weeds with some algorithm investigations (quicksort, breadth first searches with heuristics, etc.)
+- get into the weeds with some algorithm investigations (quicksort, breadth first searches with heuristics, etc. -- algorithms_playground.h)
 
 Todo:
 - add namespace hyrarchy for different components and sub-systems

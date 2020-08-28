@@ -35,14 +35,14 @@ namespace LNF
          Returns 0.0 if there is no intersect possible.
          */
         virtual double intersect(const Ray &_ray) const {
-            auto vecRaySphere = m_origin - _ray.m_origin;
+            const auto vecRaySphere = m_origin - _ray.m_origin;
             double dRayLength = vecRaySphere * _ray.m_direction;
-            double dIntersectRadiusSqr = vecRaySphere.sizeSqr() - dRayLength*dRayLength;
+            const double dIntersectRadiusSqr = vecRaySphere.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr > m_dRadiusSqr){
                 return 0.0;
             }
             
-            double dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
+            const double dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
             if (dt <= dRayLength) {
                 // we are outside of sphere
                 dRayLength -= dt;
@@ -61,9 +61,8 @@ namespace LNF
         }
         
         /* Returns the shape normal vector at the given surface position. */
-        virtual Vec normal(const Vec &_pos) const
-        {
-            return (_pos - m_origin).normalized();
+        virtual Vec normal(const Vec &_pos) const {
+            return (_pos - m_origin) / m_dRadius;
         }
 
         /* Returns texture coordinates on given surface position. */

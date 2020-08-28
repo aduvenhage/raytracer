@@ -19,12 +19,19 @@ namespace LNF
              m_dZ(0)
         {}
         
+        Vec(const Vec &) = default;
+        Vec(Vec &&) = default;
+        Vec(Vec &) = default;
+
         Vec(double _dX, double _dY, double _dZ)
             :m_dX(_dX),
              m_dY(_dY),
              m_dZ(_dZ)
         {}
         
+        Vec &operator=(const Vec &_vec) = default;
+        Vec &operator=(Vec &&_vec) = default;
+
         double sizeSqr() const {
             return m_dX * m_dX + m_dY * m_dY + m_dZ * m_dZ;
         }

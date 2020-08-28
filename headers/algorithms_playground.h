@@ -218,6 +218,88 @@ namespace LNF_DO_NOT_USE
     }
 
 
+
+    void printArray(std::vector<int> arr) {
+        for (auto ch : arr) {
+            std::cout << ch << ' ';
+        }
+
+        std::cout << std::endl;
+    }
+
+    // Complete the insertionSort2 function below.
+    void insertionSort2(int n, std::vector<int> arr) {
+
+        /*
+        for (int i = 1; i < n; i++) {
+            int e = arr[i];
+            auto it = lower_bound(arr.begin(), arr.begin()+i, e);
+            arr.erase(arr.begin()+i);
+            arr.insert(it, e);
+
+            printArray(arr);
+        }
+        */
+
+        for (int i = 1; i < n; i++) {
+            int e = arr[i];
+            auto it = lower_bound(arr.begin(), arr.begin()+i, e);
+            uint64_t iit = it - arr.begin();
+            
+            if (i > iit) {
+                memmove(arr.data() + iit + 1, arr.data() + iit, (i - iit) * sizeof(int));
+            }
+
+            arr[iit] = e;
+
+            printArray(arr);
+        }
+    }
+
+    void printq2(int *_b, int *_e) {
+        for (int *p = _b; p < _e; p++) {
+            std::cout << *p << ' ';
+        }
+
+        std::cout << std::endl;
+    }
+
+    int *partitionq2(int *_b, int *_e) {
+        int *c = _b;
+        int vc = *c;
+
+        for (int *p = _b+1; p < _e; p++) {
+            int vp = *p;
+            if (*p < vc) {
+                std::memmove(c+1, c, (p-c) * sizeof(int));
+                *c = vp;
+                c++;
+            }
+        }
+
+        return c;
+    }
+
+    void sortq2(int *_b, int *_e) {
+
+        if (_e - _b > 1) {
+            int *c = partitionq2(_b, _e);
+            sortq2(_b, c);
+            sortq2(c+1, _e);
+
+            printq2(_b, _e);
+        }
+    }
+
+    void quicksort2(std::vector <int> &arr) {
+        // Complete this function
+        sortq2(arr.data(), arr.data() + arr.size());
+    }
+
+
+
+
+
     // profile and verify algorithms
     void testAlgorithms()
     {
@@ -258,12 +340,71 @@ namespace LNF_DO_NOT_USE
         }
 
         // check search
-        auto p1 = lowerbound(data.data(), data.data() + data.size(), 4000);
-        auto p2 = lowerbound_flat(data.data(), data.data() + data.size(), 4000);
-        auto p3 = std::lower_bound(data.data(), data.data() + data.size(), 4000);
+        //auto p1 = lowerbound(data.data(), data.data() + data.size(), 4000);
+        //auto p2 = lowerbound_flat(data.data(), data.data() + data.size(), 4000);
+        //auto p3 = std::lower_bound(data.data(), data.data() + data.size(), 4000);
 
         return;
     }
+
+
+    bool colourfull(int _number) {
+        std::string str = std::to_string(_number);
+        std::vector<std::string> sequences;
+        
+        for (int n = 1; n < str.length(); n++) {
+            for (int i = 0; i < str.length() - n + 1; i++) {
+                sequences.push_back(str.substr(i, n));
+            }
+        }
+        
+        std::vector<int> products;
+        for (auto &str : sequences) {
+            int v = 1;
+            
+            for (auto ch : str) {
+                v *= (int)ch - (int)'0';
+            }
+            
+            products.push_back(v);
+        }
+
+        std::sort(products.begin(), products.end());
+        auto it = std::unique(products.begin(), products.end());
+        products.erase(it, products.end());
+        
+        return products.size() == sequences.size();
+    }
+
+    uint64_t fibonacci(uint64_t n) {
+        if (n <= 1)
+        {
+            return 0;
+        }
+        
+        std::vector<int> values(n);
+        values[0] = 0;
+        values[1] = 1;
+        
+        for (int i = 2; i < n; i++) {
+            values[i] = values[i-1] + values[i-2];
+        }
+        
+        return values[n-1];
+    }
+
+    uint64_t fibonacci_r(uint64_t n) {
+        if (n <= 1) {
+            return 0;
+        }
+        else if (n == 2) {
+            return 1;
+        }
+        else {
+            return fibonacci_r(n-1) + fibonacci_r(n-2);
+        }
+    }
+
 
 };  // namespace LNF_DO_NOT_USE
 

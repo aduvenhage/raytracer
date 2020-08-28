@@ -17,13 +17,27 @@ namespace LNF
     struct Ray
     {
         Ray() = default;
-        
-        Ray(const Vec &_origin, const Vec &_direction)
-            :m_origin(_origin),
-             m_direction(_direction),
+        Ray(const Ray &) = default;
+        Ray(Ray &&) = default;
+        Ray(Ray &) = default;
+
+        template <typename U>
+        Ray(U &&_direction)
+            :m_direction(std::forward<U>(_direction)),
              m_dMinDist(0.00001),
              m_dMaxDist(std::numeric_limits<double>::max())
         {}
+        
+        template <typename U, typename V>
+        Ray(U &&_origin, V &&_direction)
+            :m_origin(std::forward<U>(_origin)),
+             m_direction(std::forward<V>(_direction)),
+             m_dMinDist(0.00001),
+             m_dMaxDist(std::numeric_limits<double>::max())
+        {}
+
+        Ray &operator=(const Ray &) = default;
+        Ray &operator=(Ray &&) = default;
         
         Vec position(double _dt) const {
             return m_origin + m_direction * _dt;
@@ -41,10 +55,11 @@ namespace LNF
     {
         ScatteredRay() = default;
         
-        ScatteredRay(const Ray &_ray, const Color &_color, const Color &_emitted)
-            :m_ray(_ray),
-             m_color(_color),
-             m_emitted(_emitted)
+        template <typename R, typename CC, typename CE>
+        ScatteredRay(R &&_ray, CC &&_color, CE &&_emitted)
+            :m_ray(std::forward<R>(_ray)),
+             m_color(std::forward<CC>(_color)),
+             m_emitted(std::forward<CE>(_emitted))
         {}
             
         Ray     m_ray;

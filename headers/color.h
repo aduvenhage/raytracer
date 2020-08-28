@@ -24,6 +24,13 @@ namespace LNF
              m_fBlue(_fBlue)
         {}
         
+        Color(const Color &) = default;
+        Color(Color &&) = default;
+        Color(Color &) = default;
+
+        Color &operator=(const Color &) = default;
+        Color &operator=(Color &&) = default;
+        
         Color operator+(const Color &_color) const {
             return Color(m_fRed + _color.m_fRed,
                          m_fGreen + _color.m_fGreen,

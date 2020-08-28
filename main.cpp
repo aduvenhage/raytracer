@@ -1,4 +1,4 @@
-#include "headers/algorithms_playground.h"
+#include "headers/box.h"
 #include "headers/color.h"
 #include "headers/constants.h"
 #include "headers/jobs.h"
@@ -27,7 +27,6 @@
 #include <iostream>
 
 using namespace LNF;
-using namespace LNF_DO_NOT_USE;
 
 
 // diffuse material
@@ -175,8 +174,6 @@ class SimpleScene   : public Scene
 {
  public:
     SimpleScene()
-        :m_iNumTraces(0),
-         m_iNumHits(0)
     {}
     
     /*
@@ -186,7 +183,6 @@ class SimpleScene   : public Scene
     virtual Intersect hit(const Ray &_ray) const override {
         double dOnRayMin = _ray.m_dMaxDist;
         Shape *pHitShape = nullptr;
-        m_iNumTraces++;
 
         for (auto &pShape : m_shapes) {
             double dPositionOnRay = pShape->intersect(_ray);
@@ -200,7 +196,6 @@ class SimpleScene   : public Scene
         if ( (pHitShape != nullptr) &&
              (dOnRayMin > 0) )
         {
-            m_iNumHits++;
             return Intersect(pHitShape, _ray, dOnRayMin);
         }
         
@@ -224,13 +219,8 @@ class SimpleScene   : public Scene
         m_shapes.push_back(_pShape);
     }
     
-    virtual int numTraces() const override {return m_iNumTraces;}
-    virtual int numHits() const override {return m_iNumHits;}
-
  protected:
     std::vector<std::shared_ptr<Shape>>   m_shapes;
-    mutable std::atomic<int>              m_iNumTraces;
-    mutable std::atomic<int>              m_iNumHits;
 };
 
 
@@ -319,7 +309,7 @@ void renderFrame(OutputImageBuffer &_image, const ViewportScreen &_view,
     }
     
     // stats
-    printf("Frame done. num rays = %lu, num hits = %lu.\n", (unsigned long)_pScene->numTraces(), (unsigned long)_pScene->numHits());
+    printf("Frame done.");
 }
 
 int raytracer()
@@ -339,6 +329,8 @@ int raytracer()
     
     // create scene
     pScene->addShape(std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
+    pScene->addShape(std::make_shared<Disc>(Vec(0, 40, -100), Vec(0, -1, 0), 40, std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
+    pScene->addShape(std::make_shared<Rectangle>(Vec(-40, 30, -120), Vec(0, -1, 0), 10, 10, std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
     pScene->addShape(std::make_shared<Sphere>(Vec(10, -4, -25), 3, std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
     pScene->addShape(std::make_shared<Sphere>(Vec(0, 4, -35), 4, std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
     pScene->addShape(std::make_shared<Sphere>(Vec(-10, 3, -35), 5, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))));
@@ -348,7 +340,9 @@ int raytracer()
     pScene->addShape(std::make_shared<Sphere>(Vec(0, -2, -18), 4, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5)));
     pScene->addShape(std::make_shared<Sphere>(Vec(-2, -6, -15), 1.5, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5)));
     pScene->addShape(std::make_shared<Sphere>(Vec(-20, 40, -20), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))));
-    
+    pScene->addShape(std::make_shared<Sphere>(Vec(5, 40, -15), 5, std::make_unique<Light>(Color(20.0, 20.0, 20.0))));
+    pScene->addShape(std::make_shared<AABox>(Vec(2, -5, -14), Vec(4, -2, -11), std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
+
     // render frame
     renderFrame(image, view, pScene, maxTraceDepth, samplesPerPixel, numWorkers);
     
@@ -371,9 +365,10 @@ int mandlebrot()
 }
 
 
+
+
 int main()
 {
-    testAlgorithms();
     raytracer();
     //mandlebrot();
     return 0;
