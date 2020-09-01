@@ -1,6 +1,7 @@
 #ifndef LIBS_HEADER_VIEWPORT_H
 #define LIBS_HEADER_VIEWPORT_H
 
+#include "camera.h"
 #include "constants.h"
 #include "ray.h"
 #include "vec3.h"
@@ -29,19 +30,29 @@ namespace LNF
              m_dScale(tan(deg2rad(_iFovDeg * 0.5)))
         {}
         
+        void setCamera(std::shared_ptr<Camera> &_pCam) {
+            m_pCamera = _pCam;
+        }
+        
         Ray getRay(int _iX, int _iY, double _dX = 0.5, double _dY = 0.5) const override {
             double x = (2 * (_iX + _dX) / (double)m_iWidth - 1) * m_dViewAspect * m_dScale;
             double y = (1 - 2 * (_iY + _dY) / (double)m_iHeight) * m_dScale;
                 
-            // NOTE: not using a normalised ray direction here for higher performance
-            return Ray(Vec(x, y, -1).normalized());
+            if (m_pCamera == nullptr) {
+                return Ray(Vec(x, y, -1).normalized());
+            }
+            else {
+                return Ray(m_pCamera->m_origin,
+                           m_pCamera->camera2world(Vec(-x, y, 1).normalized()));
+            }
         }
         
      protected:
-        const int     m_iWidth;
-        const int     m_iHeight;
-        const double  m_dViewAspect;
-        const double  m_dScale;
+        std::shared_ptr<Camera>     m_pCamera;
+        const int                   m_iWidth;
+        const int                   m_iHeight;
+        const double                m_dViewAspect;
+        const double                m_dScale;
     };
 
     

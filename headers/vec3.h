@@ -114,6 +114,11 @@ namespace LNF
             return Vec(-m_dX, -m_dY, -m_dZ);
         }
         
+        // per element abs() -- not the same as size
+        Vec abs() const {
+            return Vec(fabs(m_dX), fabs(m_dY), fabs(m_dZ));
+        }
+        
         double      m_dX;
         double      m_dY;
         double      m_dZ;
@@ -134,6 +139,42 @@ namespace LNF
     }
 
     
+    /*
+     3 unit vector axis set
+     (sort of like a matrix)
+     */
+    struct Axis
+    {
+        Axis() = default;
+        
+        Axis(const Axis &) = default;
+        Axis(Axis &&) = default;
+        Axis(Axis &) = default;
+        
+        template <typename VX, typename VY, typename VZ>
+        Axis(VX &&_vx, VY &&_vy, VZ &&_vz)
+            :m_x(std::forward<VX>(_vx)),
+             m_y(std::forward<VY>(_vy)),
+             m_z(std::forward<VZ>(_vz))
+        {}
+
+        Axis &operator=(const Axis &) = default;
+        Axis &operator=(Axis &&) = default;
+        
+        Vec translateTo(const Vec &_vec) const {
+            return Vec(_vec * m_x, _vec * m_y, _vec * m_z);
+        }
+                
+        Vec translateFrom(const Vec &_vec) const {
+            return _vec.m_dX * m_x + _vec.m_dY * m_y + _vec.m_dZ * m_z;
+        }
+        
+        Vec     m_x;
+        Vec     m_y;
+        Vec     m_z;
+    };
+
+
     // returns a vector within the unit cube (-1..1, -1..1, -1..1)
     Vec randomUnitCube(RandomGen &_randomGen) {
         std::uniform_real_distribution<double> dist(-1.0, 1.0);
@@ -153,6 +194,72 @@ namespace LNF
         
         return ret;
     }
+
+
+    /*
+     Creates an axis set with the given orientation.
+     alpha - angle around Z axis
+     beta  - angle around Y axis
+     gamma - angle around X axis
+     */
+    Axis axisEulerZYX(double _dAlpha, double _dBeta, double _dGamma) {
+        const double ca = cos(_dAlpha);
+        const double sa = sin(_dAlpha);
+        const double cb = cos(_dBeta);
+        const double sb = sin(_dBeta);
+        const double cg = cos(_dGamma);
+        const double sg = sin(_dGamma);
+
+        return {
+            Vec{ca*cb,            sa*cb,            -sb},
+            Vec{ca*sb*sg - sa*cg, sa*sb*sg + ca*cg, cb*sg},
+            Vec{ca*sb*cg + sa*sg, sa*sb*cg - ca*sg, cb*cg}
+        };
+    }
+
+
+    /*
+     Creates a lookat at axis set.
+     lookat - position camera is aiming at
+     origin - position of camera
+     up - local camera 'up' vector
+     
+     returns: [left, up, lookat]
+     */
+    Axis axisLookat(const Vec &_lookat, const Vec &_origin, const Vec &_up) {
+        auto lookat = (_lookat - _origin).normalized();
+        auto left = crossProduct(_up, lookat).normalized();
+        auto up = crossProduct(lookat, left);
+        
+        return {
+            left,
+            up,
+            lookat
+        };
+    }
+
+
+    /*
+     Creates an axis on the plane.
+     returns: [e1, normal, e2]
+     */
+    Axis axisPlane(const Vec &_normal, const Vec &_origin) {
+        auto e1 = crossProduct(_normal, Vec(0.0, 0.0, 1.0));
+        if (e1.sizeSqr() < 0.0001) {
+            e1 = crossProduct(_normal, Vec(0.0, 1.0, 0.0));
+        }
+        
+        e1 = e1.normalized();
+        auto e2 = crossProduct(_normal, e1);
+        
+        return {
+            e1,
+            _normal,
+            e2
+        };
+    }
+    
+
 
 };  // namespace LNF
 

@@ -314,11 +314,11 @@ void renderFrame(OutputImageBuffer &_image, const ViewportScreen &_view,
 
 int raytracer()
 {
-    int width = 1920;
-    int height = 1080;
+    int width = 640;
+    int height = 480;
     int fov = 60;
     int numWorkers = 16;
-    int samplesPerPixel = 4096;
+    int samplesPerPixel = 16;
     int maxTraceDepth = 32;
 
     // init
@@ -326,6 +326,8 @@ int raytracer()
     OutputImageBuffer image(width, height);
     ViewportScreen view(width, height, fov);
     auto pScene = std::make_shared<SimpleScene>();
+    auto pCamera = std::make_shared<Camera>(Vec(0, 20, 50), Vec(0, 1, 0), Vec(0, 0, -10));
+    view.setCamera(pCamera);
     
     // create scene
     pScene->addShape(std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
@@ -341,7 +343,7 @@ int raytracer()
     pScene->addShape(std::make_shared<Sphere>(Vec(-2, -6, -15), 1.5, std::make_unique<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5)));
     pScene->addShape(std::make_shared<Sphere>(Vec(-20, 40, -20), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))));
     pScene->addShape(std::make_shared<Sphere>(Vec(5, 40, -15), 5, std::make_unique<Light>(Color(20.0, 20.0, 20.0))));
-    pScene->addShape(std::make_shared<AABox>(Vec(2, -5, -14), Vec(4, -2, -11), std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
+    pScene->addShape(std::make_shared<Box>(Vec(3, -3, -12), Vec(2, 3, 3), std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
 
     // render frame
     renderFrame(image, view, pScene, maxTraceDepth, samplesPerPixel, numWorkers);
@@ -369,6 +371,8 @@ int mandlebrot()
 
 int main()
 {
+    auto axis = axisEulerZYX(pi_4, 0, 0);
+    
     raytracer();
     //mandlebrot();
     return 0;

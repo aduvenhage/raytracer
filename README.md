@@ -22,6 +22,7 @@ Todo:
 - add starfield
 - add planet (nxn body) simulation
 - add 3D mesh viewer (3ds max or Q3A formats maybe)
+- play with some physics again
 
 ## Fractals
 When I was younger I made a nice fractal explorer application and it was so awesome.
@@ -44,6 +45,7 @@ Done:
 - generic materials: diffuse, metal, glass, checkered diffuse
 
 Todo:
+- rotated and translated objects (instancing)
 - textured objects
 - textured area lights
 - axis aligned box intersections

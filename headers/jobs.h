@@ -82,9 +82,10 @@ namespace LNF
      public:
         Worker(const std::shared_ptr<JobQueue> &_pJobs, int _iJobChunkSize)
             :m_pJobs(_pJobs),
-             m_iJobChunkSize(_iJobChunkSize)
+             m_iJobChunkSize(_iJobChunkSize),
+             m_iActiveJobs(0),
+             m_bRunning(true)
         {
-            m_bRunning = true;
             m_thread = std::thread(&Worker::run, this);
         }
         
