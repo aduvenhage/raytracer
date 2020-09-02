@@ -52,43 +52,41 @@ namespace LNF
         {}
         
         /* Returns the material used for rendering, etc. */
-        const Material *material() const {
+        const Material *material() const override {
             return m_pMaterial.get();
         }
         
-        /*
-         Returns the point (t) on the ray where it intersects this shape.
-         Returns 0.0 if there is no intersect possible.
-         */
-        virtual double intersect(const Ray &_ray) const {
-            double t[10];
-            aaboxIntersect(t, m_vecMin, m_vecMax, _ray.m_origin, _ray.m_direction);
-            return t[9];
-        }
-        
-        /* Returns the shape normal vector at the given surface position. */
-        virtual Vec normal(const Vec &_pos) const {
-            const auto p = _pos - m_vecOrigin;
-            return Vec((int)(p.m_dX / m_vecDiv.m_dX),
-                       (int)(p.m_dY / m_vecDiv.m_dY),
-                       (int)(p.m_dZ / m_vecDiv.m_dZ));
-        }
-
-        /* Returns texture coordinates on given surface position. */
-        virtual Uv uv(const Vec &_pos) const {
+        /* Returns the shape / ray intersect (calculates all hit properties). */
+        virtual Intersect intersect(const Ray &_ray) const override {
+            Intersect ret;
             static const Vec _a[] = {{0, 1, 0}, {-1, 0, 0}, {0, 1, 0}};
             static const Vec _b[] = {{0, 0, 1}, {0, 0, 1}, {-1, 0, 0}};
 
-            const auto n = normal(_pos);
-            const int i = int(fabs(n.m_dY + n.m_dZ * 2) + 0.5);
-            const auto &a = _a[i];
-            const auto &b = _b[i];
+            double t[10];
+            aaboxIntersect(t, m_vecMin, m_vecMax, _ray.m_origin, _ray.m_direction);
+            if (t[9] > 0) {
+                ret.m_pShape = this;
+                ret.m_dPositionOnRay = t[9];
+                ret.m_position = _ray.position(ret.m_dPositionOnRay);
+                
+                const auto p1 = ret.m_position - m_vecOrigin;
+                ret.m_normal = Vec((int)(p1.m_dX / m_vecDiv.m_dX),
+                                   (int)(p1.m_dY / m_vecDiv.m_dY),
+                                   (int)(p1.m_dZ / m_vecDiv.m_dZ));
+                
+                const int i = int(fabs(ret.m_normal.m_dY + ret.m_normal.m_dZ * 2) + 0.5);
+                const auto &a = _a[i];
+                const auto &b = _b[i];
 
-            const auto p = _pos - m_vecMin;
-            return Uv(a * p * m_dUvScale, b * p * m_dUvScale).wrap();
+                const auto p2 = ret.m_position - m_vecMin;
+                ret.m_uv = Uv(a * p2 * m_dUvScale, b * p2 * m_dUvScale).wrap();
+            }
+            
+            return ret;
         }
         
      private:
+        Axis                        m_axis;
         Vec                         m_vecOrigin;
         Vec                         m_vecSize;
         Vec                         m_vecMin;
@@ -97,8 +95,6 @@ namespace LNF
         std::unique_ptr<Material>   m_pMaterial;
         double                      m_dUvScale;
     };
-
-
 
 
 };  // namespace LNF

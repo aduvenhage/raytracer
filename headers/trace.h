@@ -30,11 +30,6 @@ namespace LNF
         if (intersect == true) {
             auto pHitShape = intersect.m_pShape;
             
-            // complete intersect info
-            intersect.m_normal = pHitShape->normal(intersect.m_position);
-            intersect.m_uv = pHitShape->uv(intersect.m_position);
-            intersect.m_bInside = intersect.m_normal * _ray.m_direction > 0;
-                        
             // create scattered, reflected, reftracted, etc. color
             auto pMaterial = pHitShape->material();
             auto scatteredRay = pMaterial->scatter(intersect, _ray, _randomGen);

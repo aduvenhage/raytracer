@@ -196,6 +196,16 @@ namespace LNF
     }
 
 
+    /* Creates the default axis */
+    Axis axisIdentity() {
+        return {
+            Vec{1, 0, 0},
+            Vec{0, 1, 0},
+            Vec{0, 0, 1}
+        };
+    }
+
+
     /*
      Creates an axis set with the given orientation.
      alpha - angle around Z axis

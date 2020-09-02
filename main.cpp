@@ -169,6 +169,43 @@ class Glass : public Material
 };
 
 
+/* Transform wrapper for shapes */
+class Transform        : public Shape
+{
+ public:
+    Transform()
+    {}
+    
+    Transform(const std::shared_ptr<Shape> &_pTarget, const Axis &_axis, const Vec &_origin)
+        :m_pTarget(_pTarget),
+         m_origin(_origin),
+         m_axis(_axis)
+    {}
+    
+    /* Returns the material used for rendering, etc. */
+    const Material *material() const override {
+        return m_pTarget->material();
+    }
+    
+    /* Returns the shape / ray intersect (calculates all hit properties). */
+    virtual Intersect intersect(const Ray &_ray) const override {
+        auto br = Ray(m_axis.translateTo(_ray.m_origin - m_origin),
+                      m_axis.translateTo(_ray.m_direction));
+        
+        auto hit = m_pTarget->intersect(br);
+        hit.m_normal = m_axis.translateFrom(hit.m_normal);
+        hit.m_position = m_axis.translateFrom(hit.m_position) + m_origin;
+        
+        return hit;
+    }
+     
+ private:
+    std::shared_ptr<Shape>      m_pTarget;
+    Axis                        m_axis;
+    Vec                         m_origin;
+};
+
+
 // simple scene with a linear search for object hits
 class SimpleScene   : public Scene
 {
@@ -181,25 +218,17 @@ class SimpleScene   : public Scene
        Could be accessed by multiple worker threads concurrently.
      */
     virtual Intersect hit(const Ray &_ray) const override {
-        double dOnRayMin = _ray.m_dMaxDist;
-        Shape *pHitShape = nullptr;
+        Intersect ret;
 
+        // find best hit
         for (auto &pShape : m_shapes) {
-            double dPositionOnRay = pShape->intersect(_ray);
-            if ( (dPositionOnRay < dOnRayMin) && (dPositionOnRay > _ray.m_dMinDist) )
-            {
-                pHitShape = pShape.get();
-                dOnRayMin = dPositionOnRay;
+            auto hit = pShape->intersect(_ray);
+            if (hit < ret) {
+                ret = hit;
             }
         }
         
-        if ( (pHitShape != nullptr) &&
-             (dOnRayMin > 0) )
-        {
-            return Intersect(pHitShape, _ray, dOnRayMin);
-        }
-        
-        return Intersect();
+        return ret;
     }
     
     /*
@@ -314,11 +343,11 @@ void renderFrame(OutputImageBuffer &_image, const ViewportScreen &_view,
 
 int raytracer()
 {
-    int width = 640;
-    int height = 480;
+    int width = 1920;
+    int height = 1200;
     int fov = 60;
     int numWorkers = 16;
-    int samplesPerPixel = 16;
+    int samplesPerPixel = 4096;
     int maxTraceDepth = 32;
 
     // init
@@ -326,14 +355,22 @@ int raytracer()
     OutputImageBuffer image(width, height);
     ViewportScreen view(width, height, fov);
     auto pScene = std::make_shared<SimpleScene>();
-    auto pCamera = std::make_shared<Camera>(Vec(0, 20, 50), Vec(0, 1, 0), Vec(0, 0, -10));
+    auto pCamera = std::make_shared<Camera>(Vec(0, 20, 80), Vec(0, 1, 0), Vec(0, 0, -10));
     view.setCamera(pCamera);
     
     // create scene
-    pScene->addShape(std::make_shared<Plane>(Vec(0, -8, 0), Vec(0, 1, 0), std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
+    auto pDiffuse1 = std::make_shared<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8);
+    auto pDiffuse2 = std::make_shared<DiffuseCheckered>(Color(1.0, 1.0, 0.1), Color(0.2, 0.2, 0.2), 8);
+    auto pGlass1 = std::make_shared<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5);
+    
+    pScene->addShape(std::make_shared<Plane>(pDiffuse1));
+    pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pGlass1), axisIdentity(), Vec(0, 15, 10)));
+    pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pDiffuse2), axisIdentity(), Vec(30, 15, -20)));
+    pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pDiffuse2), axisEulerZYX(0, 0.5, 0), Vec(-30, 15, -20)));
+
+    /*
     pScene->addShape(std::make_shared<Disc>(Vec(0, 40, -100), Vec(0, -1, 0), 40, std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
     pScene->addShape(std::make_shared<Rectangle>(Vec(-40, 30, -120), Vec(0, -1, 0), 10, 10, std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
-    pScene->addShape(std::make_shared<Sphere>(Vec(10, -4, -25), 3, std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
     pScene->addShape(std::make_shared<Sphere>(Vec(0, 4, -35), 4, std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
     pScene->addShape(std::make_shared<Sphere>(Vec(-10, 3, -35), 5, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))));
     pScene->addShape(std::make_shared<Sphere>(Vec(10, -4, -15), 3, std::make_unique<Diffuse>(Color(0.2, 1.0, 0.2))));
@@ -344,7 +381,8 @@ int raytracer()
     pScene->addShape(std::make_shared<Sphere>(Vec(-20, 40, -20), 10, std::make_unique<Light>(Color(10.0, 10.0, 10.0))));
     pScene->addShape(std::make_shared<Sphere>(Vec(5, 40, -15), 5, std::make_unique<Light>(Color(20.0, 20.0, 20.0))));
     pScene->addShape(std::make_shared<Box>(Vec(3, -3, -12), Vec(2, 3, 3), std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.4, 0.4, 0.4), 16)));
-
+     */
+    
     // render frame
     renderFrame(image, view, pScene, maxTraceDepth, samplesPerPixel, numWorkers);
     
@@ -371,8 +409,6 @@ int mandlebrot()
 
 int main()
 {
-    auto axis = axisEulerZYX(pi_4, 0, 0);
-    
     raytracer();
     //mandlebrot();
     return 0;

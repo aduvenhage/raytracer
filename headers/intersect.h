@@ -19,14 +19,8 @@ namespace LNF
     struct Intersect
     {
         Intersect()
-            :m_dPositionOnRay(0),
-             m_bInside(false)
-        {}
-
-        Intersect(const Shape *_pShape, const Ray &_ray, double _dPositionOnRay)
-            :m_pShape(_pShape),
-             m_dPositionOnRay(_dPositionOnRay),
-             m_position(_ray.position(_dPositionOnRay)),
+            :m_pShape(nullptr),
+             m_dPositionOnRay(-1),
              m_bInside(false)
         {}
 
@@ -41,10 +35,19 @@ namespace LNF
             return m_dPositionOnRay > 0;
         }
 
+        bool operator < (const Intersect &_i) const {
+            if ( (_i.m_dPositionOnRay > 0) &&
+                 (m_dPositionOnRay > 0) ) {
+                return m_dPositionOnRay < _i.m_dPositionOnRay;
+            }
+            
+            return m_dPositionOnRay > 0;
+        }
+
         const Shape             *m_pShape;          // shape we intersected with
         double                  m_dPositionOnRay;   // t0
-        Vec                     m_position;         // position on surface of shape
-        Vec                     m_normal;           // normal vector on surface of shape
+        Vec                     m_position;         // hit position on surface of shape
+        Vec                     m_normal;           // normal on surface of shape
         Uv                      m_uv;               // texture coordinate on surface of shape
         bool                    m_bInside;          // true if ray is inside shape
     };

@@ -44,18 +44,20 @@ Done:
 - multi-threaded rendering (through job system) using sub-images
 - generic materials: diffuse, metal, glass, checkered diffuse
 
-Todo:
+Busy:
 - rotated and translated objects (instancing)
-- textured objects
-- textured area lights
-- axis aligned box intersections
-- add bounding volume hyrarchy to scene
-- camera position and orientation
 - rotated box intersections
 - sphere rotations (affects UV)
+- axis aligned box intersections
+
+Todo:
+- textured objects (texture images)
+- textured area lights
+- add bounding volume hyrarchy to scene
+- camera position and orientation
 - triangle mesh rendering
-- de-noising
 - volumes / fog
+- de-noising
 
 
 

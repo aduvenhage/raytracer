@@ -18,65 +18,54 @@ namespace LNF
              m_dRadiusSqr(0)
         {}
         
-        Sphere(const Vec &_origin, double _dRadius, std::unique_ptr<Material> _pMaterial)
-            :m_origin(_origin),
-             m_pMaterial(std::move(_pMaterial)),
+        Sphere(double _dRadius, const std::shared_ptr<Material> &_pMaterial)
+            :m_pMaterial(_pMaterial),
              m_dRadius(_dRadius),
              m_dRadiusSqr(_dRadius * _dRadius)
         {}
         
         /* Returns the material used for rendering, etc. */
-        const Material *material() const {
+        const Material *material() const override {
             return m_pMaterial.get();
         }
         
-        /*
-         Returns the point (t) on the ray where it intersects this shape.
-         Returns 0.0 if there is no intersect possible.
-         */
-        virtual double intersect(const Ray &_ray) const {
-            const auto vecRaySphere = m_origin - _ray.m_origin;
-            double dRayLength = vecRaySphere * _ray.m_direction;
-            const double dIntersectRadiusSqr = vecRaySphere.sizeSqr() - dRayLength*dRayLength;
-            if (dIntersectRadiusSqr > m_dRadiusSqr){
-                return 0.0;
-            }
+        /* Returns the shape / ray intersect (calculates all hit properties). */
+        virtual Intersect intersect(const Ray &_ray) const override {
+            Intersect ret;
             
-            const double dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
-            if (dt <= dRayLength) {
-                // we are outside of sphere
-                dRayLength -= dt;
-            }
-            else {
-                // we are inside of sphere
-                dRayLength += dt;
-            }
-            
-            if ( (dRayLength < _ray.m_dMinDist) || (dRayLength > _ray.m_dMaxDist) ) {
-                return 0.0;
-            }
-            else {
-                return dRayLength;
-            }
-        }
-        
-        /* Returns the shape normal vector at the given surface position. */
-        virtual Vec normal(const Vec &_pos) const {
-            return (_pos - m_origin) / m_dRadius;
-        }
+            double dRayLength = -_ray.m_origin * _ray.m_direction;
+            const double dIntersectRadiusSqr = _ray.m_origin.sizeSqr() - dRayLength*dRayLength;            
+            if (dIntersectRadiusSqr <= m_dRadiusSqr) {
+                const double dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
+                if (dt <= dRayLength) {
+                    // we are outside of sphere
+                    dRayLength -= dt;
+                    ret.m_bInside = false;
+                }
+                else {
+                    // we are inside of sphere
+                    dRayLength += dt;
+                    ret.m_bInside = true;
+                }
+                
+                // check ray limits
+                if ( (dRayLength >= _ray.m_dMinDist) && (dRayLength <= _ray.m_dMaxDist) ) {
+                    ret.m_pShape = this;
+                    ret.m_dPositionOnRay = dRayLength;
+                    ret.m_position = _ray.position(ret.m_dPositionOnRay);
+                    ret.m_normal = ret.m_position / m_dRadius;
 
-        /* Returns texture coordinates on given surface position. */
-        virtual Uv uv(const Vec &_pos) const {
-            auto vec = _pos - m_origin;
-            double phi = atan2(vec.m_dZ, vec.m_dX);
-            double theta = acos(vec.m_dY / m_dRadius);
-
-            return Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
+                    const double phi = atan2(ret.m_position.m_dZ, ret.m_position.m_dX);
+                    const double theta = acos(ret.m_position.m_dY / m_dRadius);
+                    ret.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
+                }
+            }
+                
+            return ret;
         }
-        
+         
      private:
-        Vec                         m_origin;
-        std::unique_ptr<Material>   m_pMaterial;
+        std::shared_ptr<Material>   m_pMaterial;
         double                      m_dRadius;
         double                      m_dRadiusSqr;
     };

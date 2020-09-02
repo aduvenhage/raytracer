@@ -17,56 +17,43 @@ namespace LNF
         Plane()
         {}
         
-        Plane(const Vec &_origin, const Vec &_normal, std::unique_ptr<Material> _pMaterial, double _dUvScale=0.02)
-            :m_origin(_origin),
-             m_plane(axisPlane(_normal, _origin)),
-             m_pMaterial(std::move(_pMaterial)),
+        Plane(const std::shared_ptr<Material> &_pMaterial, double _dUvScale=0.02)
+            :m_pMaterial(_pMaterial),
              m_dUvScale(_dUvScale)
         {}
         
         /* Returns the material used for rendering, etc. */
-        const Material *material() const {
+        const Material *material() const override {
             return m_pMaterial.get();
         }
         
-        /*
-         Returns the point (t) on the ray where it intersects this shape.
-         Returns 0.0 if there is no intersect possible.
-         */
-        virtual double intersect(const Ray &_ray) const {
-            const double denom = m_plane.m_y * _ray.m_direction;
+        /* Returns the shape / ray intersect (calculates all hit properties). */
+        virtual Intersect intersect(const Ray &_ray) const override {
+            Intersect ret;
+            const static Vec normal(0, 1, 0);
+            const static Vec e1(1, 0, 0);
+            const static Vec e2(0, 0, 1);
+
+            // TODO: optimise for fixed axis (above)
+            const double denom = normal * _ray.m_direction;
             if (denom < -0.0000001) {
-                const auto vecRayPlane = m_origin - _ray.m_origin;
-                const double t = (vecRayPlane * m_plane.m_y) / denom;
+                const auto vecRayPlane = -_ray.m_origin;
+                const double t = (vecRayPlane * normal) / denom;
                 if ( (t > _ray.m_dMinDist) && (t < _ray.m_dMaxDist) ) {
-                    return t;
+                    ret.m_pShape = this;
+                    ret.m_dPositionOnRay = t;
+                    ret.m_position = _ray.position(ret.m_dPositionOnRay);
+                    ret.m_normal = normal;
+                    
+                    ret.m_uv = Uv(e1 * ret.m_position * m_dUvScale, e2 * ret.m_position * m_dUvScale).wrap();
                 }
             }
             
-            return 0.0;
-        }
-        
-        /* Returns the shape normal vector at the given surface position. */
-        virtual Vec normal(const Vec &_pos) const {
-            return m_plane.m_y;
-        }
-        
-        /* Returns the plane origin */
-        const Vec &origin() const {return m_origin;}
-
-        /* Returns the plane axis */
-        const Axis &axis() const {return m_plane;}
-
-        /* Returns texture coordinates on given surface position. */
-        virtual Uv uv(const Vec &_pos) const {
-            const auto vec = _pos - m_origin;
-            return Uv(m_plane.m_x * vec * m_dUvScale, m_plane.m_z * vec * m_dUvScale).wrap();
+            return ret;
         }
         
      private:
-        Vec                         m_origin;
-        Axis                        m_plane;        // [x=e1, y=normal, z=e2]
-        std::unique_ptr<Material>   m_pMaterial;
+        std::shared_ptr<Material>   m_pMaterial;
         double                      m_dUvScale;
     };
 
@@ -78,26 +65,23 @@ namespace LNF
         Disc()
         {}
         
-        Disc(const Vec &_origin, const Vec &_normal, double _dRadius, std::unique_ptr<Material> _pMaterial, double _dUvScale=0.02)
-            :Plane(_origin, _normal, std::move(_pMaterial), _dUvScale),
+        Disc(double _dRadius, const std::shared_ptr<Material> &_pMaterial, double _dUvScale=0.02)
+            :Plane(_pMaterial, _dUvScale),
              m_dRadius(_dRadius),
              m_dRadiusSqr(_dRadius * _dRadius)
         {}
         
-        /*
-         Returns the point (t) on the ray where it intersects this shape.
-         Returns 0.0 if there is no intersect possible.
-         */
-        virtual double intersect(const Ray &_ray) const {
-            const double t = Plane::intersect(_ray);
-            if (t > 0) {
-                auto p = _ray.position(t) - origin();
-                if (p.sizeSqr() < m_dRadiusSqr) {
-                    return t;
+        /* Returns the shape / ray intersect (calculates all hit properties). */
+        virtual Intersect intersect(const Ray &_ray) const override {
+            Intersect ret = Plane::intersect(_ray);
+            if (ret == true) {
+                // check disc bounds
+                if (ret.m_position.sizeSqr() > m_dRadiusSqr) {
+                    return Intersect();
                 }
             }
             
-            return 0.0;
+            return ret;
         }
         
      private:
@@ -113,28 +97,25 @@ namespace LNF
         Rectangle()
         {}
         
-        Rectangle(const Vec &_origin, const Vec &_normal, double _dWidth, double _dLength, std::unique_ptr<Material> _pMaterial, double _dUvScale=0.02)
-            :Plane(_origin, _normal, std::move(_pMaterial), _dUvScale),
+        Rectangle(double _dWidth, double _dLength, const std::shared_ptr<Material> &_pMaterial, double _dUvScale=0.02)
+            :Plane(_pMaterial, _dUvScale),
              m_dWidth(_dWidth),
              m_dLength(_dLength)
         {}
         
-        /*
-         Returns the point (t) on the ray where it intersects this shape.
-         Returns 0.0 if there is no intersect possible.
-         */
-        virtual double intersect(const Ray &_ray) const {
-            const double t = Plane::intersect(_ray);
-            if (t > 0) {
-                auto p = _ray.position(t) - origin();
-                
-                if ( (fabs(p * axis().m_x) <= m_dWidth) &&
-                     (fabs(p * axis().m_z) <= m_dLength) ) {
-                    return t;
+        /* Returns the shape / ray intersect (calculates all hit properties). */
+        virtual Intersect intersect(const Ray &_ray) const override {
+            Intersect ret = Plane::intersect(_ray);
+            
+            if (ret == true) {
+                // check rectangle bounds
+                if ( (fabs(ret.m_position.m_dX) > m_dWidth) ||
+                     (fabs(ret.m_position.m_dZ) > m_dLength) ) {
+                    return Intersect();
                 }
             }
             
-            return 0.0;
+            return ret;
         }
         
      private:
