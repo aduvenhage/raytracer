@@ -34,18 +34,17 @@ namespace LNF
     }
 
 
-    /* Axis aligned box shape class */
+    /* Axis aligned box shape class -- fixed at origin [0, 0, 0] */
     class Box        : public Shape
     {
      public:
         Box()
         {}
         
-        Box(const Vec &_origin, const Vec &_size, std::unique_ptr<Material> _pMaterial, double _dUvScale = 0.2)
-            :m_vecOrigin(_origin),
-             m_vecSize(_size),
-             m_vecMin(_origin - _size/2),
-             m_vecMax(_origin + _size/2),
+        Box(const Vec &_size, const std::shared_ptr<Material> &_pMaterial, double _dUvScale = 0.2)
+            :m_vecSize(_size),
+             m_vecMin(-_size * 0.5),
+             m_vecMax(_size * 0.5),
              m_vecDiv(_size * 0.49999),
              m_pMaterial(std::move(_pMaterial)),
              m_dUvScale(_dUvScale)
@@ -69,10 +68,9 @@ namespace LNF
                 ret.m_dPositionOnRay = t[9];
                 ret.m_position = _ray.position(ret.m_dPositionOnRay);
                 
-                const auto p1 = ret.m_position - m_vecOrigin;
-                ret.m_normal = Vec((int)(p1.m_dX / m_vecDiv.m_dX),
-                                   (int)(p1.m_dY / m_vecDiv.m_dY),
-                                   (int)(p1.m_dZ / m_vecDiv.m_dZ));
+                ret.m_normal = Vec((int)(ret.m_position.m_dX / m_vecDiv.m_dX),
+                                   (int)(ret.m_position.m_dY / m_vecDiv.m_dY),
+                                   (int)(ret.m_position.m_dZ / m_vecDiv.m_dZ));
                 
                 const int i = int(fabs(ret.m_normal.m_dY + ret.m_normal.m_dZ * 2) + 0.5);
                 const auto &a = _a[i];
@@ -87,12 +85,11 @@ namespace LNF
         
      private:
         Axis                        m_axis;
-        Vec                         m_vecOrigin;
         Vec                         m_vecSize;
         Vec                         m_vecMin;
         Vec                         m_vecMax;
         Vec                         m_vecDiv;
-        std::unique_ptr<Material>   m_pMaterial;
+        std::shared_ptr<Material>   m_pMaterial;
         double                      m_dUvScale;
     };
 

@@ -9,7 +9,7 @@
 
 namespace LNF
 {
-    /* Sphere shape class */
+    /* Sphere shape class -- fixed at origin [0, 0, 0] */
     class Sphere        : public Shape
     {
      public:

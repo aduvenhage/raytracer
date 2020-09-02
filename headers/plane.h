@@ -10,7 +10,7 @@
 
 namespace LNF
 {
-    /* Plane shape class */
+    /* Plane shape class -- fixed ZX plane with normal [0, 1, 0] and origin [0, 0, 0] */
     class Plane        : public Shape
     {
      public:
@@ -31,21 +31,17 @@ namespace LNF
         virtual Intersect intersect(const Ray &_ray) const override {
             Intersect ret;
             const static Vec normal(0, 1, 0);
-            const static Vec e1(1, 0, 0);
-            const static Vec e2(0, 0, 1);
-
-            // TODO: optimise for fixed axis (above)
-            const double denom = normal * _ray.m_direction;
+            const double denom = _ray.m_direction.m_dY;
             if (denom < -0.0000001) {
                 const auto vecRayPlane = -_ray.m_origin;
-                const double t = (vecRayPlane * normal) / denom;
+                const double t = vecRayPlane.m_dY / denom;
                 if ( (t > _ray.m_dMinDist) && (t < _ray.m_dMaxDist) ) {
                     ret.m_pShape = this;
                     ret.m_dPositionOnRay = t;
                     ret.m_position = _ray.position(ret.m_dPositionOnRay);
                     ret.m_normal = normal;
                     
-                    ret.m_uv = Uv(e1 * ret.m_position * m_dUvScale, e2 * ret.m_position * m_dUvScale).wrap();
+                    ret.m_uv = Uv(ret.m_position.m_dX * m_dUvScale, ret.m_position.m_dZ * m_dUvScale).wrap();
                 }
             }
             

@@ -362,11 +362,15 @@ int raytracer()
     auto pDiffuse1 = std::make_shared<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8);
     auto pDiffuse2 = std::make_shared<DiffuseCheckered>(Color(1.0, 1.0, 0.1), Color(0.2, 0.2, 0.2), 8);
     auto pGlass1 = std::make_shared<Glass>(Color(1.0, 1.0, 1.0), 0.01, 1.5);
-    
+    auto pMetal1 = std::make_shared<Metal>(Color(1.0, 1.0, 1.0), 0.05);
+
     pScene->addShape(std::make_shared<Plane>(pDiffuse1));
     pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pGlass1), axisIdentity(), Vec(0, 15, 10)));
     pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pDiffuse2), axisIdentity(), Vec(30, 15, -20)));
     pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pDiffuse2), axisEulerZYX(0, 0.5, 0), Vec(-30, 15, -20)));
+    pScene->addShape(std::make_shared<Transform>(std::make_shared<Box>(Vec(5, 10, 5), pDiffuse2), axisEulerZYX(0, 1, 0), Vec(10, 5, 30)));
+    pScene->addShape(std::make_shared<Transform>(std::make_shared<Box>(Vec(5, 10, 5), pMetal1), axisEulerZYX(0, 0.2, 0), Vec(-10, 5, 30)));
+    pScene->addShape(std::make_shared<Transform>(std::make_shared<Box>(Vec(5, 10, 5), pGlass1), axisEulerZYX(0, 0.5, 0), Vec(0, 5, 30)));
 
     /*
     pScene->addShape(std::make_shared<Disc>(Vec(0, 40, -100), Vec(0, -1, 0), 40, std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8)));
