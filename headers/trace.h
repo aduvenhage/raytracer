@@ -72,7 +72,7 @@ namespace LNF
                     auto ray = _pView->getRay(i, j, pixelDist(_generator), pixelDist(_generator));
 
                     // trace ray and add color result
-                    color += LNF::trace(ray, _scene, _generator, _iMaxDepth);
+                    color += trace(ray, _scene, _generator, _iMaxDepth);
                 }
                                 
                 // write averaged color to output image

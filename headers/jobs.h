@@ -32,6 +32,8 @@ namespace LNF
             :m_iSize(0)
         {}
         
+        virtual ~JobQueue() = default;
+        
         /* returns true if no more jobs */
         virtual bool empty() const {
             return m_iSize == 0;
@@ -90,10 +92,18 @@ namespace LNF
         }
         
         virtual ~Worker() {
-            m_bRunning = false;
+            stop();
             if (m_thread.joinable() == true) {
                 m_thread.join();
             }
+        }
+        
+        virtual void stop() {
+            m_bRunning = false;
+        }
+        
+        virtual bool running() const {
+            return m_bRunning;
         }
 
         /* returns true if worker has local jobs */

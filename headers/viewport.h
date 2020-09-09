@@ -47,6 +47,14 @@ namespace LNF
             }
         }
         
+        int width() const {
+            return m_iWidth;
+        }
+        
+        int height() const {
+            return m_iHeight;
+        }
+        
      protected:
         std::shared_ptr<Camera>     m_pCamera;
         const int                   m_iWidth;
@@ -60,20 +68,20 @@ namespace LNF
     class ViewportBlock    : public Viewport
     {
      public:
-        ViewportBlock(const ViewportScreen &_viewport, int _iStartX, int _iStartY)
-            :m_viewport(_viewport),
+        ViewportBlock(const std::shared_ptr<Viewport> &_pViewport, int _iStartX, int _iStartY)
+            :m_pViewport(_pViewport),
              m_iStartX(_iStartX),
              m_iStartY(_iStartY)
         {}
         
         Ray getRay(int _iX, int _iY, double _dX = 0.5, double _dY = 0.5) const override {
-            return m_viewport.getRay(_iX + m_iStartX, _iY + m_iStartY, _dX, _dY);
+            return m_pViewport->getRay(_iX + m_iStartX, _iY + m_iStartY, _dX, _dY);
         }
         
      protected:
-        const ViewportScreen    &m_viewport;
-        const int               m_iStartX;
-        const int               m_iStartY;
+        std::shared_ptr<Viewport>   m_pViewport;        // TODO: maybe drop this to a raw pointer, if it would be safe
+        const int                   m_iStartX;
+        const int                   m_iStartY;
     };
 
 

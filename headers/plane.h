@@ -4,8 +4,8 @@
 #include "constants.h"
 #include "shape.h"
 #include "material.h"
-
-#include <memory>
+#include "vec3.h"
+#include "uv.h"
 
 
 namespace LNF
@@ -63,7 +63,6 @@ namespace LNF
         
         Disc(double _dRadius, const std::shared_ptr<Material> &_pMaterial, double _dUvScale=0.02)
             :Plane(_pMaterial, _dUvScale),
-             m_dRadius(_dRadius),
              m_dRadiusSqr(_dRadius * _dRadius)
         {}
         
@@ -81,7 +80,6 @@ namespace LNF
         }
         
      private:
-        double                      m_dRadius;
         double                      m_dRadiusSqr;
     };
 

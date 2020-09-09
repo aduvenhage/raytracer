@@ -3,8 +3,8 @@
 
 #include "constants.h"
 #include "shape.h"
-
-#include <memory>
+#include "vec3.h"
+#include "uv.h"
 
 
 namespace LNF

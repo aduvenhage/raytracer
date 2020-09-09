@@ -11,9 +11,10 @@ For now the project is mainly just a set of header files thrown into a single na
 Done:
 - create JPEG image writer for seeing what I created
 - generic job/worker system (multi-theading) -- using all of my CPU now :-)
+- get into the weeds with some algorithm investigations (quicksort, breadth first searches with heuristics, etc. -- algorithms_playground.h)
 
 Busy:
-- get into the weeds with some algorithm investigations (quicksort, breadth first searches with heuristics, etc. -- algorithms_playground.h)
+- create JPEG image reader for textures, etc.
 
 Todo:
 - add namespace hyrarchy for different components and sub-systems
@@ -43,16 +44,16 @@ Done:
 - monte-carlo based sampling and materials
 - multi-threaded rendering (through job system) using sub-images
 - generic materials: diffuse, metal, glass, checkered diffuse
-
-Busy:
 - rotated and translated objects (instancing)
 - rotated box intersections
 - sphere rotations (affects UV)
 - axis aligned box intersections
 
-Todo:
+Busy:
 - textured objects (texture images)
 - textured area lights
+
+Todo:
 - add bounding volume hyrarchy to scene
 - camera position and orientation
 - triangle mesh rendering

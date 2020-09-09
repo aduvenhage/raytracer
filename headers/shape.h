@@ -5,8 +5,6 @@
 #include "intersect.h"
 #include "material.h"
 #include "ray.h"
-#include "uv.h"
-#include "vec3.h"
 
 #include <memory>
 

@@ -31,8 +31,8 @@ namespace LNF
         
         jpeg_stdio_dest(&cinfo, outfile);
         
-        cinfo.image_width  = _iWidth;           // |-- Image width and height in pixels.
-        cinfo.image_height = _iHeight;           // |
+        cinfo.image_width  = _iWidth;           // Image width and height in pixels.
+        cinfo.image_height = _iHeight;
         cinfo.input_components = 3;         // Number of color components per pixel.
         cinfo.in_color_space = JCS_RGB;     // Colorspace of input image as RGB.
         
