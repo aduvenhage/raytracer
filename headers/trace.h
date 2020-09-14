@@ -56,7 +56,7 @@ namespace LNF
                      RandomGen &_generator,
                      int _iRaysPerPixel, int _iMaxDepth)
     {
-        std::uniform_real_distribution<double> pixelDist(-0.4, 0.4);
+        std::uniform_real_distribution<float> pixelDist(-0.4, 0.4);
         
         // create rays and trace them for all pixels in block
         for (auto j = 0; j < _pOutput->height(); j++)

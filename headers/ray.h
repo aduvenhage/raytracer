@@ -24,29 +24,29 @@ namespace LNF
         template <typename U>
         Ray(U &&_direction)
             :m_direction(std::forward<U>(_direction)),
-             m_dMinDist(0.00001),
-             m_dMaxDist(std::numeric_limits<double>::max())
+             m_dMinDist(0.00001f),
+             m_dMaxDist(std::numeric_limits<float>::max())
         {}
         
         template <typename U, typename V>
         Ray(U &&_origin, V &&_direction)
             :m_origin(std::forward<U>(_origin)),
              m_direction(std::forward<V>(_direction)),
-             m_dMinDist(0.00001),
-             m_dMaxDist(std::numeric_limits<double>::max())
+             m_dMinDist(0.00001f),
+             m_dMaxDist(std::numeric_limits<float>::max())
         {}
 
         Ray &operator=(const Ray &) = default;
         Ray &operator=(Ray &&) = default;
         
-        Vec position(double _dt) const {
+        Vec position(float _dt) const {
             return m_origin + m_direction * _dt;
         }
 
         Vec     m_origin;
         Vec     m_direction;
-        double  m_dMinDist;
-        double  m_dMaxDist;
+        float   m_dMinDist;
+        float   m_dMaxDist;
     };
 
 
@@ -76,7 +76,7 @@ namespace LNF
 
 
     /* Schlick’s approximation to Fresnel */
-    double schlick(double cosi, double _dEtaiOverEtat) {
+    float schlick(float cosi, float _dEtaiOverEtat) {
         // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
         auto r0 = sqr((1 - _dEtaiOverEtat) / (1 + _dEtaiOverEtat));
         return r0 + (1 - r0) * pow((1 - cosi), 5);
@@ -84,16 +84,16 @@ namespace LNF
 
 
     /* bend vector around normal with specific refraction index */
-    inline Vec refract(const Vec &_vec, const Vec &_normal, double _dEtaiOverEtat, RandomGen &_randomGen)
+    inline Vec refract(const Vec &_vec, const Vec &_normal, float _dEtaiOverEtat, RandomGen &_randomGen)
     {
         // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
-        double cosi = -_vec * _normal;
-        double k = sqr(_dEtaiOverEtat) * (1 - sqr(cosi));
-        std::uniform_real_distribution<double> uniform01(0, 1);
+        float cosi = -_vec * _normal;
+        float k = sqr(_dEtaiOverEtat) * (1 - sqr(cosi));
+        std::uniform_real_distribution<float> uniform01(0, 1);
         
         // k > 1 ==> total internal reflection
         if ( (k > 1) ||
-            (uniform01(_randomGen) < schlick(cosi, _dEtaiOverEtat)) )
+             (uniform01(_randomGen) < schlick(cosi, _dEtaiOverEtat)) )
         {
             // total internal reflection
             return _vec + _normal * 2 * cosi;

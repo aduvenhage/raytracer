@@ -67,7 +67,7 @@ namespace LNF
          beta  - angle around Y axis
          gamma - angle around X axis
          */
-        void rotateEulerZYX(double _dAlpha, double _dBeta, double _dGamma, bool _bRecalcBounds = true) {
+        void rotateEulerZYX(float _dAlpha, float _dBeta, float _dGamma, bool _bRecalcBounds = true) {
             m_axis = axisEulerZYX(_dAlpha, _dBeta, _dGamma);
             
             if (_bRecalcBounds == true) {

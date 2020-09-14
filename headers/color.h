@@ -57,26 +57,26 @@ namespace LNF
             return *this;
         }
         
-        Color operator*(double _dScale) const {
+        Color operator*(float _dScale) const {
             return Color(m_fRed * _dScale,
                          m_fGreen * _dScale,
                          m_fBlue * _dScale);
         }
         
-        Color &operator*=(double _dScale) {
+        Color &operator*=(float _dScale) {
             m_fRed *= _dScale;
             m_fGreen *= _dScale;
             m_fBlue *= _dScale;
             return *this;
         }
         
-        Color operator/(double _dScale) const {
+        Color operator/(float _dScale) const {
             return Color(m_fRed / _dScale,
                          m_fGreen / _dScale,
                          m_fBlue / _dScale);
         }
         
-        Color &operator/=(double _dScale) {
+        Color &operator/=(float _dScale) {
             m_fRed /= _dScale;
             m_fGreen /= _dScale;
             m_fBlue /= _dScale;
@@ -100,14 +100,9 @@ namespace LNF
         
         // set color values to 0 if smaller and 1 if larger.
         Color &clamp() {
-            if (m_fRed > 1.0) m_fRed = 1.0;
-            else if (m_fRed < 0) m_fRed = 0.0;
-            
-            if (m_fGreen > 1.0) m_fGreen = 1.0;
-            else if (m_fGreen < 0) m_fGreen = 0.0;
-            
-            if (m_fBlue > 1.0) m_fBlue = 1.0;
-            else if (m_fBlue < 0) m_fBlue = 0.0;
+            m_fRed = ::clamp(m_fRed, 0.0f, 1.0f);
+            m_fGreen = ::clamp(m_fGreen, 0.0f, 1.0f);
+            m_fBlue = ::clamp(m_fBlue, 0.0f, 1.0f);
             
             return *this;
         }
@@ -121,7 +116,7 @@ namespace LNF
         }
         
         bool isBlack() {
-            return m_fRed + m_fGreen + m_fBlue < 0.00001;
+            return m_fRed + m_fGreen + m_fBlue < 0.00001f;
         }
         
         float      m_fRed;

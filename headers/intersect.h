@@ -45,7 +45,7 @@ namespace LNF
         }
 
         const Shape             *m_pShape;          // shape we intersected with
-        double                  m_dPositionOnRay;   // t0
+        float                   m_dPositionOnRay;   // t0
         Vec                     m_position;         // hit position on surface of shape
         Vec                     m_normal;           // normal on surface of shape
         Uv                      m_uv;               // texture coordinate on surface of shape

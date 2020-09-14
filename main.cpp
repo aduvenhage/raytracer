@@ -84,8 +84,8 @@ class SimpleScene   : public Scene
      Could be accessed by multiple worker threads concurrently.
      */
     virtual Color missColor(const Ray &_ray) const override {
-        double shift = _ray.m_direction.m_dY * _ray.m_direction.m_dY * 0.3 + 0.3;
-        return Color(shift, shift, 0.6);
+        float shift = _ray.m_direction.m_dY * _ray.m_direction.m_dY * 0.3f + 0.3f;
+        return Color(shift, shift, 0.6f);
     }
 
     /*
@@ -117,7 +117,7 @@ class MainWindow : public QMainWindow
         int fov = 60;
 
         resize(width, height);
-        setWindowTitle(QApplication::translate("windowlayout", "Window layout"));
+        setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(std::chrono::milliseconds(500));
         
         m_pView = std::make_unique<ViewportScreen>(width, height, fov);
@@ -149,7 +149,7 @@ class MainWindow : public QMainWindow
              (m_pSource->isFinished() == true)*/ )
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 256;
+            int samplesPerPixel = 4096;
             int maxTraceDepth = 32;
             m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, numWorkers, samplesPerPixel, maxTraceDepth);
         }

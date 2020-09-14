@@ -17,7 +17,7 @@ namespace LNF
         Plane()
         {}
         
-        Plane(const Material *_pMaterial, double _dUvScale=0.02)
+        Plane(const Material *_pMaterial, float _dUvScale=0.02f)
             :m_pMaterial(_pMaterial),
              m_dUvScale(_dUvScale)
         {}
@@ -31,10 +31,10 @@ namespace LNF
         virtual Intersect intersect(const Ray &_ray) const override {
             Intersect ret;
             const static Vec normal(0, 1, 0);
-            const double denom = _ray.m_direction.m_dY;
-            if (denom < -0.0000001) {
+            const float denom = _ray.m_direction.m_dY;
+            if (denom < -0.0000001f) {
                 const auto vecRayPlane = -_ray.m_origin;
-                const double t = vecRayPlane.m_dY / denom;
+                const float t = vecRayPlane.m_dY / denom;
                 if ( (t > _ray.m_dMinDist) && (t < _ray.m_dMaxDist) ) {
                     ret.m_pShape = this;
                     ret.m_dPositionOnRay = t;
@@ -50,7 +50,7 @@ namespace LNF
         
      private:
         const Material      *m_pMaterial;
-        double              m_dUvScale;
+        float               m_dUvScale;
     };
 
 
@@ -61,7 +61,7 @@ namespace LNF
         Disc()
         {}
         
-        Disc(double _dRadius, const Material *_pMaterial, double _dUvScale=0.02)
+        Disc(float _dRadius, const Material *_pMaterial, float _dUvScale=0.02f)
             :Plane(_pMaterial, _dUvScale),
              m_bounds(Vec(_dRadius, 1, _dRadius), Vec(-_dRadius, -1, -_dRadius)),
              m_dRadiusSqr(_dRadius * _dRadius)
@@ -87,7 +87,7 @@ namespace LNF
         
      private:
         Bounds                      m_bounds;
-        double                      m_dRadiusSqr;
+        float                       m_dRadiusSqr;
     };
 
 
@@ -98,7 +98,7 @@ namespace LNF
         Rectangle()
         {}
         
-        Rectangle(double _dWidth, double _dLength, const Material *_pMaterial, double _dUvScale=0.02)
+        Rectangle(float _dWidth, float _dLength, const Material *_pMaterial, float _dUvScale=0.02f)
             :Plane(_pMaterial, _dUvScale),
              m_bounds(Vec(_dWidth, 1, _dLength), Vec(-_dWidth, -1, -_dLength)),
              m_dWidth(_dWidth),
@@ -127,8 +127,8 @@ namespace LNF
 
      private:
         Bounds                      m_bounds;
-        double                      m_dWidth;
-        double                      m_dLength;
+        float                       m_dWidth;
+        float                       m_dLength;
     };
 
 

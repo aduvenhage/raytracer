@@ -18,7 +18,7 @@ namespace LNF
              m_dRadiusSqr(0)
         {}
         
-        Sphere(double _dRadius, const Material *_pMaterial)
+        Sphere(float _dRadius, const Material *_pMaterial)
             :m_pMaterial(_pMaterial),
              m_bounds(Vec(_dRadius, _dRadius, _dRadius), Vec(-_dRadius, -_dRadius, -_dRadius)),
              m_dRadius(_dRadius),
@@ -34,10 +34,10 @@ namespace LNF
         virtual Intersect intersect(const Ray &_ray) const override {
             Intersect ret;
             
-            double dRayLength = -_ray.m_origin * _ray.m_direction;
-            const double dIntersectRadiusSqr = _ray.m_origin.sizeSqr() - dRayLength*dRayLength;            
+            float dRayLength = -_ray.m_origin * _ray.m_direction;
+            const float dIntersectRadiusSqr = _ray.m_origin.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr <= m_dRadiusSqr) {
-                const double dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
+                const float dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
                 if (dt <= dRayLength) {
                     // we are outside of sphere
                     dRayLength -= dt;
@@ -56,8 +56,8 @@ namespace LNF
                     ret.m_position = _ray.position(ret.m_dPositionOnRay);
                     ret.m_normal = ret.m_position / m_dRadius;
 
-                    const double phi = atan2(ret.m_position.m_dZ, ret.m_position.m_dX);
-                    const double theta = acos(ret.m_position.m_dY / m_dRadius);
+                    const float phi = atan2(ret.m_position.m_dZ, ret.m_position.m_dX);
+                    const float theta = acos(ret.m_position.m_dY / m_dRadius);
                     ret.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
                 }
             }
@@ -73,8 +73,8 @@ namespace LNF
      private:
         const Material     *m_pMaterial;
         Bounds             m_bounds;
-        double             m_dRadius;
-        double             m_dRadiusSqr;
+        float              m_dRadius;
+        float              m_dRadiusSqr;
     };
 
 

@@ -49,7 +49,7 @@ namespace LNF
     class Frame
     {
      protected:
-        const static int PIXEL_BLOCK_SIZE = 64;     // size of blocks jobs work on
+        const static int PIXEL_BLOCK_SIZE = 16;     // size of blocks jobs work on
         
      public:
         Frame(const ViewportScreen *_pViewport,

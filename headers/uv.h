@@ -12,7 +12,7 @@ namespace LNF
              m_dV(0)
         {}
         
-        Uv(double _dU, double _dV)
+        Uv(float _dU, float _dV)
             :m_dU(_dU),
              m_dV(_dV)
         {}
@@ -26,12 +26,8 @@ namespace LNF
 
         /// set color values to 0 if smaller and 1 if larger.
         Uv &clamp() {
-            if (m_dU > 1.0) m_dU = 1.0;
-            else if (m_dV < 0) m_dV = 0.0;
-            
-            if (m_dU > 1.0) m_dU = 1.0;
-            else if (m_dV < 0) m_dV = 0.0;
-            
+            m_dU = ::clamp(m_dU, 0.0f, 1.0f);
+            m_dV = ::clamp(m_dV, 0.0f, 1.0f);
             return *this;
         }
         
@@ -42,8 +38,8 @@ namespace LNF
             return *this;
         }
         
-        double  m_dU;
-        double  m_dV;
+        float  m_dU;
+        float  m_dV;
     };
 
 };  // namespace LNF

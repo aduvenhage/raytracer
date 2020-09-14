@@ -10,7 +10,7 @@
 namespace LNF
 {
     /* test if ray is inside box or not */
-    inline double *aaboxIntersect(double _t[10], const Vec &_min, const Vec &_max, const Vec &_rayOrigin, const Vec &_rayDirection) {
+    inline float *aaboxIntersect(float _t[10], const Vec &_min, const Vec &_max, const Vec &_rayOrigin, const Vec &_rayDirection) {
         _t[1] = (_min.m_dX - _rayOrigin.m_dX) / _rayDirection.m_dX;
         _t[2] = (_max.m_dX - _rayOrigin.m_dX) / _rayDirection.m_dX;
         _t[3] = (_min.m_dY - _rayOrigin.m_dY) / _rayDirection.m_dY;
@@ -33,9 +33,9 @@ namespace LNF
         Box()
         {}
         
-        Box(const Vec &_size, const Material *_pMaterial, double _dUvScale = 0.2)
-            :m_bounds(-_size * 0.5, _size * 0.5),
-             m_vecDiv(_size * 0.49999),
+        Box(const Vec &_size, const Material *_pMaterial, float _dUvScale = 0.2f)
+            :m_bounds(-_size * 0.5f, _size * 0.5f),
+             m_vecDiv(_size * 0.49999f),
              m_pMaterial(_pMaterial),
              m_dUvScale(_dUvScale)
         {}
@@ -51,7 +51,7 @@ namespace LNF
             static const Vec _a[] = {{0, 1, 0}, {-1, 0, 0}, {0, 1, 0}};
             static const Vec _b[] = {{0, 0, 1}, {0, 0, 1}, {-1, 0, 0}};
 
-            double t[10];
+            float t[10];
             aaboxIntersect(t, m_bounds.m_min, m_bounds.m_max, _ray.m_origin, _ray.m_direction);
             if (t[9] > 0) {
                 ret.m_pShape = this;
@@ -83,7 +83,7 @@ namespace LNF
         Bounds                 m_bounds;
         Vec                    m_vecDiv;
         const Material         *m_pMaterial;
-        double                 m_dUvScale;
+        float                 m_dUvScale;
     };
 
 

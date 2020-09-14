@@ -80,7 +80,7 @@ namespace LNF
     class Metal : public Material
     {
      public:
-        Metal(const Color &_color, double _dScatter)
+        Metal(const Color &_color, float _dScatter)
             :m_color(_color),
              m_dScatter(_dScatter)
         {}
@@ -94,8 +94,8 @@ namespace LNF
         }
 
      private:
-        Color           m_color;
-        double          m_dScatter;
+        Color          m_color;
+        float          m_dScatter;
     };
 
 
@@ -103,7 +103,7 @@ namespace LNF
     class Glass : public Material
     {
      public:
-        Glass(const Color &_color, double _dScatter, double _dIndexOfRefraction)
+        Glass(const Color &_color, float _dScatter, float _dIndexOfRefraction)
             :m_color(_color),
              m_dScatter(_dScatter),
              m_dIndexOfRefraction(_dIndexOfRefraction)
@@ -112,7 +112,7 @@ namespace LNF
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
             auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_dScatter).normalized();
-            double dEtaiOverEtat = 1.0/m_dIndexOfRefraction;
+            float dEtaiOverEtat = 1.0f/m_dIndexOfRefraction;
             
             if (_hit.m_bInside == true) {
                 normal = -normal;
@@ -124,9 +124,9 @@ namespace LNF
         }
 
      private:
-        Color           m_color;
-        double          m_dScatter;
-        double          m_dIndexOfRefraction;
+        Color          m_color;
+        float          m_dScatter;
+        float          m_dIndexOfRefraction;
     };
     
 };  // namespace LNF

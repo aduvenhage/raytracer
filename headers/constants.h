@@ -6,21 +6,29 @@
 #include <random>
 
 
-constexpr double deg2rad(double _dDeg) {
-    return _dDeg / 180.0 * M_PI;
+constexpr float deg2rad(float _dDeg) {
+    return _dDeg / 180.0f * M_PI;
 }
 
 
-constexpr double sqr(double _a) {
+constexpr float sqr(float _a) {
     return _a * _a;
+}
+
+
+template <typename T>
+inline auto clamp(const T &_value, const T &_min, const T &_max) {
+    auto v = (_value < _min) ? _min : _value;
+    return (v > _max) ? _max : v;
 }
 
 
 namespace LNF
 {
-    const double pi     = M_PI;
+    const float pi     = M_PI;
 
-    using RandomGen     = std::mt19937_64;
+    using RandomGen    = std::mt19937_64;
+    
 
 };  //namespace LNF
 

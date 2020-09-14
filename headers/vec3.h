@@ -23,7 +23,7 @@ namespace LNF
         Vec(Vec &&) = default;
         Vec(Vec &) = default;
 
-        Vec(double _dX, double _dY, double _dZ)
+        Vec(float _dX, float _dY, float _dZ)
             :m_dX(_dX),
              m_dY(_dY),
              m_dZ(_dZ)
@@ -32,11 +32,11 @@ namespace LNF
         Vec &operator=(const Vec &_vec) = default;
         Vec &operator=(Vec &&_vec) = default;
 
-        double sizeSqr() const {
+        float sizeSqr() const {
             return m_dX * m_dX + m_dY * m_dY + m_dZ * m_dZ;
         }
         
-        double size() const {
+        float size() const {
             return sqrt(sizeSqr());
         }
         
@@ -71,32 +71,32 @@ namespace LNF
         }
         
         // dot product
-        double operator*(const Vec &_vec) const {
+        float operator*(const Vec &_vec) const {
             return m_dX * _vec.m_dX +
                    m_dY * _vec.m_dY +
                    m_dZ * _vec.m_dZ ;
         }
 
-        Vec operator*(double _dScale) const {
+        Vec operator*(float _dScale) const {
             return Vec(m_dX * _dScale,
                        m_dY * _dScale,
                        m_dZ * _dScale);
         }
         
-        Vec operator/(double _dScale) const {
+        Vec operator/(float _dScale) const {
             return Vec(m_dX / _dScale,
                        m_dY / _dScale,
                        m_dZ / _dScale);
         }
         
-        Vec &operator*=(double _dScale) {
+        Vec &operator*=(float _dScale) {
             m_dX *= _dScale;
             m_dY *= _dScale;
             m_dZ *= _dScale;
             return *this;
         }
         
-        Vec &operator/=(double _dScale) {
+        Vec &operator/=(float _dScale) {
             m_dX /= _dScale;
             m_dY /= _dScale;
             m_dZ /= _dScale;
@@ -104,7 +104,7 @@ namespace LNF
         }
 
         Vec normalized() const {
-            double r = size();
+            float r = size();
             return Vec(m_dX / r,
                        m_dY / r,
                        m_dZ / r);
@@ -119,13 +119,13 @@ namespace LNF
             return Vec(fabs(m_dX), fabs(m_dY), fabs(m_dZ));
         }
         
-        double      m_dX;
-        double      m_dY;
-        double      m_dZ;
+        float      m_dX;
+        float      m_dY;
+        float      m_dZ;
     };
 
 
-    inline Vec operator*(double _dScale, const Vec &_vec) {
+    inline Vec operator*(float _dScale, const Vec &_vec) {
         return Vec(_vec.m_dX*_dScale,
                    _vec.m_dY*_dScale,
                    _vec.m_dZ*_dScale);
@@ -197,7 +197,7 @@ namespace LNF
 
     // returns a vector within the unit cube (-1..1, -1..1, -1..1)
     Vec randomUnitCube(RandomGen &_randomGen) {
-        std::uniform_real_distribution<double> dist(-1.0, 1.0);
+        std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
         return Vec(dist(_randomGen),
                    dist(_randomGen),
                    dist(_randomGen));
@@ -219,9 +219,9 @@ namespace LNF
     /* Creates the default axis */
     Axis axisIdentity() {
         return {
-            Vec{1, 0, 0},
-            Vec{0, 1, 0},
-            Vec{0, 0, 1}
+            Vec{1.0f, 0.0f, 0.0f},
+            Vec{0.0f, 1.0f, 0.0f},
+            Vec{0.0f, 0.0f, 1.0f}
         };
     }
 
@@ -232,13 +232,13 @@ namespace LNF
      beta  - angle around Y axis
      gamma - angle around X axis
      */
-    Axis axisEulerZYX(double _dAlpha, double _dBeta, double _dGamma) {
-        const double ca = cos(_dAlpha);
-        const double sa = sin(_dAlpha);
-        const double cb = cos(_dBeta);
-        const double sb = sin(_dBeta);
-        const double cg = cos(_dGamma);
-        const double sg = sin(_dGamma);
+    Axis axisEulerZYX(float _dAlpha, float _dBeta, float _dGamma) {
+        const float ca = cos(_dAlpha);
+        const float sa = sin(_dAlpha);
+        const float cb = cos(_dBeta);
+        const float sb = sin(_dBeta);
+        const float cg = cos(_dGamma);
+        const float sg = sin(_dGamma);
 
         return {
             Vec{ca*cb,            sa*cb,            -sb},
@@ -274,9 +274,9 @@ namespace LNF
      returns: [e1, normal, e2]
      */
     Axis axisPlane(const Vec &_normal, const Vec &_origin) {
-        auto e1 = crossProduct(_normal, Vec(0.0, 0.0, 1.0));
-        if (e1.sizeSqr() < 0.0001) {
-            e1 = crossProduct(_normal, Vec(0.0, 1.0, 0.0));
+        auto e1 = crossProduct(_normal, Vec(0.0f, 0.0f, 1.0f));
+        if (e1.sizeSqr() < 0.0001f) {
+            e1 = crossProduct(_normal, Vec(0.0f, 1.0f, 0.0f));
         }
         
         e1 = e1.normalized();
