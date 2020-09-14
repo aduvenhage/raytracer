@@ -63,7 +63,7 @@ namespace LNF
                 m_jobs.pop();
                 m_iSize = (int)m_jobs.size();
 
-                if (++count >= _uNumJobs) {
+                if (++count >= (int)_uNumJobs) {
                     break;
                 }
             }

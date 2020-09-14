@@ -145,13 +145,16 @@ class MainWindow : public QMainWindow
     }
     
     virtual void timerEvent(QTimerEvent *_event) {
-        if ( (m_pSource == nullptr) /*||
-             (m_pSource->isFinished() == true)*/ )
+        if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
             int samplesPerPixel = 4096;
             int maxTraceDepth = 32;
             m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, numWorkers, samplesPerPixel, maxTraceDepth);
+        }
+        else if (m_pSource->isFinished() == true) {
+            m_pSource->writeJpegFile("raytraced.jpeg", 100);
+            m_pSource = nullptr;
         }
 
         update();

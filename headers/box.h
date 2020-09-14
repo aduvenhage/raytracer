@@ -62,7 +62,7 @@ namespace LNF
                                    (int)(ret.m_position.m_dY / m_vecDiv.m_dY),
                                    (int)(ret.m_position.m_dZ / m_vecDiv.m_dZ));
                 
-                const int i = int(fabs(ret.m_normal.m_dY + ret.m_normal.m_dZ * 2) + 0.5);
+                const int i = int(fabs(ret.m_normal.m_dY + ret.m_normal.m_dZ * 2) + 0.5f);
                 const auto &a = _a[i];
                 const auto &b = _b[i];
 
