@@ -18,15 +18,16 @@ namespace LNF
              m_dRadiusSqr(0)
         {}
         
-        Sphere(double _dRadius, const std::shared_ptr<Material> &_pMaterial)
+        Sphere(double _dRadius, const Material *_pMaterial)
             :m_pMaterial(_pMaterial),
+             m_bounds(Vec(_dRadius, _dRadius, _dRadius), Vec(-_dRadius, -_dRadius, -_dRadius)),
              m_dRadius(_dRadius),
              m_dRadiusSqr(_dRadius * _dRadius)
         {}
         
         /* Returns the material used for rendering, etc. */
         const Material *material() const override {
-            return m_pMaterial.get();
+            return m_pMaterial;
         }
         
         /* Returns the shape / ray intersect (calculates all hit properties). */
@@ -63,11 +64,17 @@ namespace LNF
                 
             return ret;
         }
-         
+
+        /* returns bounds for shape */
+        virtual const Bounds &bounds() const override {
+            return  m_bounds;
+        }
+
      private:
-        std::shared_ptr<Material>   m_pMaterial;
-        double                      m_dRadius;
-        double                      m_dRadiusSqr;
+        const Material     *m_pMaterial;
+        Bounds             m_bounds;
+        double             m_dRadius;
+        double             m_dRadiusSqr;
     };
 
 

@@ -146,7 +146,6 @@ namespace LNF
     struct Axis
     {
         Axis() = default;
-        
         Axis(const Axis &) = default;
         Axis(Axis &&) = default;
         Axis(Axis &) = default;
@@ -172,6 +171,27 @@ namespace LNF
         Vec     m_x;
         Vec     m_y;
         Vec     m_z;
+    };
+    
+    
+    /*
+     Min/Max bounds
+     */
+    struct Bounds
+    {
+        Bounds() = default;
+        Bounds(const Bounds &) = default;
+        Bounds(Bounds &&) = default;
+        Bounds(Bounds &) = default;
+        
+        template <typename VX, typename VY>
+        Bounds(VX &&_min, VY &&_max)
+            :m_min(std::forward<VX>(_min)),
+             m_max(std::forward<VY>(_max))
+        {}
+        
+        Vec     m_min;
+        Vec     m_max;
     };
 
 

@@ -26,14 +26,6 @@ namespace LNF
     }
 
 
-    /* simple yes/no ray box intersect */
-    inline bool aaboxIntersect(const Vec &_min, const Vec &_max, const Ray &_ray) {
-        double t[10];
-        aaboxIntersect(t, _min, _max, _ray.m_origin, _ray.m_direction);
-        return t[9] > 0.0001;
-    }
-
-
     /* Axis aligned box shape class -- fixed at origin [0, 0, 0] */
     class Box        : public Shape
     {
@@ -41,18 +33,16 @@ namespace LNF
         Box()
         {}
         
-        Box(const Vec &_size, const std::shared_ptr<Material> &_pMaterial, double _dUvScale = 0.2)
-            :m_vecSize(_size),
-             m_vecMin(-_size * 0.5),
-             m_vecMax(_size * 0.5),
+        Box(const Vec &_size, const Material *_pMaterial, double _dUvScale = 0.2)
+            :m_bounds(-_size * 0.5, _size * 0.5),
              m_vecDiv(_size * 0.49999),
-             m_pMaterial(std::move(_pMaterial)),
+             m_pMaterial(_pMaterial),
              m_dUvScale(_dUvScale)
         {}
         
         /* Returns the material used for rendering, etc. */
         const Material *material() const override {
-            return m_pMaterial.get();
+            return m_pMaterial;
         }
         
         /* Returns the shape / ray intersect (calculates all hit properties). */
@@ -62,7 +52,7 @@ namespace LNF
             static const Vec _b[] = {{0, 0, 1}, {0, 0, 1}, {-1, 0, 0}};
 
             double t[10];
-            aaboxIntersect(t, m_vecMin, m_vecMax, _ray.m_origin, _ray.m_direction);
+            aaboxIntersect(t, m_bounds.m_min, m_bounds.m_max, _ray.m_origin, _ray.m_direction);
             if (t[9] > 0) {
                 ret.m_pShape = this;
                 ret.m_dPositionOnRay = t[9];
@@ -76,21 +66,24 @@ namespace LNF
                 const auto &a = _a[i];
                 const auto &b = _b[i];
 
-                const auto p2 = ret.m_position - m_vecMin;
+                const auto p2 = ret.m_position - m_bounds.m_min;
                 ret.m_uv = Uv(a * p2 * m_dUvScale, b * p2 * m_dUvScale).wrap();
             }
             
             return ret;
         }
+                
+        /* returns bounds for shape */
+        virtual const Bounds &bounds() const override {
+            return  m_bounds;
+        }
         
      private:
-        Axis                        m_axis;
-        Vec                         m_vecSize;
-        Vec                         m_vecMin;
-        Vec                         m_vecMax;
-        Vec                         m_vecDiv;
-        std::shared_ptr<Material>   m_pMaterial;
-        double                      m_dUvScale;
+        Axis                   m_axis;
+        Bounds                 m_bounds;
+        Vec                    m_vecDiv;
+        const Material         *m_pMaterial;
+        double                 m_dUvScale;
     };
 
 

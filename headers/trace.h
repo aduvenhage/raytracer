@@ -22,7 +22,7 @@ namespace LNF
 {
     /* Trace ray (recursively) through scene */
     Color trace(const Ray &_ray,
-                const std::shared_ptr<Scene> &_pScene,
+                const Scene *_pScene,
                 RandomGen &_randomGen,
                 int _maxTraceDepth)
     {
@@ -50,9 +50,9 @@ namespace LNF
 
 
     /* raytrace for a specific view to a specific output block */
-    void renderImage(const std::unique_ptr<OutputImage> &_pOutput,
-                     const std::unique_ptr<Viewport> &_pView,
-                     const std::shared_ptr<Scene> &_scene,
+    void renderImage(OutputImage *_pOutput,
+                     const Viewport *_pView,
+                     const Scene *_scene,
                      RandomGen &_generator,
                      int _iRaysPerPixel, int _iMaxDepth)
     {

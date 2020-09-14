@@ -37,7 +37,7 @@ namespace LNF
          Add a new shape to the scene.
          The scene is expected to be thread-safe.
          */
-        virtual void addShape(const std::shared_ptr<Shape> &_pShape) = 0;
+        virtual void addShape(std::unique_ptr<Shape> &&_pShape) = 0;
     };
     
 

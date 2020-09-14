@@ -46,6 +46,9 @@ namespace LNF
         virtual int bytesPerPixel() const override {return BYTES_PER_PIXEL;}
         virtual int width() const override {return m_iWidth;}
         virtual int height() const override {return m_iHeight;}
+        size_t size() const {
+            return BYTES_PER_PIXEL * m_iWidth * m_iHeight;
+        }
         
         /* returns pointer to start of image data */
         virtual unsigned char *data() override {return m_image.data();}
@@ -74,15 +77,15 @@ namespace LNF
     class OutputImageBlock  : public OutputImage
     {
      public:
-        OutputImageBlock(OutputImageBuffer &_buffer, int _iX, int _iY, int _iWidth, int _iHeight)
-            :m_buffer(_buffer),
+        OutputImageBlock(OutputImageBuffer *_pBuffer, int _iX, int _iY, int _iWidth, int _iHeight)
+            :m_pBuffer(_pBuffer),
              m_iX(_iX),
              m_iY(_iY),
              m_iWidth(_iWidth),
              m_iHeight(_iHeight)
         {}
         
-        virtual int bytesPerPixel() const override {return m_buffer.bytesPerPixel();}
+        virtual int bytesPerPixel() const override {return m_pBuffer->bytesPerPixel();}
         virtual int width() const override {return m_iWidth;}
         virtual int height() const override {return m_iHeight;}
         
@@ -94,16 +97,16 @@ namespace LNF
         
         /* returns pointer to start of given row */
         virtual unsigned char *row(int _iY) override {
-            return m_buffer.row(_iY + m_iY) + bytesPerPixel() * m_iX;
+            return m_pBuffer->row(_iY + m_iY) + bytesPerPixel() * m_iX;
         }
          
         /* returns pointer to start of given row */
         virtual const unsigned char *row(int _iY) const override {
-            return m_buffer.row(_iY + m_iY) + bytesPerPixel() * m_iX;
+            return m_pBuffer->row(_iY + m_iY) + bytesPerPixel() * m_iX;
         }
         
      protected:
-        OutputImageBuffer       &m_buffer;
+        OutputImageBuffer       *m_pBuffer;
         const int               m_iX;
         const int               m_iY;
         const int               m_iWidth;

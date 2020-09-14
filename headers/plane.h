@@ -17,14 +17,14 @@ namespace LNF
         Plane()
         {}
         
-        Plane(const std::shared_ptr<Material> &_pMaterial, double _dUvScale=0.02)
+        Plane(const Material *_pMaterial, double _dUvScale=0.02)
             :m_pMaterial(_pMaterial),
              m_dUvScale(_dUvScale)
         {}
         
         /* Returns the material used for rendering, etc. */
         const Material *material() const override {
-            return m_pMaterial.get();
+            return m_pMaterial;
         }
         
         /* Returns the shape / ray intersect (calculates all hit properties). */
@@ -49,20 +49,21 @@ namespace LNF
         }
         
      private:
-        std::shared_ptr<Material>   m_pMaterial;
-        double                      m_dUvScale;
+        const Material      *m_pMaterial;
+        double              m_dUvScale;
     };
 
 
-    /* Disc (plane within a certain radius) shape class */
+    /* Disc (plane within a certain radius; fixed ZX plane with normal [0, 1, 0] and origin [0, 0, 0]) shape class */
     class Disc        : public Plane
     {
      public:
         Disc()
         {}
         
-        Disc(double _dRadius, const std::shared_ptr<Material> &_pMaterial, double _dUvScale=0.02)
+        Disc(double _dRadius, const Material *_pMaterial, double _dUvScale=0.02)
             :Plane(_pMaterial, _dUvScale),
+             m_bounds(Vec(_dRadius, 1, _dRadius), Vec(-_dRadius, -1, -_dRadius)),
              m_dRadiusSqr(_dRadius * _dRadius)
         {}
         
@@ -78,21 +79,28 @@ namespace LNF
             
             return ret;
         }
+                        
+        /* returns bounds for shape */
+        virtual const Bounds &bounds() const override {
+            return  m_bounds;
+        }
         
      private:
+        Bounds                      m_bounds;
         double                      m_dRadiusSqr;
     };
 
 
-    /* Rectangle (plane within a certain width and length) shape class */
+    /* Rectangle (plane within a certain width and length; fixed ZX plane with normal [0, 1, 0] and origin [0, 0, 0]) shape class */
     class Rectangle        : public Plane
     {
      public:
         Rectangle()
         {}
         
-        Rectangle(double _dWidth, double _dLength, const std::shared_ptr<Material> &_pMaterial, double _dUvScale=0.02)
+        Rectangle(double _dWidth, double _dLength, const Material *_pMaterial, double _dUvScale=0.02)
             :Plane(_pMaterial, _dUvScale),
+             m_bounds(Vec(_dWidth, 1, _dLength), Vec(-_dWidth, -1, -_dLength)),
              m_dWidth(_dWidth),
              m_dLength(_dLength)
         {}
@@ -111,8 +119,14 @@ namespace LNF
             
             return ret;
         }
-        
+                        
+        /* returns bounds for shape */
+        virtual const Bounds &bounds() const override {
+            return  m_bounds;
+        }
+
      private:
+        Bounds                      m_bounds;
         double                      m_dWidth;
         double                      m_dLength;
     };

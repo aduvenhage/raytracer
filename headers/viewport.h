@@ -30,7 +30,7 @@ namespace LNF
              m_dScale(tan(deg2rad(_iFovDeg * 0.5)))
         {}
         
-        void setCamera(std::shared_ptr<Camera> &_pCam) {
+        void setCamera(Camera *_pCam) {
             m_pCamera = _pCam;
         }
         
@@ -56,7 +56,7 @@ namespace LNF
         }
         
      protected:
-        std::shared_ptr<Camera>     m_pCamera;
+        Camera                      *m_pCamera;
         const int                   m_iWidth;
         const int                   m_iHeight;
         const double                m_dViewAspect;
@@ -68,7 +68,7 @@ namespace LNF
     class ViewportBlock    : public Viewport
     {
      public:
-        ViewportBlock(const std::shared_ptr<Viewport> &_pViewport, int _iStartX, int _iStartY)
+        ViewportBlock(const Viewport *_pViewport, int _iStartX, int _iStartY)
             :m_pViewport(_pViewport),
              m_iStartX(_iStartX),
              m_iStartY(_iStartY)
@@ -79,9 +79,9 @@ namespace LNF
         }
         
      protected:
-        std::shared_ptr<Viewport>   m_pViewport;        // TODO: maybe drop this to a raw pointer, if it would be safe
-        const int                   m_iStartX;
-        const int                   m_iStartY;
+        const Viewport     *m_pViewport;
+        const int          m_iStartX;
+        const int          m_iStartY;
     };
 
 

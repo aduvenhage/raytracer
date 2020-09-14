@@ -20,7 +20,7 @@ namespace LNF
      public:
         virtual ~Job() = default;
         
-        virtual void run() const = 0;
+        virtual void run() = 0;
     };
 
 
@@ -82,7 +82,7 @@ namespace LNF
     class Worker
     {
      public:
-        Worker(const std::shared_ptr<JobQueue> &_pJobs, int _iJobChunkSize)
+        Worker(JobQueue *_pJobs, int _iJobChunkSize)
             :m_pJobs(_pJobs),
              m_iJobChunkSize(_iJobChunkSize),
              m_iActiveJobs(0),
@@ -134,12 +134,15 @@ namespace LNF
 
                     pJobPtr->run();
                 }
+                else {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
             }
         }
         
      protected:
         std::thread                                 m_thread;
-        std::shared_ptr<JobQueue>                   m_pJobs;
+        JobQueue                                    *m_pJobs;
         int                                         m_iJobChunkSize;
         std::vector<std::unique_ptr<Job>>           m_localJobs;
         std::atomic<int>                            m_iActiveJobs;

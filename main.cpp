@@ -92,124 +92,105 @@ class SimpleScene   : public Scene
      Add a new shape to the scene.
      The scene is expected to be static (thread-safe).  Only do this when not rendering.
      */
-    virtual void addShape(const std::shared_ptr<Shape> &_pShape) override {
-        m_shapes.push_back(_pShape);
+    virtual void addShape(std::unique_ptr<Shape> &&_pShape) override {
+        m_shapes.push_back(std::move(_pShape));
     }
     
  protected:
-    std::vector<std::shared_ptr<Shape>>   m_shapes;
+ 
+    // TODO: FIGURE OUT contigeous storage  .. ECS ??
+    std::vector<std::unique_ptr<Shape>>   m_shapes;
 };
-
-
-
-int raytracer()
-{
-    int width = 1920;
-    int height = 1200;
-    int fov = 60;
-    int numWorkers = 16;
-    int samplesPerPixel = 4;
-    int maxTraceDepth = 32;
-
-    // init
-    HighPrecisionScopeTimer timer;
-    OutputImageBuffer image(width, height);
-    auto pView = std::make_shared<ViewportScreen>(width, height, fov);
-    auto pScene = std::make_shared<SimpleScene>();
-    auto pCamera = std::make_shared<Camera>(Vec(0, 20, 80), Vec(0, 1, 0), Vec(0, 0, -10));
-    pView->setCamera(pCamera);
-    
-    // create scene
-    auto pDiffuse1 = std::make_shared<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8);
-    auto pDiffuse2 = std::make_shared<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 8);
-    auto pGlass1 = std::make_shared<Glass>(Color(0.9, 0.9, 0.9), 0.01, 1.5);
-    auto pMetal1 = std::make_shared<Metal>(Color(0.8, 0.8, 0.8), 0.05);
-    auto pLight1 = std::make_shared<Light>(Color(10.0, 10.0, 10.0));
-
-    pScene->addShape(std::make_shared<Plane>(pDiffuse1));
-    pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pGlass1), axisIdentity(), Vec(0, 15, 10)));
-    pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pDiffuse2), axisIdentity(), Vec(30, 15, -20)));
-    pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pDiffuse2), axisEulerZYX(0, 0.5, 0), Vec(-30, 15, -20)));
-    pScene->addShape(std::make_shared<Transform>(std::make_shared<Box>(Vec(5, 10, 5), pDiffuse2), axisEulerZYX(0, 1, 0), Vec(10, 5, 30)));
-    pScene->addShape(std::make_shared<Transform>(std::make_shared<Box>(Vec(5, 10, 5), pMetal1), axisEulerZYX(0, 0.2, 0), Vec(-10, 5, 30)));
-    pScene->addShape(std::make_shared<Transform>(std::make_shared<Box>(Vec(5, 10, 5), pGlass1), axisEulerZYX(0, 0.5, 0), Vec(0, 5, 40)));
-    pScene->addShape(std::make_shared<Transform>(std::make_shared<Sphere>(15, pLight1), axisIdentity(), Vec(0, 60, 20)));
-
-    
-    // render frame
-    LNF::Frame frame(pView, pScene, numWorkers, samplesPerPixel, maxTraceDepth);
-    for (;;) {
-        int active = frame.activeJobs();
-        if (active == 0) {
-            break;
-        }
-        else {
-            printf("%d\n", active);
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-    frame.writeJpegFile("raytraced.jpeg", 100);
-    
-    return 0;
-}
-
-
-// just create mandlebrot image and output to JPEG
-int mandlebrot()
-{
-    int width = 1280;
-    int height = 960;
-    auto mb = MandleBrot(width, height);
-    mb.render();
-    mb.writeToJpeg("mandlebrot.jpeg");
-    return 0;
-}
 
 
 
 class MainWindow : public QMainWindow
 {
  public:
-    MainWindow()
+    MainWindow(const SimpleScene *_pScene)
         :QMainWindow(),
+         m_pScene(_pScene),
          m_iFrameCount(0)
     {
-        resize(1024, 700);
+        int width = 640;
+        int height = 480;
+        int fov = 60;
+
+        resize(width, height);
         setWindowTitle(QApplication::translate("windowlayout", "Window layout"));
+        startTimer(std::chrono::milliseconds(500));
         
+        m_pView = std::make_unique<ViewportScreen>(width, height, fov);
+        m_pCamera = std::make_unique<Camera>(Vec(0, 20, 80), Vec(0, 1, 0), Vec(0, 0, -10));
+        m_pView->setCamera(m_pCamera.get());
     }
     
  protected:
     virtual void paintEvent(QPaintEvent *_event) {
         QPainter painter(this);
-        QImage image(width(), height(), QImage::Format_RGB888);
+        QImage image(m_pView->width(), m_pView->height(), QImage::Format_RGB888);
 
-        uchar *pData = image.bits();
-        
-        for (int y = 0; y < height(); y++) {
-            for (int x = 0; x < width(); x++) {
-                *pData++ = (int)(127.0 * sin(x/20.0 + m_iFrameCount/10.0) + 127.0 + 0.5);
-                *pData++ = (int)(127.0 * cos(y/20.0 + m_iFrameCount/10.0) + 127.0 + 0.5);
-                *pData++ = 0;
-            }
+        if (m_pSource != nullptr) {
+            uchar *pDstData = image.bits();
+            uchar *pSrcData = m_pSource->image().data();
+            size_t n = m_pSource->image().size();
+            std::memcpy(pDstData, pSrcData, n);
+        }
+        else {
+            image.fill(Qt::black);
         }
         
         painter.drawImage(0, 0, image);
         m_iFrameCount++;
     }
     
+    virtual void timerEvent(QTimerEvent *_event) {
+        if ( (m_pSource == nullptr) /*||
+             (m_pSource->isFinished() == true)*/ )
+        {
+            int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
+            int samplesPerPixel = 256;
+            int maxTraceDepth = 32;
+            m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, numWorkers, samplesPerPixel, maxTraceDepth);
+        }
+
+        update();
+    }
+    
  private:
-    int     m_iFrameCount;
+    const SimpleScene                   *m_pScene;
+    std::unique_ptr<ViewportScreen>     m_pView;
+    std::unique_ptr<Camera>             m_pCamera;
+    std::unique_ptr<LNF::Frame>         m_pSource;
+    int                                 m_iFrameCount;
 };
 
 
 
 int main(int argc, char *argv[])
 {
-    raytracer();
+    // init
+    auto pScene = std::make_unique<SimpleScene>();
     
+    // create scene
+    auto pDiffuse1 = std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8);
+    auto pDiffuse2 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 8);
+    auto pGlass1 = std::make_unique<Glass>(Color(0.9, 0.9, 0.9), 0.01, 1.5);
+    auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.05);
+    auto pLight1 = std::make_unique<Light>(Color(10.0, 10.0, 10.0));
+
+    pScene->addShape(std::make_unique<Disc>(500, pDiffuse1.get()));
+    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisIdentity(), Vec(0, 15, 10)));
+    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisIdentity(), Vec(30, 15, -20)));
+    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0), Vec(-30, 15, -20)));
+    pScene->addShape(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0), Vec(10, 5, 30)));
+    pScene->addShape(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0), Vec(-10, 5, 30)));
+    pScene->addShape(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pGlass1.get()), axisEulerZYX(0, 0.5, 0), Vec(0, 5, 40)));
+    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisIdentity(), Vec(0, 60, 20)));
+
+    // start app
     QApplication app(argc, argv);
-    MainWindow window;
+    MainWindow window(pScene.get());
     window.show();
     
     return app.exec();

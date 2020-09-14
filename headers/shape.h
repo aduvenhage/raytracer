@@ -21,7 +21,10 @@ namespace LNF
         virtual const Material *material() const = 0;
         
         /* Returns the shape / ray intersect (calculates all hit properties). */
-        virtual Intersect intersect(const Ray &_ray) const = 0;        
+        virtual Intersect intersect(const Ray &_ray) const = 0;
+        
+        /* returns bounds for shape */
+        virtual const Bounds &bounds() const = 0;
     };
 
 };  // namespace LNF
