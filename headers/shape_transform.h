@@ -97,12 +97,18 @@ namespace LNF
             }
             
             // find min/max bounds
+            m_bounds.m_min = points[0];
+            m_bounds.m_max = points[0];
             
-            
-            
-            
-            
-            
+            for (auto &vec : points) {
+                m_bounds.m_min.m_dX = vec.m_dX < m_bounds.m_min.m_dX ? vec.m_dX : m_bounds.m_min.m_dX;
+                m_bounds.m_min.m_dY = vec.m_dY < m_bounds.m_min.m_dY ? vec.m_dY : m_bounds.m_min.m_dY;
+                m_bounds.m_min.m_dZ = vec.m_dZ < m_bounds.m_min.m_dZ ? vec.m_dZ : m_bounds.m_min.m_dZ;
+                
+                m_bounds.m_max.m_dX = vec.m_dX > m_bounds.m_max.m_dX ? vec.m_dX : m_bounds.m_max.m_dX;
+                m_bounds.m_max.m_dY = vec.m_dY > m_bounds.m_max.m_dY ? vec.m_dY : m_bounds.m_max.m_dY;
+                m_bounds.m_max.m_dZ = vec.m_dZ > m_bounds.m_max.m_dZ ? vec.m_dZ : m_bounds.m_max.m_dZ;
+            }
         }
         
      private:

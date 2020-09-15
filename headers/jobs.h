@@ -130,7 +130,7 @@ namespace LNF
                 if (m_localJobs.empty() == false) {
                     auto pJobPtr = std::move(m_localJobs.back());
                     m_localJobs.pop_back();
-                    m_iActiveJobs = (int)m_localJobs.size();
+                    m_iActiveJobs = (int)m_localJobs.size() + 1;
 
                     pJobPtr->run();
                 }

@@ -148,8 +148,8 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 4096;
-            int maxTraceDepth = 32;
+            int samplesPerPixel = 256;
+            int maxTraceDepth = 24;
             m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, numWorkers, samplesPerPixel, maxTraceDepth);
         }
         else if (m_pSource->isFinished() == true) {
