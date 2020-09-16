@@ -28,7 +28,7 @@ namespace LNF
         
         // rotate from camera/view to world coordinates
         Vec camera2world(const Vec &_view) {
-            return m_axis.translateFrom(_view);
+            return m_axis.rotateFrom(_view);
         }
         
         Axis    m_axis;       // [x=left, y=up, z=lookat]

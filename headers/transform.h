@@ -31,29 +31,25 @@ namespace LNF
         
         /* Returns the material used for rendering, etc. */
         const Material *material() const override {
-            return m_pTarget->material();
+            return nullptr;
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual Intersect hit(const Ray &_ray) const override {
-            Intersect hit;
-
+        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
             // check AA bounding volume first
             float t[10];
             aaboxIntersect(t, m_bounds.m_min, m_bounds.m_max, _ray.m_origin, _ray.m_direction);
             if ( (t[9] > 0) || (t[0] > 0) )
             {
                 // transform ray and check target intersect
-                auto br = Ray(m_axis.translateTo(_ray.m_origin - m_axis.m_origin),
-                              m_axis.translateTo(_ray.m_direction));
+                auto br = Ray(m_axis.transformTo(_ray.m_origin), m_axis.rotateTo(_ray.m_direction));
                 
                 // check target hit
-                hit = m_pTarget->hit(br);
-                hit.m_pNode = this;
-                hit.m_axis = m_axis;
+                _hit.m_axis = m_axis;
+                return m_pTarget->hit(_hit, br);
             }
     
-            return hit;
+            return false;
         }
         
         /* Completes the node intersect properties. */
@@ -108,7 +104,7 @@ namespace LNF
             
             // rotate and translate
             for (auto &vec : points) {
-                vec = m_axis.translateFrom(vec) + m_axis.m_origin;
+                vec = m_axis.transformFrom(vec);
             }
             
             // find min/max bounds

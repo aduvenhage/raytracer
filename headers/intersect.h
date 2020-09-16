@@ -36,15 +36,6 @@ namespace LNF
             return m_fPositionOnRay > 0;
         }
 
-        bool operator < (const Intersect &_i) const {
-            if ( (_i.m_fPositionOnRay > 0) &&
-                 (m_fPositionOnRay > 0) ) {
-                return m_fPositionOnRay < _i.m_fPositionOnRay;
-            }
-            
-            return m_fPositionOnRay > 0;
-        }
-
         const Node              *m_pNode;           // node we intersected with
         Axis                    m_axis;             // transform used on ray
         Ray                     m_ray;              // ray used for intersection (may be transformed from original ray)

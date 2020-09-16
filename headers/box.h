@@ -29,18 +29,18 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual Intersect hit(const Ray &_ray) const override {
-            Intersect ret;
-
+        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
             float t[10];
             aaboxIntersect(t, m_bounds.m_min, m_bounds.m_max, _ray.m_origin, _ray.m_direction);
             if (t[9] > 0) {
-                ret.m_pNode = this;
-                ret.m_fPositionOnRay = t[9];
-                ret.m_ray = _ray;
+                _hit.m_pNode = this;
+                _hit.m_fPositionOnRay = t[9];
+                _hit.m_ray = _ray;
+
+                return true;
             }
             
-            return ret;
+            return false;
         }
         
         /* Completes the node intersect properties. */

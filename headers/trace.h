@@ -26,30 +26,33 @@ namespace LNF
                 RandomGen &_randomGen,
                 int _maxTraceDepth)
     {
-        auto intersect = _pScene->hit(_ray);
-        if (intersect == true) {
-            auto pHitNode = intersect.m_pNode;
+        Intersect hit;
+        if (_pScene->hit(hit, _ray) == true) {
+            if (hit.m_pNode != nullptr) {
+                // complete intercept
+                auto pHitNode = hit.m_pNode;
+                pHitNode->intersect(hit);
             
-            // create scattered, reflected, reftracted, etc. color
-            auto pMaterial = pHitNode->material();
-            auto scatteredRay = pMaterial->scatter(intersect, intersect.m_ray, _randomGen);
-            scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
-            
-            // transform ray back to world space
-            scatteredRay.m_ray.m_direction = intersect.m_axis.translateFrom(scatteredRay.m_ray.m_direction);
-            scatteredRay.m_ray.m_origin = intersect.m_axis.translateFrom(scatteredRay.m_ray.m_origin) + intersect.m_axis.m_origin;
+                // create scattered, reflected, reftracted, etc. color
+                auto pMaterial = pHitNode->material();
+                auto scatteredRay = pMaterial->scatter(hit, hit.m_ray, _randomGen);
+                scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
+                
+                // transform ray back to world space
+                scatteredRay.m_ray.m_direction = hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction);
+                scatteredRay.m_ray.m_origin = hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin);
 
-            if ( (_maxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
-                return scatteredRay.m_emitted +
-                       scatteredRay.m_color * trace(scatteredRay.m_ray, _pScene, _randomGen, _maxTraceDepth - 1);
-            }
-            else {
-                return scatteredRay.m_emitted;
+                if ( (_maxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
+                    return scatteredRay.m_emitted +
+                           scatteredRay.m_color * trace(scatteredRay.m_ray, _pScene, _randomGen, _maxTraceDepth - 1);
+                }
+                else {
+                    return scatteredRay.m_emitted;
+                }
             }
         }
-        else {
-            return _pScene->missColor(_ray);  // background color
-        }
+        
+        return _pScene->missColor(_ray);  // background color
     }
 
 

@@ -31,9 +31,7 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual Intersect hit(const Ray &_ray) const override {
-            Intersect ret;
-            
+        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
             float dRayLength = -_ray.m_origin * _ray.m_direction;
             const float dIntersectRadiusSqr = _ray.m_origin.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr <= m_fRadiusSqr) {
@@ -41,23 +39,25 @@ namespace LNF
                 if (dt <= dRayLength) {
                     // we are outside of sphere
                     dRayLength -= dt;
-                    ret.m_bInside = false;
+                    _hit.m_bInside = false;
                 }
                 else {
                     // we are inside of sphere
                     dRayLength += dt;
-                    ret.m_bInside = true;
+                    _hit.m_bInside = true;
                 }
                 
                 // check ray limits
                 if ( (dRayLength >= _ray.m_fMinDist) && (dRayLength <= _ray.m_fMaxDist) ) {
-                    ret.m_pNode = this;
-                    ret.m_fPositionOnRay = dRayLength;
-                    ret.m_ray = _ray;
+                    _hit.m_pNode = this;
+                    _hit.m_fPositionOnRay = dRayLength;
+                    _hit.m_ray = _ray;
+                    
+                    return true;
                 }
             }
                     
-            return ret;
+            return false;
         }
         
         /* Completes the node intersect properties. */

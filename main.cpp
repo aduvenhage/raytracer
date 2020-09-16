@@ -65,23 +65,21 @@ class SimpleScene   : public Scene
        Checks for an intersect with a scene object.
        Could be accessed by multiple worker threads concurrently.
      */
-    virtual Intersect hit(const Ray &_ray) const override {
-        Intersect bestHit;
-
+    virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        bool bHit = false;
+        
         // find best hit
+        Intersect nh;
         for (auto &pNode : m_nodes) {
-            auto hit = pNode->hit(_ray);
-            if (hit < bestHit) {
-                bestHit = hit;
+            if ( (pNode->hit(nh, _ray) == true) &&
+                 ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+            {
+                _hit = nh;
+                bHit = true;
             }
         }
         
-        // complete intercept
-        if (bestHit.m_pNode != nullptr) {
-            bestHit.m_pNode->intersect(bestHit);
-        }
-        
-        return bestHit;
+        return bHit;
     }
     
     /*

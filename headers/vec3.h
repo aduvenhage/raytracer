@@ -161,12 +161,21 @@ namespace LNF
         Axis &operator=(const Axis &) = default;
         Axis &operator=(Axis &&) = default;
         
-        Vec translateTo(const Vec &_vec) const {
+        Vec rotateTo(const Vec &_vec) const {
             return Vec(_vec * m_x, _vec * m_y, _vec * m_z);
         }
                 
-        Vec translateFrom(const Vec &_vec) const {
+        Vec transformTo(const Vec &_vec) const {
+            auto v = _vec - m_origin;
+            return Vec(v * m_x, v * m_y, v * m_z);
+        }
+                
+        Vec rotateFrom(const Vec &_vec) const {
             return _vec.m_fX * m_x + _vec.m_fY * m_y + _vec.m_fZ * m_z;
+        }
+        
+        Vec transformFrom(const Vec &_vec) const {
+            return _vec.m_fX * m_x + _vec.m_fY * m_y + _vec.m_fZ * m_z + m_origin;
         }
         
         Vec     m_x;

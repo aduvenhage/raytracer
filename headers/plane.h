@@ -28,21 +28,22 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual Intersect hit(const Ray &_ray) const override {
-            Intersect ret;
+        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
             const static Vec normal(0, 1, 0);
             const float denom = _ray.m_direction.m_fY;
             if (denom < -0.0000001f) {
                 const auto vecRayPlane = -_ray.m_origin;
                 const float t = vecRayPlane.m_fY / denom;
                 if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
-                    ret.m_pNode = this;
-                    ret.m_fPositionOnRay = t;
-                    ret.m_ray = _ray;
+                    _hit.m_pNode = this;
+                    _hit.m_fPositionOnRay = t;
+                    _hit.m_ray = _ray;
+
+                    return true;
                 }
             }
             
-            return ret;
+            return false;
         }
         
         /* Completes the node intersect properties. */
@@ -74,16 +75,13 @@ namespace LNF
         {}
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual Intersect hit(const Ray &_ray) const override {
-            Intersect ret = Plane::hit(_ray);
-            if (ret == true) {
+        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+            if (Plane::hit(_hit, _ray) == true) {
                 // check disc bounds
-                if (ret.m_position.sizeSqr() > m_fRadiusSqr) {
-                    return Intersect();
-                }
+                return _hit.m_position.sizeSqr() < m_fRadiusSqr;
             }
             
-            return ret;
+            return false;
         }
         
         /* returns bounds for shape */
@@ -112,18 +110,14 @@ namespace LNF
         {}
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual Intersect hit(const Ray &_ray) const override {
-            Intersect ret = Plane::hit(_ray);
-            
-            if (ret == true) {
+        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+            if (Plane::hit(_hit, _ray) == true) {
                 // check rectangle bounds
-                if ( (fabs(ret.m_position.m_fX) > m_fWidth) ||
-                     (fabs(ret.m_position.m_fZ) > m_fLength) ) {
-                    return Intersect();
-                }
+                return (fabs(_hit.m_position.m_fX) <= m_fWidth) &&
+                       (fabs(_hit.m_position.m_fZ) <= m_fLength);
             }
             
-            return ret;
+            return false;
         }
         
         /* returns bounds for shape */
