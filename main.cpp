@@ -45,7 +45,7 @@ class DiffuseMandlebrot : public Diffuse
     
     /* Returns the diffuse color at the given surface position */
     virtual Color color(const Intersect &_hit) const override {
-        return m_baseColor * (m_mandlebrot.value(_hit.m_uv.m_dU, _hit.m_uv.m_dV) * 0.1 + 0.1);
+        return m_baseColor * (m_mandlebrot.value(_hit.m_uv.m_fU, _hit.m_uv.m_fV) * 0.1 + 0.1);
     }
     
  private:
@@ -84,7 +84,7 @@ class SimpleScene   : public Scene
      Could be accessed by multiple worker threads concurrently.
      */
     virtual Color missColor(const Ray &_ray) const override {
-        float shift = _ray.m_direction.m_dY * _ray.m_direction.m_dY * 0.3f + 0.3f;
+        float shift = _ray.m_direction.m_fY * _ray.m_direction.m_fY * 0.3f + 0.3f;
         return Color(shift, shift, 0.6f);
     }
 
@@ -110,7 +110,8 @@ class MainWindow : public QMainWindow
     MainWindow(const SimpleScene *_pScene)
         :QMainWindow(),
          m_pScene(_pScene),
-         m_iFrameCount(0)
+         m_iFrameCount(0),
+         m_bFrameDone(false)
     {
         int width = 640;
         int height = 480;
@@ -148,13 +149,15 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 256;
-            int maxTraceDepth = 24;
+            int samplesPerPixel = 128;
+            int maxTraceDepth = 32;
             m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, numWorkers, samplesPerPixel, maxTraceDepth);
         }
         else if (m_pSource->isFinished() == true) {
-            m_pSource->writeJpegFile("raytraced.jpeg", 100);
-            m_pSource = nullptr;
+            if (m_bFrameDone == false) {
+                m_pSource->writeJpegFile("raytraced.jpeg", 100);
+                m_bFrameDone = true;
+            }
         }
 
         update();
@@ -166,6 +169,7 @@ class MainWindow : public QMainWindow
     std::unique_ptr<Camera>             m_pCamera;
     std::unique_ptr<LNF::Frame>         m_pSource;
     int                                 m_iFrameCount;
+    bool                                m_bFrameDone;
 };
 
 

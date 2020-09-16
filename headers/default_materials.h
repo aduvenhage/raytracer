@@ -47,7 +47,7 @@ namespace LNF
         
         /* Returns the diffuse color at the given surface position */
         virtual Color color(const Intersect &_hit) const override {
-            int c = ((int)(_hit.m_uv.m_dU * m_iBlockSize) + (int)(_hit.m_uv.m_dV * m_iBlockSize)) % 2;
+            int c = ((int)(_hit.m_uv.m_fU * m_iBlockSize) + (int)(_hit.m_uv.m_fV * m_iBlockSize)) % 2;
             return m_colorA * c + m_colorB * (1 - c);
         }
         
@@ -80,14 +80,14 @@ namespace LNF
     class Metal : public Material
     {
      public:
-        Metal(const Color &_color, float _dScatter)
+        Metal(const Color &_color, float _fScatter)
             :m_color(_color),
-             m_dScatter(_dScatter)
+             m_fScatter(_fScatter)
         {}
         
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
-            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_dScatter).normalized();
+            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_fScatter).normalized();
             auto reflectedRay = Ray(_hit.m_position, reflect(_ray.m_direction, normal));
         
             return ScatteredRay(reflectedRay, m_color, Color());
@@ -95,7 +95,7 @@ namespace LNF
 
      private:
         Color          m_color;
-        float          m_dScatter;
+        float          m_fScatter;
     };
 
 
@@ -103,20 +103,20 @@ namespace LNF
     class Glass : public Material
     {
      public:
-        Glass(const Color &_color, float _dScatter, float _dIndexOfRefraction)
+        Glass(const Color &_color, float _fScatter, float _fIndexOfRefraction)
             :m_color(_color),
-             m_dScatter(_dScatter),
-             m_dIndexOfRefraction(_dIndexOfRefraction)
+             m_fScatter(_fScatter),
+             m_fIndexOfRefraction(_fIndexOfRefraction)
         {}
         
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
-            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_dScatter).normalized();
-            float dEtaiOverEtat = 1.0f/m_dIndexOfRefraction;
+            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_fScatter).normalized();
+            float dEtaiOverEtat = 1.0f/m_fIndexOfRefraction;
             
             if (_hit.m_bInside == true) {
                 normal = -normal;
-                dEtaiOverEtat = m_dIndexOfRefraction;
+                dEtaiOverEtat = m_fIndexOfRefraction;
             }
             
             auto refractedRay = Ray(_hit.m_position, refract(_ray.m_direction, normal, dEtaiOverEtat, _randomGen));
@@ -125,8 +125,8 @@ namespace LNF
 
      private:
         Color          m_color;
-        float          m_dScatter;
-        float          m_dIndexOfRefraction;
+        float          m_fScatter;
+        float          m_fIndexOfRefraction;
     };
     
 };  // namespace LNF

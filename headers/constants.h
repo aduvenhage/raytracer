@@ -6,8 +6,8 @@
 #include <random>
 
 
-constexpr float deg2rad(float _dDeg) {
-    return _dDeg / 180.0f * (float)M_PI;
+constexpr float deg2rad(float _fDeg) {
+    return _fDeg / 180.0f * (float)M_PI;
 }
 
 

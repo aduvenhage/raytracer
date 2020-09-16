@@ -15,7 +15,7 @@ namespace LNF
      public:
         virtual ~Viewport() = default;
         
-        virtual Ray getRay(int _iX, int _iY, float _dX, float _dY) const = 0;
+        virtual Ray getRay(int _iX, int _iY, float _fX, float _fY) const = 0;
     };
 
 
@@ -26,17 +26,17 @@ namespace LNF
         ViewportScreen(int _iWidth, int _iHeight, int _iFovDeg)
             :m_iWidth(_iWidth),
              m_iHeight(_iHeight),
-             m_dViewAspect((float)_iWidth / (float)_iHeight),
-             m_dScale(tan(deg2rad(_iFovDeg * 0.5f)))
+             m_fViewAspect((float)_iWidth / (float)_iHeight),
+             m_fScale(tan(deg2rad(_iFovDeg * 0.5f)))
         {}
         
         void setCamera(Camera *_pCam) {
             m_pCamera = _pCam;
         }
         
-        Ray getRay(int _iX, int _iY, float _dX = 0.5f, float _dY = 0.5f) const override {
-            float x = (2 * (_iX + _dX) / (float)m_iWidth - 1) * m_dViewAspect * m_dScale;
-            float y = (1 - 2 * (_iY + _dY) / (float)m_iHeight) * m_dScale;
+        Ray getRay(int _iX, int _iY, float _fX = 0.5f, float _fY = 0.5f) const override {
+            float x = (2 * (_iX + _fX) / (float)m_iWidth - 1) * m_fViewAspect * m_fScale;
+            float y = (1 - 2 * (_iY + _fY) / (float)m_iHeight) * m_fScale;
                 
             if (m_pCamera == nullptr) {
                 return Ray(Vec(x, y, -1).normalized());
@@ -59,8 +59,8 @@ namespace LNF
         Camera                      *m_pCamera;
         const int                   m_iWidth;
         const int                   m_iHeight;
-        const float                 m_dViewAspect;
-        const float                 m_dScale;
+        const float                 m_fViewAspect;
+        const float                 m_fScale;
     };
 
     
@@ -74,8 +74,8 @@ namespace LNF
              m_iStartY(_iStartY)
         {}
         
-        Ray getRay(int _iX, int _iY, float _dX = 0.5f, float _dY = 0.5f) const override {
-            return m_pViewport->getRay(_iX + m_iStartX, _iY + m_iStartY, _dX, _dY);
+        Ray getRay(int _iX, int _iY, float _fX = 0.5f, float _fY = 0.5f) const override {
+            return m_pViewport->getRay(_iX + m_iStartX, _iY + m_iStartY, _fX, _fY);
         }
         
      protected:

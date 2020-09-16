@@ -14,15 +14,15 @@ namespace LNF
     {
      public:
         Sphere()
-            :m_dRadius(0),
-             m_dRadiusSqr(0)
+            :m_fRadius(0),
+             m_fRadiusSqr(0)
         {}
         
-        Sphere(float _dRadius, const Material *_pMaterial)
+        Sphere(float _fRadius, const Material *_pMaterial)
             :m_pMaterial(_pMaterial),
-             m_bounds(Vec(_dRadius, _dRadius, _dRadius), Vec(-_dRadius, -_dRadius, -_dRadius)),
-             m_dRadius(_dRadius),
-             m_dRadiusSqr(_dRadius * _dRadius)
+             m_bounds(Vec(_fRadius, _fRadius, _fRadius), Vec(-_fRadius, -_fRadius, -_fRadius)),
+             m_fRadius(_fRadius),
+             m_fRadiusSqr(_fRadius * _fRadius)
         {}
         
         /* Returns the material used for rendering, etc. */
@@ -36,8 +36,8 @@ namespace LNF
             
             float dRayLength = -_ray.m_origin * _ray.m_direction;
             const float dIntersectRadiusSqr = _ray.m_origin.sizeSqr() - dRayLength*dRayLength;
-            if (dIntersectRadiusSqr <= m_dRadiusSqr) {
-                const float dt = sqrt(m_dRadiusSqr - dIntersectRadiusSqr);
+            if (dIntersectRadiusSqr <= m_fRadiusSqr) {
+                const float dt = sqrt(m_fRadiusSqr - dIntersectRadiusSqr);
                 if (dt <= dRayLength) {
                     // we are outside of sphere
                     dRayLength -= dt;
@@ -50,14 +50,14 @@ namespace LNF
                 }
                 
                 // check ray limits
-                if ( (dRayLength >= _ray.m_dMinDist) && (dRayLength <= _ray.m_dMaxDist) ) {
+                if ( (dRayLength >= _ray.m_fMinDist) && (dRayLength <= _ray.m_fMaxDist) ) {
                     ret.m_pShape = this;
-                    ret.m_dPositionOnRay = dRayLength;
-                    ret.m_position = _ray.position(ret.m_dPositionOnRay);
-                    ret.m_normal = ret.m_position / m_dRadius;
+                    ret.m_fPositionOnRay = dRayLength;
+                    ret.m_position = _ray.position(ret.m_fPositionOnRay);
+                    ret.m_normal = ret.m_position / m_fRadius;
 
-                    const float phi = atan2(ret.m_position.m_dZ, ret.m_position.m_dX);
-                    const float theta = acos(ret.m_position.m_dY / m_dRadius);
+                    const float phi = atan2(ret.m_position.m_fZ, ret.m_position.m_fX);
+                    const float theta = acos(ret.m_position.m_fY / m_fRadius);
                     ret.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
                 }
             }
@@ -73,8 +73,8 @@ namespace LNF
      private:
         const Material     *m_pMaterial;
         Bounds             m_bounds;
-        float              m_dRadius;
-        float              m_dRadiusSqr;
+        float              m_fRadius;
+        float              m_fRadiusSqr;
     };
 
 

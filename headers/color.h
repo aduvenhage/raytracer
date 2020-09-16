@@ -57,29 +57,29 @@ namespace LNF
             return *this;
         }
         
-        Color operator*(float _dScale) const {
-            return Color(m_fRed * _dScale,
-                         m_fGreen * _dScale,
-                         m_fBlue * _dScale);
+        Color operator*(float _fScale) const {
+            return Color(m_fRed * _fScale,
+                         m_fGreen * _fScale,
+                         m_fBlue * _fScale);
         }
         
-        Color &operator*=(float _dScale) {
-            m_fRed *= _dScale;
-            m_fGreen *= _dScale;
-            m_fBlue *= _dScale;
+        Color &operator*=(float _fScale) {
+            m_fRed *= _fScale;
+            m_fGreen *= _fScale;
+            m_fBlue *= _fScale;
             return *this;
         }
         
-        Color operator/(float _dScale) const {
-            return Color(m_fRed / _dScale,
-                         m_fGreen / _dScale,
-                         m_fBlue / _dScale);
+        Color operator/(float _fScale) const {
+            return Color(m_fRed / _fScale,
+                         m_fGreen / _fScale,
+                         m_fBlue / _fScale);
         }
         
-        Color &operator/=(float _dScale) {
-            m_fRed /= _dScale;
-            m_fGreen /= _dScale;
-            m_fBlue /= _dScale;
+        Color &operator/=(float _fScale) {
+            m_fRed /= _fScale;
+            m_fGreen /= _fScale;
+            m_fBlue /= _fScale;
             return *this;
         }
         

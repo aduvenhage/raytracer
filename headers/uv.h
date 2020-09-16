@@ -8,13 +8,13 @@ namespace LNF
     struct Uv
     {
         Uv()
-            :m_dU(0),
-             m_dV(0)
+            :m_fU(0),
+             m_fV(0)
         {}
         
-        Uv(float _dU, float _dV)
-            :m_dU(_dU),
-             m_dV(_dV)
+        Uv(float _fU, float _fV)
+            :m_fU(_fU),
+             m_fV(_fV)
         {}
         
         Uv(const Uv &) = default;
@@ -26,20 +26,20 @@ namespace LNF
 
         /// set color values to 0 if smaller and 1 if larger.
         Uv &clamp() {
-            m_dU = ::clamp(m_dU, 0.0f, 1.0f);
-            m_dV = ::clamp(m_dV, 0.0f, 1.0f);
+            m_fU = ::clamp(m_fU, 0.0f, 1.0f);
+            m_fV = ::clamp(m_fV, 0.0f, 1.0f);
             return *this;
         }
         
         /// wrap color values and keep range [0...1]
         Uv &wrap() {
-            m_dU -= floor(m_dU);
-            m_dV -= floor(m_dV);
+            m_fU -= floor(m_fU);
+            m_fV -= floor(m_fV);
             return *this;
         }
         
-        float  m_dU;
-        float  m_dV;
+        float  m_fU;
+        float  m_fV;
     };
 
 };  // namespace LNF

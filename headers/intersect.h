@@ -20,7 +20,7 @@ namespace LNF
     {
         Intersect()
             :m_pShape(nullptr),
-             m_dPositionOnRay(-1),
+             m_fPositionOnRay(-1),
              m_bInside(false)
         {}
 
@@ -32,20 +32,20 @@ namespace LNF
         Intersect &operator=(Intersect &&) = default;
 
         operator bool () const {
-            return m_dPositionOnRay > 0;
+            return m_fPositionOnRay > 0;
         }
 
         bool operator < (const Intersect &_i) const {
-            if ( (_i.m_dPositionOnRay > 0) &&
-                 (m_dPositionOnRay > 0) ) {
-                return m_dPositionOnRay < _i.m_dPositionOnRay;
+            if ( (_i.m_fPositionOnRay > 0) &&
+                 (m_fPositionOnRay > 0) ) {
+                return m_fPositionOnRay < _i.m_fPositionOnRay;
             }
             
-            return m_dPositionOnRay > 0;
+            return m_fPositionOnRay > 0;
         }
 
         const Shape             *m_pShape;          // shape we intersected with
-        float                   m_dPositionOnRay;   // t0
+        float                   m_fPositionOnRay;   // t0
         Vec                     m_position;         // hit position on surface of shape
         Vec                     m_normal;           // normal on surface of shape
         Uv                      m_uv;               // texture coordinate on surface of shape

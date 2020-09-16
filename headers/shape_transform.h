@@ -37,13 +37,24 @@ namespace LNF
         
         /* Returns the shape / ray intersect (calculates all hit properties). */
         virtual Intersect intersect(const Ray &_ray) const override {
-            auto br = Ray(m_axis.translateTo(_ray.m_origin - m_origin),
-                          m_axis.translateTo(_ray.m_direction));
-            
-            auto hit = m_pTarget->intersect(br);
-            hit.m_normal = m_axis.translateFrom(hit.m_normal);
-            hit.m_position = m_axis.translateFrom(hit.m_position) + m_origin;
-            
+            Intersect hit;
+
+            // check AA bounding volume first
+            float t[10];
+            aaboxIntersect(t, m_bounds.m_min, m_bounds.m_max, _ray.m_origin, _ray.m_direction);
+            if ( (t[9] > 0) || (t[0] > 0) )
+            {
+                // transform ray and check target intersect
+                auto br = Ray(m_axis.translateTo(_ray.m_origin - m_origin),
+                              m_axis.translateTo(_ray.m_direction));
+                
+                hit = m_pTarget->intersect(br);
+                
+                // transform hit back to world space
+                hit.m_normal = m_axis.translateFrom(hit.m_normal);
+                hit.m_position = m_axis.translateFrom(hit.m_position) + m_origin;
+            }
+    
             return hit;
         }
          
@@ -67,8 +78,8 @@ namespace LNF
          beta  - angle around Y axis
          gamma - angle around X axis
          */
-        void rotateEulerZYX(float _dAlpha, float _dBeta, float _dGamma, bool _bRecalcBounds = true) {
-            m_axis = axisEulerZYX(_dAlpha, _dBeta, _dGamma);
+        void rotateEulerZYX(float _fAlpha, float _fBeta, float _fGamma, bool _bRecalcBounds = true) {
+            m_axis = axisEulerZYX(_fAlpha, _fBeta, _fGamma);
             
             if (_bRecalcBounds == true) {
                 recalcBounds();
@@ -81,14 +92,14 @@ namespace LNF
             
             // construct cuboid
             std::array<Vec, 8> points = {
-                Vec{tb.m_min.m_dX, tb.m_min.m_dY, tb.m_min.m_dZ},
-                Vec{tb.m_max.m_dX, tb.m_min.m_dY, tb.m_min.m_dZ},
-                Vec{tb.m_max.m_dX, tb.m_min.m_dY, tb.m_max.m_dZ},
-                Vec{tb.m_min.m_dX, tb.m_min.m_dY, tb.m_max.m_dZ},
-                Vec{tb.m_min.m_dX, tb.m_max.m_dY, tb.m_min.m_dZ},
-                Vec{tb.m_max.m_dX, tb.m_max.m_dY, tb.m_min.m_dZ},
-                Vec{tb.m_max.m_dX, tb.m_max.m_dY, tb.m_max.m_dZ},
-                Vec{tb.m_min.m_dX, tb.m_max.m_dY, tb.m_max.m_dZ}
+                Vec{tb.m_min.m_fX, tb.m_min.m_fY, tb.m_min.m_fZ},
+                Vec{tb.m_max.m_fX, tb.m_min.m_fY, tb.m_min.m_fZ},
+                Vec{tb.m_max.m_fX, tb.m_min.m_fY, tb.m_max.m_fZ},
+                Vec{tb.m_min.m_fX, tb.m_min.m_fY, tb.m_max.m_fZ},
+                Vec{tb.m_min.m_fX, tb.m_max.m_fY, tb.m_min.m_fZ},
+                Vec{tb.m_max.m_fX, tb.m_max.m_fY, tb.m_min.m_fZ},
+                Vec{tb.m_max.m_fX, tb.m_max.m_fY, tb.m_max.m_fZ},
+                Vec{tb.m_min.m_fX, tb.m_max.m_fY, tb.m_max.m_fZ}
             };
             
             // rotate and translate
@@ -101,13 +112,13 @@ namespace LNF
             m_bounds.m_max = points[0];
             
             for (auto &vec : points) {
-                m_bounds.m_min.m_dX = vec.m_dX < m_bounds.m_min.m_dX ? vec.m_dX : m_bounds.m_min.m_dX;
-                m_bounds.m_min.m_dY = vec.m_dY < m_bounds.m_min.m_dY ? vec.m_dY : m_bounds.m_min.m_dY;
-                m_bounds.m_min.m_dZ = vec.m_dZ < m_bounds.m_min.m_dZ ? vec.m_dZ : m_bounds.m_min.m_dZ;
+                m_bounds.m_min.m_fX = vec.m_fX < m_bounds.m_min.m_fX ? vec.m_fX : m_bounds.m_min.m_fX;
+                m_bounds.m_min.m_fY = vec.m_fY < m_bounds.m_min.m_fY ? vec.m_fY : m_bounds.m_min.m_fY;
+                m_bounds.m_min.m_fZ = vec.m_fZ < m_bounds.m_min.m_fZ ? vec.m_fZ : m_bounds.m_min.m_fZ;
                 
-                m_bounds.m_max.m_dX = vec.m_dX > m_bounds.m_max.m_dX ? vec.m_dX : m_bounds.m_max.m_dX;
-                m_bounds.m_max.m_dY = vec.m_dY > m_bounds.m_max.m_dY ? vec.m_dY : m_bounds.m_max.m_dY;
-                m_bounds.m_max.m_dZ = vec.m_dZ > m_bounds.m_max.m_dZ ? vec.m_dZ : m_bounds.m_max.m_dZ;
+                m_bounds.m_max.m_fX = vec.m_fX > m_bounds.m_max.m_fX ? vec.m_fX : m_bounds.m_max.m_fX;
+                m_bounds.m_max.m_fY = vec.m_fY > m_bounds.m_max.m_fY ? vec.m_fY : m_bounds.m_max.m_fY;
+                m_bounds.m_max.m_fZ = vec.m_fZ > m_bounds.m_max.m_fZ ? vec.m_fZ : m_bounds.m_max.m_fZ;
             }
         }
         

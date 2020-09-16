@@ -17,9 +17,9 @@ namespace LNF
         Plane()
         {}
         
-        Plane(const Material *_pMaterial, float _dUvScale=0.02f)
+        Plane(const Material *_pMaterial, float _fUvScale=0.02f)
             :m_pMaterial(_pMaterial),
-             m_dUvScale(_dUvScale)
+             m_fUvScale(_fUvScale)
         {}
         
         /* Returns the material used for rendering, etc. */
@@ -31,17 +31,17 @@ namespace LNF
         virtual Intersect intersect(const Ray &_ray) const override {
             Intersect ret;
             const static Vec normal(0, 1, 0);
-            const float denom = _ray.m_direction.m_dY;
+            const float denom = _ray.m_direction.m_fY;
             if (denom < -0.0000001f) {
                 const auto vecRayPlane = -_ray.m_origin;
-                const float t = vecRayPlane.m_dY / denom;
-                if ( (t > _ray.m_dMinDist) && (t < _ray.m_dMaxDist) ) {
+                const float t = vecRayPlane.m_fY / denom;
+                if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
                     ret.m_pShape = this;
-                    ret.m_dPositionOnRay = t;
-                    ret.m_position = _ray.position(ret.m_dPositionOnRay);
+                    ret.m_fPositionOnRay = t;
+                    ret.m_position = _ray.position(ret.m_fPositionOnRay);
                     ret.m_normal = normal;
                     
-                    ret.m_uv = Uv(ret.m_position.m_dX * m_dUvScale, ret.m_position.m_dZ * m_dUvScale).wrap();
+                    ret.m_uv = Uv(ret.m_position.m_fX * m_fUvScale, ret.m_position.m_fZ * m_fUvScale).wrap();
                 }
             }
             
@@ -50,7 +50,7 @@ namespace LNF
         
      private:
         const Material      *m_pMaterial;
-        float               m_dUvScale;
+        float               m_fUvScale;
     };
 
 
@@ -61,10 +61,10 @@ namespace LNF
         Disc()
         {}
         
-        Disc(float _dRadius, const Material *_pMaterial, float _dUvScale=0.02f)
-            :Plane(_pMaterial, _dUvScale),
-             m_bounds(Vec(_dRadius, 1, _dRadius), Vec(-_dRadius, -1, -_dRadius)),
-             m_dRadiusSqr(_dRadius * _dRadius)
+        Disc(float _fRadius, const Material *_pMaterial, float _fUvScale=0.02f)
+            :Plane(_pMaterial, _fUvScale),
+             m_bounds(Vec(_fRadius, 1, _fRadius), Vec(-_fRadius, -1, -_fRadius)),
+             m_fRadiusSqr(_fRadius * _fRadius)
         {}
         
         /* Returns the shape / ray intersect (calculates all hit properties). */
@@ -72,7 +72,7 @@ namespace LNF
             Intersect ret = Plane::intersect(_ray);
             if (ret == true) {
                 // check disc bounds
-                if (ret.m_position.sizeSqr() > m_dRadiusSqr) {
+                if (ret.m_position.sizeSqr() > m_fRadiusSqr) {
                     return Intersect();
                 }
             }
@@ -87,7 +87,7 @@ namespace LNF
         
      private:
         Bounds                      m_bounds;
-        float                       m_dRadiusSqr;
+        float                       m_fRadiusSqr;
     };
 
 
@@ -98,11 +98,11 @@ namespace LNF
         Rectangle()
         {}
         
-        Rectangle(float _dWidth, float _dLength, const Material *_pMaterial, float _dUvScale=0.02f)
-            :Plane(_pMaterial, _dUvScale),
-             m_bounds(Vec(_dWidth, 1, _dLength), Vec(-_dWidth, -1, -_dLength)),
-             m_dWidth(_dWidth),
-             m_dLength(_dLength)
+        Rectangle(float _fWidth, float _fLength, const Material *_pMaterial, float _fUvScale=0.02f)
+            :Plane(_pMaterial, _fUvScale),
+             m_bounds(Vec(_fWidth, 1, _fLength), Vec(-_fWidth, -1, -_fLength)),
+             m_fWidth(_fWidth),
+             m_fLength(_fLength)
         {}
         
         /* Returns the shape / ray intersect (calculates all hit properties). */
@@ -111,8 +111,8 @@ namespace LNF
             
             if (ret == true) {
                 // check rectangle bounds
-                if ( (fabs(ret.m_position.m_dX) > m_dWidth) ||
-                     (fabs(ret.m_position.m_dZ) > m_dLength) ) {
+                if ( (fabs(ret.m_position.m_fX) > m_fWidth) ||
+                     (fabs(ret.m_position.m_fZ) > m_fLength) ) {
                     return Intersect();
                 }
             }
@@ -127,8 +127,8 @@ namespace LNF
 
      private:
         Bounds                      m_bounds;
-        float                       m_dWidth;
-        float                       m_dLength;
+        float                       m_fWidth;
+        float                       m_fLength;
     };
 
 

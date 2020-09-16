@@ -10,7 +10,7 @@
 namespace LNF
 {
     /* Returns mandlebrot escape iteration count or 0 if it reached max iterations. */
-    inline int mandlebrot(double _dCx, double _dCy, unsigned int _uMaxIterations)
+    inline int mandlebrot(double _fCx, double _fCy, unsigned int _uMaxIterations)
     {
         double fZx = 0;
         double fZy = 0;
@@ -22,8 +22,8 @@ namespace LNF
             double fZxx = fZx * fZx;
             double fZyy = fZy * fZy;
 
-            fZy = 2 * fZx * fZy + _dCy;
-            fZx = fZxx - fZyy + _dCx;
+            fZy = 2 * fZx * fZy + _fCy;
+            fZx = fZxx - fZyy + _fCx;
 
             if ((fZxx + fZyy) >= 4) {
                 return i;
@@ -51,10 +51,10 @@ namespace LNF
              m_iHeight(_iHeight),
              m_iMaxIterations(0),
              m_image(m_iWidth * m_iHeight * 3, 0),
-             m_dPosX(0),
-             m_dPosY(0),
-             m_dZoom(0),
-             m_dScale(0)
+             m_fPosX(0),
+             m_fPosY(0),
+             m_fZoom(0),
+             m_fScale(0)
         {
             // default view
             setView(-0.5, 0, 0.4, 50);
@@ -67,29 +67,29 @@ namespace LNF
         const unsigned char *image() const {return m_image.data();}
 
         /* Set position and zoom level, using Mandlebrot values. */
-        void setView(double _dCx, double _dCy, double _dZoom, int _iMaxIterations)
+        void setView(double _fCx, double _fCy, double _fZoom, int _iMaxIterations)
         {
-            m_dZoom = _dZoom;
+            m_fZoom = _fZoom;
             if (m_iWidth < m_iHeight) {
-                m_dScale = 1.0 / m_iWidth / m_dZoom;
+                m_fScale = 1.0 / m_iWidth / m_fZoom;
             }
             else {
-                m_dScale = 1.0 / m_iHeight / m_dZoom;
+                m_fScale = 1.0 / m_iHeight / m_fZoom;
             }
             
-            m_dPosX = _dCx - m_dScale*m_iWidth*0.5;
-            m_dPosY = _dCy - m_dScale*m_iHeight*0.5;
+            m_fPosX = _fCx - m_fScale*m_iWidth*0.5;
+            m_fPosY = _fCy - m_fScale*m_iHeight*0.5;
             m_iMaxIterations = _iMaxIterations;
         }
         
         /* Returns mandlebrot escape iteration count or 0 if it reached max iterations.
-           _dPixelX and _dPixelY are the image pixel positions, but allows for special case
+           _fPixelX and _fPixelY are the image pixel positions, but allows for special case
            where image size is 1 x 1 (i.e. pixel coordinates normalised [0..1]).
          */
-        int value(double _dPixelX, double _dPixelY) const
+        int value(double _fPixelX, double _fPixelY) const
         {
-            return mandlebrot(_dPixelX * m_dScale + m_dPosX,
-                              _dPixelY * m_dScale + m_dPosY,
+            return mandlebrot(_fPixelX * m_fScale + m_fPosX,
+                              _fPixelY * m_fScale + m_fPosY,
                               m_iMaxIterations);
         }
         
@@ -124,10 +124,10 @@ namespace LNF
         int                         m_iHeight;
         int                         m_iMaxIterations;
         std::vector<unsigned char>  m_image;
-        double                      m_dPosX;
-        double                      m_dPosY;
-        double                      m_dZoom;
-        double                      m_dScale;
+        double                      m_fPosX;
+        double                      m_fPosY;
+        double                      m_fZoom;
+        double                      m_fScale;
     };
 
 

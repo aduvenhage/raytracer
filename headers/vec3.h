@@ -14,26 +14,26 @@ namespace LNF
     {
      public:
         Vec()
-            :m_dX(0),
-             m_dY(0),
-             m_dZ(0)
+            :m_fX(0),
+             m_fY(0),
+             m_fZ(0)
         {}
         
         Vec(const Vec &) = default;
         Vec(Vec &&) = default;
         Vec(Vec &) = default;
 
-        Vec(float _dX, float _dY, float _dZ)
-            :m_dX(_dX),
-             m_dY(_dY),
-             m_dZ(_dZ)
+        Vec(float _fX, float _fY, float _fZ)
+            :m_fX(_fX),
+             m_fY(_fY),
+             m_fZ(_fZ)
         {}
         
         Vec &operator=(const Vec &_vec) = default;
         Vec &operator=(Vec &&_vec) = default;
 
         float sizeSqr() const {
-            return m_dX * m_dX + m_dY * m_dY + m_dZ * m_dZ;
+            return m_fX * m_fX + m_fY * m_fY + m_fZ * m_fZ;
         }
         
         float size() const {
@@ -41,15 +41,15 @@ namespace LNF
         }
         
         Vec operator+(const Vec &_vec) const {
-            return Vec(m_dX + _vec.m_dX,
-                       m_dY + _vec.m_dY,
-                       m_dZ + _vec.m_dZ);
+            return Vec(m_fX + _vec.m_fX,
+                       m_fY + _vec.m_fY,
+                       m_fZ + _vec.m_fZ);
         }
         
         Vec operator-(const Vec &_vec) const {
-            return Vec(m_dX - _vec.m_dX,
-                       m_dY - _vec.m_dY,
-                       m_dZ - _vec.m_dZ);
+            return Vec(m_fX - _vec.m_fX,
+                       m_fY - _vec.m_fY,
+                       m_fZ - _vec.m_fZ);
         }
         
         Vec operator-() const {
@@ -57,85 +57,85 @@ namespace LNF
         }
         
         Vec &operator-=(const Vec &_vec) {
-            m_dX -= _vec.m_dX;
-            m_dY -= _vec.m_dY;
-            m_dZ -= _vec.m_dZ;
+            m_fX -= _vec.m_fX;
+            m_fY -= _vec.m_fY;
+            m_fZ -= _vec.m_fZ;
             return *this;
         }
         
         Vec &operator+=(const Vec &_vec) {
-            m_dX += _vec.m_dX;
-            m_dY += _vec.m_dY;
-            m_dZ += _vec.m_dZ;
+            m_fX += _vec.m_fX;
+            m_fY += _vec.m_fY;
+            m_fZ += _vec.m_fZ;
             return *this;
         }
         
         // dot product
         float operator*(const Vec &_vec) const {
-            return m_dX * _vec.m_dX +
-                   m_dY * _vec.m_dY +
-                   m_dZ * _vec.m_dZ ;
+            return m_fX * _vec.m_fX +
+                   m_fY * _vec.m_fY +
+                   m_fZ * _vec.m_fZ ;
         }
 
-        Vec operator*(float _dScale) const {
-            return Vec(m_dX * _dScale,
-                       m_dY * _dScale,
-                       m_dZ * _dScale);
+        Vec operator*(float _fScale) const {
+            return Vec(m_fX * _fScale,
+                       m_fY * _fScale,
+                       m_fZ * _fScale);
         }
         
-        Vec operator/(float _dScale) const {
-            return Vec(m_dX / _dScale,
-                       m_dY / _dScale,
-                       m_dZ / _dScale);
+        Vec operator/(float _fScale) const {
+            return Vec(m_fX / _fScale,
+                       m_fY / _fScale,
+                       m_fZ / _fScale);
         }
         
-        Vec &operator*=(float _dScale) {
-            m_dX *= _dScale;
-            m_dY *= _dScale;
-            m_dZ *= _dScale;
+        Vec &operator*=(float _fScale) {
+            m_fX *= _fScale;
+            m_fY *= _fScale;
+            m_fZ *= _fScale;
             return *this;
         }
         
-        Vec &operator/=(float _dScale) {
-            m_dX /= _dScale;
-            m_dY /= _dScale;
-            m_dZ /= _dScale;
+        Vec &operator/=(float _fScale) {
+            m_fX /= _fScale;
+            m_fY /= _fScale;
+            m_fZ /= _fScale;
             return *this;
         }
 
         Vec normalized() const {
             float r = size();
-            return Vec(m_dX / r,
-                       m_dY / r,
-                       m_dZ / r);
+            return Vec(m_fX / r,
+                       m_fY / r,
+                       m_fZ / r);
         }
         
         Vec inverse() const {
-            return Vec(-m_dX, -m_dY, -m_dZ);
+            return Vec(-m_fX, -m_fY, -m_fZ);
         }
         
         // per element abs() -- not the same as size
         Vec abs() const {
-            return Vec(fabs(m_dX), fabs(m_dY), fabs(m_dZ));
+            return Vec(fabs(m_fX), fabs(m_fY), fabs(m_fZ));
         }
         
-        float      m_dX;
-        float      m_dY;
-        float      m_dZ;
+        float      m_fX;
+        float      m_fY;
+        float      m_fZ;
     };
 
 
-    inline Vec operator*(float _dScale, const Vec &_vec) {
-        return Vec(_vec.m_dX*_dScale,
-                   _vec.m_dY*_dScale,
-                   _vec.m_dZ*_dScale);
+    inline Vec operator*(float _fScale, const Vec &_vec) {
+        return Vec(_vec.m_fX*_fScale,
+                   _vec.m_fY*_fScale,
+                   _vec.m_fZ*_fScale);
     }
 
 
     inline Vec crossProduct(const Vec &_a, const Vec &_b) {
-        return Vec(_a.m_dY * _b.m_dZ - _a.m_dZ * _b.m_dY,
-                   _a.m_dZ * _b.m_dX - _a.m_dX * _b.m_dZ,
-                   _a.m_dX * _b.m_dY - _a.m_dY * _b.m_dX);
+        return Vec(_a.m_fY * _b.m_fZ - _a.m_fZ * _b.m_fY,
+                   _a.m_fZ * _b.m_fX - _a.m_fX * _b.m_fZ,
+                   _a.m_fX * _b.m_fY - _a.m_fY * _b.m_fX);
     }
 
     
@@ -165,7 +165,7 @@ namespace LNF
         }
                 
         Vec translateFrom(const Vec &_vec) const {
-            return _vec.m_dX * m_x + _vec.m_dY * m_y + _vec.m_dZ * m_z;
+            return _vec.m_fX * m_x + _vec.m_fY * m_y + _vec.m_fZ * m_z;
         }
         
         Vec     m_x;
@@ -193,6 +193,29 @@ namespace LNF
         Vec     m_min;
         Vec     m_max;
     };
+
+
+    /* test if ray is inside box or not */
+    inline float *aaboxIntersect(float _t[9], const Vec &_min, const Vec &_max, const Vec &_rayOrigin, const Vec &_rayDirection) {
+        // check ray origin (_t[0] = -1 outside; 1 inside)
+        _t[0] = (_rayOrigin.m_fX - _min.m_fX > 0) && (_rayOrigin.m_fY - _min.m_fY > 0) && (_rayOrigin.m_fZ - _min.m_fZ > 0) &&
+                (_max.m_fX - _rayOrigin.m_fX > 0) && (_max.m_fY - _rayOrigin.m_fY > 0) && (_max.m_fZ - _rayOrigin.m_fZ > 0) ?
+                1.0f : -1.0f;
+                
+        // check ray direction (_t[9] = -1 no hit; > 0 hit; 0 no hit
+        _t[1] = (_min.m_fX - _rayOrigin.m_fX) / _rayDirection.m_fX;
+        _t[2] = (_max.m_fX - _rayOrigin.m_fX) / _rayDirection.m_fX;
+        _t[3] = (_min.m_fY - _rayOrigin.m_fY) / _rayDirection.m_fY;
+        _t[4] = (_max.m_fY - _rayOrigin.m_fY) / _rayDirection.m_fY;
+        _t[5] = (_min.m_fZ - _rayOrigin.m_fZ) / _rayDirection.m_fZ;
+        _t[6] = (_max.m_fZ - _rayOrigin.m_fZ) / _rayDirection.m_fZ;
+        
+        _t[7] = fmax(fmax(fmin(_t[1], _t[2]), fmin(_t[3], _t[4])), fmin(_t[5], _t[6]));
+        _t[8] = fmin(fmin(fmax(_t[1], _t[2]), fmax(_t[3], _t[4])), fmax(_t[5], _t[6]));
+        _t[9] = (_t[8] < 0.0f || _t[7] > _t[8]) ? -1.0f : _t[7];
+        
+        return _t;
+    }
 
 
     // returns a vector within the unit cube (-1..1, -1..1, -1..1)
@@ -232,13 +255,13 @@ namespace LNF
      beta  - angle around Y axis
      gamma - angle around X axis
      */
-    Axis axisEulerZYX(float _dAlpha, float _dBeta, float _dGamma) {
-        const float ca = cos(_dAlpha);
-        const float sa = sin(_dAlpha);
-        const float cb = cos(_dBeta);
-        const float sb = sin(_dBeta);
-        const float cg = cos(_dGamma);
-        const float sg = sin(_dGamma);
+    Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma) {
+        const float ca = cos(_fAlpha);
+        const float sa = sin(_fAlpha);
+        const float cb = cos(_fBeta);
+        const float sb = sin(_fBeta);
+        const float cg = cos(_fGamma);
+        const float sg = sin(_fGamma);
 
         return {
             Vec{ca*cb,            sa*cb,            -sb},

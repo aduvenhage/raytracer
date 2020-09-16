@@ -65,7 +65,6 @@ namespace LNF
             for (auto i = 0; i < _pOutput->width(); i++)
             {
                 auto color = Color();
-                
                 for (int k = 0; k < _iRaysPerPixel; k++)
                 {
                     // get ray with some fuzziness around pixel center
@@ -77,9 +76,9 @@ namespace LNF
                                 
                 // write averaged color to output image
                 color = (color / _iRaysPerPixel).clamp();
-                *(pPixel++) = (int)(255 * color.m_fRed);
-                *(pPixel++) = (int)(255 * color.m_fGreen);
-                *(pPixel++) = (int)(255 * color.m_fBlue);
+                *(pPixel++) = (int)(255 * color.m_fRed + 0.5);
+                *(pPixel++) = (int)(255 * color.m_fGreen + 0.5);
+                *(pPixel++) = (int)(255 * color.m_fBlue + 0.5);
             }
         }
     }
