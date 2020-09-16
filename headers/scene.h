@@ -5,7 +5,7 @@
 #include "constants.h"
 #include "intersect.h"
 #include "ray.h"
-#include "shape.h"
+#include "node.h"
 
 #include <algorithm>
 #include <limits>
@@ -34,10 +34,10 @@ namespace LNF
         virtual Color missColor(const Ray &_ray) const = 0;
         
         /*
-         Add a new shape to the scene.
+         Add a new node to the scene.
          The scene is expected to be thread-safe.
          */
-        virtual void addShape(std::unique_ptr<Shape> &&_pShape) = 0;
+        virtual void addNode(std::unique_ptr<Node> &&_pNode) = 0;
     };
     
 

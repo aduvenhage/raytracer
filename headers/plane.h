@@ -2,7 +2,7 @@
 #define LIBS_HEADER_PLANE_H
 
 #include "constants.h"
-#include "shape.h"
+#include "node.h"
 #include "material.h"
 #include "vec3.h"
 #include "uv.h"
@@ -11,7 +11,7 @@
 namespace LNF
 {
     /* Plane shape class -- fixed ZX plane with normal [0, 1, 0] and origin [0, 0, 0] */
-    class Plane        : public Shape
+    class Plane        : public Node
     {
      public:
         Plane()
@@ -27,8 +27,8 @@ namespace LNF
             return m_pMaterial;
         }
         
-        /* Returns the shape / ray intersect (calculates all hit properties). */
-        virtual Intersect intersect(const Ray &_ray) const override {
+        /* Quick node hit check (populates at least node and time properties of intercept) */
+        virtual Intersect hit(const Ray &_ray) const override {
             Intersect ret;
             const static Vec normal(0, 1, 0);
             const float denom = _ray.m_direction.m_fY;
@@ -36,16 +36,22 @@ namespace LNF
                 const auto vecRayPlane = -_ray.m_origin;
                 const float t = vecRayPlane.m_fY / denom;
                 if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
-                    ret.m_pShape = this;
+                    ret.m_pNode = this;
                     ret.m_fPositionOnRay = t;
-                    ret.m_position = _ray.position(ret.m_fPositionOnRay);
-                    ret.m_normal = normal;
-                    
-                    ret.m_uv = Uv(ret.m_position.m_fX * m_fUvScale, ret.m_position.m_fZ * m_fUvScale).wrap();
+                    ret.m_ray = _ray;
                 }
             }
             
             return ret;
+        }
+        
+        /* Completes the node intersect properties. */
+        virtual Intersect &intersect(Intersect &_hit) const override {
+            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_normal = Vec(0, 1, 0);
+            _hit.m_uv = Uv(_hit.m_position.m_fX * m_fUvScale, _hit.m_position.m_fZ * m_fUvScale).wrap();
+            
+            return _hit;
         }
         
      private:
@@ -67,9 +73,9 @@ namespace LNF
              m_fRadiusSqr(_fRadius * _fRadius)
         {}
         
-        /* Returns the shape / ray intersect (calculates all hit properties). */
-        virtual Intersect intersect(const Ray &_ray) const override {
-            Intersect ret = Plane::intersect(_ray);
+        /* Quick node hit check (populates at least node and time properties of intercept) */
+        virtual Intersect hit(const Ray &_ray) const override {
+            Intersect ret = Plane::hit(_ray);
             if (ret == true) {
                 // check disc bounds
                 if (ret.m_position.sizeSqr() > m_fRadiusSqr) {
@@ -79,7 +85,7 @@ namespace LNF
             
             return ret;
         }
-                        
+        
         /* returns bounds for shape */
         virtual const Bounds &bounds() const override {
             return  m_bounds;
@@ -105,9 +111,9 @@ namespace LNF
              m_fLength(_fLength)
         {}
         
-        /* Returns the shape / ray intersect (calculates all hit properties). */
-        virtual Intersect intersect(const Ray &_ray) const override {
-            Intersect ret = Plane::intersect(_ray);
+        /* Quick node hit check (populates at least node and time properties of intercept) */
+        virtual Intersect hit(const Ray &_ray) const override {
+            Intersect ret = Plane::hit(_ray);
             
             if (ret == true) {
                 // check rectangle bounds
@@ -119,7 +125,7 @@ namespace LNF
             
             return ret;
         }
-                        
+        
         /* returns bounds for shape */
         virtual const Bounds &bounds() const override {
             return  m_bounds;

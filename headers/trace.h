@@ -28,12 +28,16 @@ namespace LNF
     {
         auto intersect = _pScene->hit(_ray);
         if (intersect == true) {
-            auto pHitShape = intersect.m_pShape;
+            auto pHitNode = intersect.m_pNode;
             
             // create scattered, reflected, reftracted, etc. color
-            auto pMaterial = pHitShape->material();
-            auto scatteredRay = pMaterial->scatter(intersect, _ray, _randomGen);
+            auto pMaterial = pHitNode->material();
+            auto scatteredRay = pMaterial->scatter(intersect, intersect.m_ray, _randomGen);
             scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
+            
+            // transform ray back to world space
+            scatteredRay.m_ray.m_direction = intersect.m_axis.translateFrom(scatteredRay.m_ray.m_direction);
+            scatteredRay.m_ray.m_origin = intersect.m_axis.translateFrom(scatteredRay.m_ray.m_origin) + intersect.m_axis.m_origin;
 
             if ( (_maxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
                 return scatteredRay.m_emitted +

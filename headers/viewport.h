@@ -42,7 +42,7 @@ namespace LNF
                 return Ray(Vec(x, y, -1).normalized());
             }
             else {
-                return Ray(m_pCamera->m_origin,
+                return Ray(m_pCamera->m_axis.m_origin,
                            m_pCamera->camera2world(Vec(-x, y, 1).normalized()));
             }
         }

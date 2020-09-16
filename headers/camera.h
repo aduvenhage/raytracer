@@ -16,8 +16,7 @@ namespace LNF
         {}
         
         Camera(const Vec &_origin, const Vec &_up, const Vec &_lookat)
-            :m_origin(_origin),
-             m_camera(axisLookat(_lookat, _origin, _up))
+            :m_axis(axisLookat(_lookat, _origin, _up))
         {}
         
         Camera(const Camera &) = default;
@@ -29,11 +28,10 @@ namespace LNF
         
         // rotate from camera/view to world coordinates
         Vec camera2world(const Vec &_view) {
-            return m_camera.translateFrom(_view);
+            return m_axis.translateFrom(_view);
         }
         
-        Vec     m_origin;
-        Axis    m_camera;       // [x=left, y=up, z=lookat]
+        Axis    m_axis;       // [x=left, y=up, z=lookat]
     };
 
 

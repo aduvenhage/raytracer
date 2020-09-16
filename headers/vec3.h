@@ -150,11 +150,12 @@ namespace LNF
         Axis(Axis &&) = default;
         Axis(Axis &) = default;
         
-        template <typename VX, typename VY, typename VZ>
-        Axis(VX &&_vx, VY &&_vy, VZ &&_vz)
+        template <typename VX, typename VY, typename VZ, typename P>
+        Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin)
             :m_x(std::forward<VX>(_vx)),
              m_y(std::forward<VY>(_vy)),
-             m_z(std::forward<VZ>(_vz))
+             m_z(std::forward<VZ>(_vz)),
+             m_origin(_origin)
         {}
 
         Axis &operator=(const Axis &) = default;
@@ -171,6 +172,7 @@ namespace LNF
         Vec     m_x;
         Vec     m_y;
         Vec     m_z;
+        Vec     m_origin;
     };
     
     
@@ -244,10 +246,21 @@ namespace LNF
         return {
             Vec{1.0f, 0.0f, 0.0f},
             Vec{0.0f, 1.0f, 0.0f},
-            Vec{0.0f, 0.0f, 1.0f}
+            Vec{0.0f, 0.0f, 1.0f},
+            Vec{0.0f, 0.0f, 0.0f}
         };
     }
 
+    /* Creates the default axis */
+    template <typename P>
+    Axis axisIdentity(P &&_origin) {
+        return {
+            Vec{1.0f, 0.0f, 0.0f},
+            Vec{0.0f, 1.0f, 0.0f},
+            Vec{0.0f, 0.0f, 1.0f},
+            _origin
+        };
+    }
 
     /*
      Creates an axis set with the given orientation.
@@ -255,7 +268,8 @@ namespace LNF
      beta  - angle around Y axis
      gamma - angle around X axis
      */
-    Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma) {
+    template <typename P>
+    Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma, P &&_origin) {
         const float ca = cos(_fAlpha);
         const float sa = sin(_fAlpha);
         const float cb = cos(_fBeta);
@@ -266,7 +280,8 @@ namespace LNF
         return {
             Vec{ca*cb,            sa*cb,            -sb},
             Vec{ca*sb*sg - sa*cg, sa*sb*sg + ca*cg, cb*sg},
-            Vec{ca*sb*cg + sa*sg, sa*sb*cg - ca*sg, cb*cg}
+            Vec{ca*sb*cg + sa*sg, sa*sb*cg - ca*sg, cb*cg},
+            _origin
         };
     }
 
@@ -279,7 +294,8 @@ namespace LNF
      
      returns: [left, up, lookat]
      */
-    Axis axisLookat(const Vec &_lookat, const Vec &_origin, const Vec &_up) {
+    template <typename P>
+    Axis axisLookat(const Vec &_lookat, P &&_origin, const Vec &_up) {
         auto lookat = (_lookat - _origin).normalized();
         auto left = crossProduct(_up, lookat).normalized();
         auto up = crossProduct(lookat, left);
@@ -287,7 +303,8 @@ namespace LNF
         return {
             left,
             up,
-            lookat
+            lookat,
+            _origin
         };
     }
 
@@ -296,7 +313,8 @@ namespace LNF
      Creates an axis on the plane.
      returns: [e1, normal, e2]
      */
-    Axis axisPlane(const Vec &_normal, const Vec &_origin) {
+    template <typename N, typename P>
+    Axis axisPlane(N &&_normal, P &&_origin) {
         auto e1 = crossProduct(_normal, Vec(0.0f, 0.0f, 1.0f));
         if (e1.sizeSqr() < 0.0001f) {
             e1 = crossProduct(_normal, Vec(0.0f, 1.0f, 0.0f));
@@ -308,7 +326,8 @@ namespace LNF
         return {
             e1,
             _normal,
-            e2
+            e2,
+            _origin
         };
     }
     

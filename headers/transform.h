@@ -1,10 +1,10 @@
-#ifndef LIBS_HEADER_SHAPE_TRANSFORM_H
-#define LIBS_HEADER_SHAPE_TRANSFORM_H
+#ifndef LIBS_HEADER_TRANSFORM_H
+#define LIBS_HEADER_TRANSFORM_H
 
 #include "constants.h"
 #include "intersect.h"
 #include "material.h"
-#include "shape.h"
+#include "node.h"
 #include "ray.h"
 #include "vec3.h"
 
@@ -15,17 +15,16 @@
 namespace LNF
 {
 
-    /* Transform wrapper for shapes */
-    class Transform        : public Shape
+    /* Transform wrapper for raytracing node */
+    class Transform        : public Node
     {
      public:
         Transform()
         {}
         
-        Transform(std::unique_ptr<Shape> &&_pTarget, const Axis &_axis, const Vec &_origin)
+        Transform(std::unique_ptr<Node> &&_pTarget, const Axis &_axis)
             :m_pTarget(std::move(_pTarget)),
-             m_axis(_axis),
-             m_origin(_origin)
+             m_axis(_axis)
         {
             recalcBounds();
         }
@@ -35,8 +34,8 @@ namespace LNF
             return m_pTarget->material();
         }
         
-        /* Returns the shape / ray intersect (calculates all hit properties). */
-        virtual Intersect intersect(const Ray &_ray) const override {
+        /* Quick node hit check (populates at least node and time properties of intercept) */
+        virtual Intersect hit(const Ray &_ray) const override {
             Intersect hit;
 
             // check AA bounding volume first
@@ -45,17 +44,22 @@ namespace LNF
             if ( (t[9] > 0) || (t[0] > 0) )
             {
                 // transform ray and check target intersect
-                auto br = Ray(m_axis.translateTo(_ray.m_origin - m_origin),
+                auto br = Ray(m_axis.translateTo(_ray.m_origin - m_axis.m_origin),
                               m_axis.translateTo(_ray.m_direction));
                 
-                hit = m_pTarget->intersect(br);
-                
-                // transform hit back to world space
-                hit.m_normal = m_axis.translateFrom(hit.m_normal);
-                hit.m_position = m_axis.translateFrom(hit.m_position) + m_origin;
+                // check target hit
+                hit = m_pTarget->hit(br);
+                hit.m_pNode = this;
+                hit.m_axis = m_axis;
             }
     
             return hit;
+        }
+        
+        /* Completes the node intersect properties. */
+        virtual Intersect &intersect(Intersect &_hit) const override {
+            m_pTarget->intersect(_hit);
+            return _hit;
         }
          
         /* returns bounds for shape */
@@ -65,7 +69,7 @@ namespace LNF
         
         /* move shape */
         virtual void move(const Vec &_origin, bool _bRecalcBounds = true) {
-            m_origin = _origin;
+            m_axis.m_origin = _origin;
             
             if (_bRecalcBounds == true) {
                 recalcBounds();
@@ -79,7 +83,7 @@ namespace LNF
          gamma - angle around X axis
          */
         void rotateEulerZYX(float _fAlpha, float _fBeta, float _fGamma, bool _bRecalcBounds = true) {
-            m_axis = axisEulerZYX(_fAlpha, _fBeta, _fGamma);
+            m_axis = axisEulerZYX(_fAlpha, _fBeta, _fGamma, m_axis.m_origin);
             
             if (_bRecalcBounds == true) {
                 recalcBounds();
@@ -104,7 +108,7 @@ namespace LNF
             
             // rotate and translate
             for (auto &vec : points) {
-                vec = m_axis.translateFrom(vec) + m_origin;
+                vec = m_axis.translateFrom(vec) + m_axis.m_origin;
             }
             
             // find min/max bounds
@@ -123,14 +127,13 @@ namespace LNF
         }
         
      private:
-        std::unique_ptr<Shape>  m_pTarget;
-        Bounds                  m_bounds;
-        Axis                    m_axis;
-        Vec                     m_origin;
+        std::unique_ptr<Node>  m_pTarget;
+        Bounds                   m_bounds;
+        Axis                     m_axis;
     };
 
 
 };  // namespace LNF
 
-#endif  // #ifndef LIBS_HEADER_SHAPE_TRANSFORM_H
+#endif  // #ifndef LIBS_HEADER_TRANSFORM_H
 

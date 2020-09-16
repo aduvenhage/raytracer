@@ -64,8 +64,8 @@ SET(LNF_HEADERS
     headers/profile.h
     headers/ray.h
     headers/scene.h
-    headers/shape.h
-    headers/shape_transform.h
+    headers/node.h
+    headers/transform.h
     headers/sphere.h
     headers/trace.h
     headers/uv.h

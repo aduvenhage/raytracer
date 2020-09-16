@@ -2,7 +2,7 @@
 #define LIBS_HEADER_SPHERE_H
 
 #include "constants.h"
-#include "shape.h"
+#include "node.h"
 #include "vec3.h"
 #include "uv.h"
 
@@ -10,7 +10,7 @@
 namespace LNF
 {
     /* Sphere shape class -- fixed at origin [0, 0, 0] */
-    class Sphere        : public Shape
+    class Sphere        : public Node
     {
      public:
         Sphere()
@@ -30,8 +30,8 @@ namespace LNF
             return m_pMaterial;
         }
         
-        /* Returns the shape / ray intersect (calculates all hit properties). */
-        virtual Intersect intersect(const Ray &_ray) const override {
+        /* Quick node hit check (populates at least node and time properties of intercept) */
+        virtual Intersect hit(const Ray &_ray) const override {
             Intersect ret;
             
             float dRayLength = -_ray.m_origin * _ray.m_direction;
@@ -51,18 +51,25 @@ namespace LNF
                 
                 // check ray limits
                 if ( (dRayLength >= _ray.m_fMinDist) && (dRayLength <= _ray.m_fMaxDist) ) {
-                    ret.m_pShape = this;
+                    ret.m_pNode = this;
                     ret.m_fPositionOnRay = dRayLength;
-                    ret.m_position = _ray.position(ret.m_fPositionOnRay);
-                    ret.m_normal = ret.m_position / m_fRadius;
-
-                    const float phi = atan2(ret.m_position.m_fZ, ret.m_position.m_fX);
-                    const float theta = acos(ret.m_position.m_fY / m_fRadius);
-                    ret.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
+                    ret.m_ray = _ray;
                 }
             }
-                
+                    
             return ret;
+        }
+        
+        /* Completes the node intersect properties. */
+        virtual Intersect &intersect(Intersect &_hit) const override {
+            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_normal = _hit.m_position / m_fRadius;
+
+            const float phi = atan2(_hit.m_position.m_fZ, _hit.m_position.m_fX);
+            const float theta = acos(_hit.m_position.m_fY / m_fRadius);
+            _hit.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
+                
+            return _hit;
         }
 
         /* returns bounds for shape */

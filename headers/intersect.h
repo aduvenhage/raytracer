@@ -11,7 +11,7 @@
 
 namespace LNF
 {
-    class Shape;
+    class Node;
 
     /*
      Container for intersect attributes and products.
@@ -19,7 +19,8 @@ namespace LNF
     struct Intersect
     {
         Intersect()
-            :m_pShape(nullptr),
+            :m_pNode(nullptr),
+             m_axis(axisIdentity()),
              m_fPositionOnRay(-1),
              m_bInside(false)
         {}
@@ -44,11 +45,13 @@ namespace LNF
             return m_fPositionOnRay > 0;
         }
 
-        const Shape             *m_pShape;          // shape we intersected with
-        float                   m_fPositionOnRay;   // t0
+        const Node              *m_pNode;           // node we intersected with
+        Axis                    m_axis;             // transform used on ray
+        Ray                     m_ray;              // ray used for intersection (may be transformed from original ray)
         Vec                     m_position;         // hit position on surface of shape
         Vec                     m_normal;           // normal on surface of shape
         Uv                      m_uv;               // texture coordinate on surface of shape
+        float                   m_fPositionOnRay;   // t0
         bool                    m_bInside;          // true if ray is inside shape
     };
 

@@ -11,7 +11,7 @@
 #include "headers/profile.h"
 #include "headers/ray.h"
 #include "headers/scene.h"
-#include "headers/shape_transform.h"
+#include "headers/transform.h"
 #include "headers/sphere.h"
 #include "headers/trace.h"
 #include "headers/uv.h"
@@ -66,17 +66,22 @@ class SimpleScene   : public Scene
        Could be accessed by multiple worker threads concurrently.
      */
     virtual Intersect hit(const Ray &_ray) const override {
-        Intersect ret;
+        Intersect bestHit;
 
         // find best hit
-        for (auto &pShape : m_shapes) {
-            auto hit = pShape->intersect(_ray);
-            if (hit < ret) {
-                ret = hit;
+        for (auto &pNode : m_nodes) {
+            auto hit = pNode->hit(_ray);
+            if (hit < bestHit) {
+                bestHit = hit;
             }
         }
         
-        return ret;
+        // complete intercept
+        if (bestHit.m_pNode != nullptr) {
+            bestHit.m_pNode->intersect(bestHit);
+        }
+        
+        return bestHit;
     }
     
     /*
@@ -89,17 +94,15 @@ class SimpleScene   : public Scene
     }
 
     /*
-     Add a new shape to the scene.
+     Add a new node to the scene.
      The scene is expected to be static (thread-safe).  Only do this when not rendering.
      */
-    virtual void addShape(std::unique_ptr<Shape> &&_pShape) override {
-        m_shapes.push_back(std::move(_pShape));
+    virtual void addNode(std::unique_ptr<Node> &&_pNode) override {
+        m_nodes.push_back(std::move(_pNode));
     }
     
  protected:
- 
-    // TODO: FIGURE OUT contigeous storage  .. ECS ??
-    std::vector<std::unique_ptr<Shape>>   m_shapes;
+    std::vector<std::unique_ptr<Node>>   m_nodes;
 };
 
 
@@ -186,14 +189,14 @@ int main(int argc, char *argv[])
     auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.05);
     auto pLight1 = std::make_unique<Light>(Color(10.0, 10.0, 10.0));
 
-    pScene->addShape(std::make_unique<Disc>(500, pDiffuse1.get()));
-    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisIdentity(), Vec(0, 15, 10)));
-    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisIdentity(), Vec(30, 15, -20)));
-    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0), Vec(-30, 15, -20)));
-    pScene->addShape(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0), Vec(10, 5, 30)));
-    pScene->addShape(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0), Vec(-10, 5, 30)));
-    pScene->addShape(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pGlass1.get()), axisEulerZYX(0, 0.5, 0), Vec(0, 5, 40)));
-    pScene->addShape(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisIdentity(), Vec(0, 60, 20)));
+    pScene->addNode(std::make_unique<Disc>(500, pDiffuse1.get()));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0.5, 0, Vec(0, 15, 10))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisIdentity(Vec(30, 15, -20))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0, Vec(-30, 15, -20))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(10, 5, 30))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0, Vec(-10, 5, 30))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pGlass1.get()), axisEulerZYX(0, 0.5, 0, Vec(0, 5, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisIdentity(Vec(0, 60, 20))));
 
     // start app
     QApplication app(argc, argv);
