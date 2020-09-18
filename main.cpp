@@ -107,6 +107,9 @@ class SimpleScene   : public Scene
 
 class MainWindow : public QMainWindow
 {
+ protected:
+    using clock_type = std::chrono::high_resolution_clock;
+    
  public:
     MainWindow(const SimpleScene *_pScene)
         :QMainWindow(),
@@ -114,13 +117,13 @@ class MainWindow : public QMainWindow
          m_iFrameCount(0),
          m_bFrameDone(false)
     {
-        int width = 640;
-        int height = 480;
+        int width = 1024;
+        int height = 768;
         int fov = 60;
 
         resize(width, height);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
-        startTimer(std::chrono::milliseconds(500));
+        startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(width, height, fov);
         m_pCamera = std::make_unique<Camera>(Vec(0, 20, 80), Vec(0, 1, 0), Vec(0, 0, -10));
@@ -150,14 +153,22 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 128;
+            int samplesPerPixel = 1024;
             int maxTraceDepth = 32;
+            
+            m_tpInit = clock_type::now();
             m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, numWorkers, samplesPerPixel, maxTraceDepth);
         }
         else if (m_pSource->isFinished() == true) {
             if (m_bFrameDone == false) {
                 m_pSource->writeJpegFile("raytraced.jpeg", 100);
                 m_bFrameDone = true;
+                
+                auto td = clock_type::now() - m_tpInit;
+                auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(td).count();
+                
+                std::string title = std::string("Done ") + std::to_string((float)ns/1e09) + "s";
+                setWindowTitle(QString::fromStdString(title));
             }
         }
 
@@ -171,6 +182,7 @@ class MainWindow : public QMainWindow
     std::unique_ptr<LNF::Frame>         m_pSource;
     int                                 m_iFrameCount;
     bool                                m_bFrameDone;
+    clock_type::time_point              m_tpInit;
 };
 
 
@@ -181,20 +193,24 @@ int main(int argc, char *argv[])
     auto pScene = std::make_unique<SimpleScene>();
     
     // create scene
+    auto pDiffuse0 = std::make_unique<Diffuse>(Color(0.4, 0.4, 0.4));
     auto pDiffuse1 = std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8);
     auto pDiffuse2 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 8);
-    auto pGlass1 = std::make_unique<Glass>(Color(0.9, 0.9, 0.9), 0.01, 1.5);
-    auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.05);
+    auto pGlass1 = std::make_unique<Glass>(Color(0.8, 0.8, 0.8), 0.01, 1.8);
+    auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.04);
     auto pLight1 = std::make_unique<Light>(Color(10.0, 10.0, 10.0));
+    auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
 
-    pScene->addNode(std::make_unique<Disc>(500, pDiffuse1.get()));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0.5, 0, Vec(0, 15, 10))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisIdentity(Vec(30, 15, -20))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0)));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 10))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisTranslation(Vec(30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0, Vec(-30, 15, -20))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(10, 5, 30))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0, Vec(-10, 5, 30))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pGlass1.get()), axisEulerZYX(0, 0.5, 0, Vec(0, 5, 40))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisIdentity(Vec(0, 60, 20))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(10, 5.5, 30))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0, Vec(-10, 5.5, 30))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(10, 20, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pNormalsInside.get()), axisEulerZYX(0, 0.3, 0, Vec(10, 3, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 60, 40))));
 
     // start app
     QApplication app(argc, argv);

@@ -126,9 +126,16 @@ namespace LNF
 
 
     inline Vec operator*(float _fScale, const Vec &_vec) {
-        return Vec(_vec.m_fX*_fScale,
-                   _vec.m_fY*_fScale,
-                   _vec.m_fZ*_fScale);
+        return Vec(_vec.m_fX * _fScale,
+                   _vec.m_fY * _fScale,
+                   _vec.m_fZ * _fScale);
+    }
+
+
+    inline Vec operator/(float _numerator, const Vec &_vec) {
+        return Vec(_numerator / _vec.m_fX,
+                   _numerator / _vec.m_fY,
+                   _numerator / _vec.m_fZ);
     }
 
 
@@ -139,6 +146,36 @@ namespace LNF
     }
 
     
+    inline Vec perElementScale(const Vec &_vec1, const Vec &_vec2) {
+        return Vec(_vec1.m_fX * _vec2.m_fX,
+                   _vec1.m_fY * _vec2.m_fY,
+                   _vec1.m_fZ * _vec2.m_fZ);
+    }
+
+
+    inline Vec perElementMax(const Vec &_vec1, const Vec &_vec2) {
+        return Vec(fmax(_vec1.m_fX, _vec2.m_fX),
+                   fmax(_vec1.m_fY, _vec2.m_fY),
+                   fmax(_vec1.m_fZ, _vec2.m_fZ));
+    }
+
+
+    inline Vec perElementMin(const Vec &_vec1, const Vec &_vec2) {
+        return Vec(fmin(_vec1.m_fX, _vec2.m_fX),
+                   fmin(_vec1.m_fY, _vec2.m_fY),
+                   fmin(_vec1.m_fZ, _vec2.m_fZ));
+    }
+
+    inline float minElement(const Vec &_vec) {
+        return fmin(fmin(_vec.m_fX, _vec.m_fY), _vec.m_fZ);
+    }
+
+    inline float maxElement(const Vec &_vec) {
+        return fmax(fmax(_vec.m_fX, _vec.m_fY), _vec.m_fZ);
+    }
+
+
+
     /*
      3 unit vector axis set
      (sort of like a matrix)
@@ -206,31 +243,42 @@ namespace LNF
     };
 
 
-    /* test if ray is inside box or not */
-    inline float *aaboxIntersect(float _t[9], const Vec &_min, const Vec &_max, const Vec &_rayOrigin, const Vec &_rayDirection) {
-        // check ray origin (_t[0] = -1 outside; 1 inside)
-        _t[0] = (_rayOrigin.m_fX - _min.m_fX > 0) && (_rayOrigin.m_fY - _min.m_fY > 0) && (_rayOrigin.m_fZ - _min.m_fZ > 0) &&
-                (_max.m_fX - _rayOrigin.m_fX > 0) && (_max.m_fY - _rayOrigin.m_fY > 0) && (_max.m_fZ - _rayOrigin.m_fZ > 0) ?
-                1.0f : -1.0f;
-                
-        // check ray direction (_t[9] = -1 no hit; > 0 hit; 0 no hit
-        _t[1] = (_min.m_fX - _rayOrigin.m_fX) / _rayDirection.m_fX;
-        _t[2] = (_max.m_fX - _rayOrigin.m_fX) / _rayDirection.m_fX;
-        _t[3] = (_min.m_fY - _rayOrigin.m_fY) / _rayDirection.m_fY;
-        _t[4] = (_max.m_fY - _rayOrigin.m_fY) / _rayDirection.m_fY;
-        _t[5] = (_min.m_fZ - _rayOrigin.m_fZ) / _rayDirection.m_fZ;
-        _t[6] = (_max.m_fZ - _rayOrigin.m_fZ) / _rayDirection.m_fZ;
+    // ray-box intersection (_invDir = 1 / ray_direction)
+    inline bool aaboxIntersectCheck(const Bounds &_box, const Vec &_origin, const Vec &_invDir) {
+        auto t1 = perElementScale(_box.m_min - _origin, _invDir);
+        auto t2 = perElementScale(_box.m_max - _origin, _invDir);
         
-        _t[7] = fmax(fmax(fmin(_t[1], _t[2]), fmin(_t[3], _t[4])), fmin(_t[5], _t[6]));
-        _t[8] = fmin(fmin(fmax(_t[1], _t[2]), fmax(_t[3], _t[4])), fmax(_t[5], _t[6]));
-        _t[9] = (_t[8] < 0.0f || _t[7] > _t[8]) ? -1.0f : _t[7];
+        auto tmn = perElementMin(t1, t2);
+        auto tmx = perElementMax(t1, t2);
         
-        return _t;
+        auto tmin = maxElement(tmn);
+        auto tmax = minElement(tmx);
+        
+        return tmin < tmax;
+    }
+
+    
+    // ray-box intersection (_invDir = 1 / ray_direction)
+    inline std::pair<float, bool> aaboxIntersect(const Bounds &_box, const Vec &_origin, const Vec &_invDir) {
+        auto t1 = perElementScale(_box.m_min - _origin, _invDir);
+        auto t2 = perElementScale(_box.m_max - _origin, _invDir);
+        
+        auto tmn = perElementMin(t1, t2);
+        auto tmx = perElementMax(t1, t2);
+        
+        auto tmin = maxElement(tmn);
+        auto tmax = minElement(tmx);
+        
+        auto intersect = tmin < tmax;
+        auto inside = intersect && (tmin < 0) && (tmax > 0);
+        auto t = inside ? tmax : tmin;
+
+        return std::make_pair(intersect ? t : -1.0f, inside);
     }
 
 
     // returns a vector within the unit cube (-1..1, -1..1, -1..1)
-    Vec randomUnitCube(RandomGen &_randomGen) {
+    inline Vec randomUnitCube(RandomGen &_randomGen) {
         std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
         return Vec(dist(_randomGen),
                    dist(_randomGen),
@@ -239,7 +287,7 @@ namespace LNF
 
     
     // returns a vector within the unit sphere (radius of 1)
-    Vec randomUnitSphere(RandomGen &_randomGen) {
+    inline Vec randomUnitSphere(RandomGen &_randomGen) {
         Vec ret = randomUnitCube(_randomGen);
         
         while (ret.sizeSqr() > 1) {
@@ -251,7 +299,7 @@ namespace LNF
 
 
     /* Creates the default axis */
-    Axis axisIdentity() {
+    inline Axis axisIdentity() {
         return {
             Vec{1.0f, 0.0f, 0.0f},
             Vec{0.0f, 1.0f, 0.0f},
@@ -262,7 +310,7 @@ namespace LNF
 
     /* Creates the default axis */
     template <typename P>
-    Axis axisIdentity(P &&_origin) {
+    inline Axis axisTranslation(P &&_origin) {
         return {
             Vec{1.0f, 0.0f, 0.0f},
             Vec{0.0f, 1.0f, 0.0f},
@@ -293,6 +341,16 @@ namespace LNF
             _origin
         };
     }
+    
+    /*
+     Creates an axis set with the given orientation.
+     alpha - angle around Z axis
+     beta  - angle around Y axis
+     gamma - angle around X axis
+     */
+    inline Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma) {
+        return axisEulerZYX(_fAlpha, _fBeta, _fGamma, Vec{0, 0, 0});
+    }
 
 
     /*
@@ -304,7 +362,7 @@ namespace LNF
      returns: [left, up, lookat]
      */
     template <typename P>
-    Axis axisLookat(const Vec &_lookat, P &&_origin, const Vec &_up) {
+    inline Axis axisLookat(const Vec &_lookat, P &&_origin, const Vec &_up) {
         auto lookat = (_lookat - _origin).normalized();
         auto left = crossProduct(_up, lookat).normalized();
         auto up = crossProduct(lookat, left);
@@ -323,7 +381,7 @@ namespace LNF
      returns: [e1, normal, e2]
      */
     template <typename N, typename P>
-    Axis axisPlane(N &&_normal, P &&_origin) {
+    inline Axis axisPlane(N &&_normal, P &&_origin) {
         auto e1 = crossProduct(_normal, Vec(0.0f, 0.0f, 1.0f));
         if (e1.sizeSqr() < 0.0001f) {
             e1 = crossProduct(_normal, Vec(0.0f, 1.0f, 0.0f));

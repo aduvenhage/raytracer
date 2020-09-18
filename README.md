@@ -37,6 +37,11 @@ Todo:
 ## Raytracing
 Never did raytracing before, but tried it now and I'm hooked :-)
 
+Resources:
+- http://www.realtimerendering.com/intersections.html
+- https://raytracing.github.io/
+- https://www.scratchapixel.com/
+
 Done:
 - rays and viewport
 - ray sphere interactions
@@ -48,14 +53,14 @@ Done:
 - rotated box intersections
 - sphere rotations (affects UV)
 - axis aligned box intersections
+- camera position and orientation
 
 Busy:
-- textured objects (texture images)
-- textured area lights
+- add bounding volume hyrarchy to scene
 
 Todo:
-- add bounding volume hyrarchy to scene
-- camera position and orientation
+- textured objects (texture images)
+- textured area lights
 - triangle mesh rendering
 - volumes / fog
 - de-noising

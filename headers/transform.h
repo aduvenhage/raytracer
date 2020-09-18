@@ -37,9 +37,7 @@ namespace LNF
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
             // check AA bounding volume first
-            float t[10];
-            aaboxIntersect(t, m_bounds.m_min, m_bounds.m_max, _ray.m_origin, _ray.m_direction);
-            if ( (t[9] > 0) || (t[0] > 0) )
+            if (aaboxIntersectCheck(m_bounds, _ray.m_origin, _ray.m_invDirection) == true)
             {
                 // transform ray and check target intersect
                 auto br = Ray(m_axis.transformTo(_ray.m_origin), m_axis.rotateTo(_ray.m_direction));

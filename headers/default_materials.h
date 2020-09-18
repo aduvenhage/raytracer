@@ -20,7 +20,7 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
             auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
             return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color(_hit), Color());
         }
@@ -67,8 +67,8 @@ namespace LNF
        {}
        
        /* Returns the scattered ray at the intersection point. */
-       virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
-           return ScatteredRay(_ray, Color(), m_color);
+       virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+           return ScatteredRay(_hit.m_ray, Color(), m_color);
        }
        
      private:
@@ -86,9 +86,9 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
             auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_fScatter).normalized();
-            auto reflectedRay = Ray(_hit.m_position, reflect(_ray.m_direction, normal));
+            auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_ray.m_direction, normal));
         
             return ScatteredRay(reflectedRay, m_color, Color());
         }
@@ -110,16 +110,12 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+            float dEtaiOverEtat = _hit.m_bInside ? m_fIndexOfRefraction : (1.0f/m_fIndexOfRefraction);
             auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_fScatter).normalized();
-            float dEtaiOverEtat = 1.0f/m_fIndexOfRefraction;
+            normal *= _hit.m_bInside ? -1 : 1;
             
-            if (_hit.m_bInside == true) {
-                normal = -normal;
-                dEtaiOverEtat = m_fIndexOfRefraction;
-            }
-            
-            auto refractedRay = Ray(_hit.m_position, refract(_ray.m_direction, normal, dEtaiOverEtat, _randomGen));
+            auto refractedRay = Ray(_hit.m_position, refract(_hit.m_ray.m_direction, normal, dEtaiOverEtat, _randomGen));
             return ScatteredRay(refractedRay, m_color, Color());
         }
 
@@ -128,6 +124,42 @@ namespace LNF
         float          m_fScatter;
         float          m_fIndexOfRefraction;
     };
+    
+    
+    // material that colors surface based on surface normal
+    class SurfaceNormal : public Material
+    {
+     public:
+        SurfaceNormal(bool _bInside=false)
+            :m_bInside(_bInside)
+        {}
+        
+        /* Returns the scattered ray at the intersection point. */
+        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+            if (_hit.m_bInside == m_bInside) {
+                auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
+                auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
+                auto color = Color((_hit.m_normal.m_fX + 1)/2, (_hit.m_normal.m_fY + 1)/2, (_hit.m_normal.m_fZ + 1)/2);
+
+                return ScatteredRay(scatteredRay, Color(), color);
+            }
+            else {
+                auto passThroughRay = Ray(_hit.m_position, _hit.m_ray.m_direction);
+                return ScatteredRay(passThroughRay, Color(1, 1, 1), Color());
+            }
+        }
+
+     private:
+        bool           m_bInside;
+    };
+    
+    
+    
+    
+    
+    // DEBUGGING -- draw normals
+
+
     
 };  // namespace LNF
 

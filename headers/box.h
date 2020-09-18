@@ -30,12 +30,12 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-            float t[10];
-            aaboxIntersect(t, m_bounds.m_min, m_bounds.m_max, _ray.m_origin, _ray.m_direction);
-            if (t[9] > 0) {
+            auto bi = aaboxIntersect(m_bounds, _ray.m_origin, _ray.m_invDirection);
+            if ( (bi.first >= _ray.m_fMinDist) && (bi.first <= _ray.m_fMaxDist) ) {
                 _hit.m_pNode = this;
-                _hit.m_fPositionOnRay = t[9];
+                _hit.m_fPositionOnRay = bi.first;
                 _hit.m_ray = _ray;
+                _hit.m_bInside = bi.second;
 
                 return true;
             }
@@ -45,21 +45,22 @@ namespace LNF
         
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const override {
-            static const Vec _a[] = {{0, 1, 0}, {-1, 0, 0}, {0, 1, 0}};
-            static const Vec _b[] = {{0, 0, 1}, {0, 0, 1}, {-1, 0, 0}};
-
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
             
             _hit.m_normal = Vec((int)(_hit.m_position.m_fX / m_vecDiv.m_fX),
                                 (int)(_hit.m_position.m_fY / m_vecDiv.m_fY),
                                 (int)(_hit.m_position.m_fZ / m_vecDiv.m_fZ));
             
-            const int i = int(fabs(_hit.m_normal.m_fY + _hit.m_normal.m_fZ * 2) + 0.5f);
-            const auto &a = _a[i];
-            const auto &b = _b[i];
+            auto e1 = crossProduct(_hit.m_normal, Vec(0.0f, 0.0f, 1.0f));
+            if (e1.sizeSqr() < 0.0001f) {
+                e1 = crossProduct(_hit.m_normal, Vec(0.0f, 1.0f, 0.0f));
+            }
+            
+            e1 = e1.normalized();
+            auto e2 = crossProduct(_hit.m_normal, e1);
 
             const auto p2 = _hit.m_position - m_bounds.m_min;
-            _hit.m_uv = Uv(a * p2 * m_fUvScale, b * p2 * m_fUvScale).wrap();
+            _hit.m_uv = Uv(e1 * p2 * m_fUvScale, e2 * p2 * m_fUvScale).wrap();
             
             return _hit;
         }

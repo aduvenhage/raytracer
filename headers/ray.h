@@ -22,16 +22,18 @@ namespace LNF
         Ray(Ray &) = default;
 
         template <typename U>
-        Ray(U &&_firection)
-            :m_direction(std::forward<U>(_firection)),
+        Ray(U &&_direction)
+            :m_direction(std::forward<U>(_direction)),
+             m_invDirection(1/_direction),
              m_fMinDist(0.00001f),
              m_fMaxDist(std::numeric_limits<float>::max())
         {}
         
         template <typename U, typename V>
-        Ray(U &&_origin, V &&_firection)
+        Ray(U &&_origin, V &&_direction)
             :m_origin(std::forward<U>(_origin)),
-             m_direction(std::forward<V>(_firection)),
+             m_direction(std::forward<V>(_direction)),
+             m_invDirection(1/_direction),
              m_fMinDist(0.00001f),
              m_fMaxDist(std::numeric_limits<float>::max())
         {}
@@ -45,6 +47,7 @@ namespace LNF
 
         Vec     m_origin;
         Vec     m_direction;
+        Vec     m_invDirection;
         float   m_fMinDist;
         float   m_fMaxDist;
     };

@@ -35,16 +35,17 @@ namespace LNF
             
                 // create scattered, reflected, reftracted, etc. color
                 auto pMaterial = pHitNode->material();
-                auto scatteredRay = pMaterial->scatter(hit, hit.m_ray, _randomGen);
+                auto scatteredRay = pMaterial->scatter(hit, _randomGen);
                 scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
                 
                 // transform ray back to world space
                 scatteredRay.m_ray.m_direction = hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction);
                 scatteredRay.m_ray.m_origin = hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin);
 
+                // trace recursively and blend colors
                 if ( (_maxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
-                    return scatteredRay.m_emitted +
-                           scatteredRay.m_color * trace(scatteredRay.m_ray, _pScene, _randomGen, _maxTraceDepth - 1);
+                    auto tracedColor = trace(scatteredRay.m_ray, _pScene, _randomGen, _maxTraceDepth - 1);
+                    return scatteredRay.m_emitted + scatteredRay.m_color * tracedColor;
                 }
                 else {
                     return scatteredRay.m_emitted;

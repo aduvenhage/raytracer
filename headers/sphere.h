@@ -46,13 +46,13 @@ namespace LNF
                     dRayLength += dt;
                     _hit.m_bInside = true;
                 }
-                
+
                 // check ray limits
                 if ( (dRayLength >= _ray.m_fMinDist) && (dRayLength <= _ray.m_fMaxDist) ) {
                     _hit.m_pNode = this;
                     _hit.m_fPositionOnRay = dRayLength;
                     _hit.m_ray = _ray;
-                    
+
                     return true;
                 }
             }

@@ -15,7 +15,7 @@ namespace LNF
         virtual ~Material() = default;
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const = 0;
+        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const = 0;
     };
 
 };  // namespace LNF
