@@ -238,9 +238,42 @@ namespace LNF
              m_max(std::forward<VY>(_max))
         {}
         
+        Bounds &operator=(const Bounds &) = default;
+        Bounds &operator=(Bounds &&) = default;
+        
+        double area() const {
+            Vec dist = m_max - m_min;            
+            return 2 * dist.m_fX * dist.m_fY +
+                   2 * dist.m_fX * dist.m_fZ +
+                   2 * dist.m_fY * dist.m_fZ;
+        }
+        
+        double volume() const {
+            Vec dist = m_max - m_min;
+            return dist.m_fX * dist.m_fY * dist.m_fZ;
+        }
+        
         Vec     m_min;
         Vec     m_max;
     };
+    
+    
+    // split box on longest axis
+    std::pair<Bounds, Bounds> splitBox(const Bounds &_bounds) {
+        Vec dist = _bounds.m_max - _bounds.m_min;
+        if ( (dist.m_fX > dist.m_fY) && (dist.m_fX > dist.m_fZ) ) {
+            dist.m_fX *= 0.5;
+        }
+        else if ( (dist.m_fY > dist.m_fX) && (dist.m_fY > dist.m_fZ) ) {
+            dist.m_fY *= 0.5;
+        }
+        else {
+            dist.m_fZ *= 0.5;
+        }
+        
+        return std::make_pair(Bounds(_bounds.m_min, _bounds.m_min + dist), Bounds(_bounds.m_max - dist, _bounds.m_max));
+                                
+    }
 
 
     // ray-box intersection (_invDir = 1 / ray_direction)
@@ -274,6 +307,14 @@ namespace LNF
         auto t = inside ? tmax : tmin;
 
         return std::make_pair(intersect ? t : -1.0f, inside);
+    }
+    
+    
+    // box-box intersection (checks whether A intersects with B)
+    inline bool aaboxIntersectCheck(const Bounds &_boxA, const Bounds &_boxB) {
+        return (_boxA.m_min.m_fX <= _boxB.m_max.m_fX) && (_boxA.m_max.m_fX >= _boxB.m_min.m_fX) &&
+               (_boxA.m_min.m_fY <= _boxB.m_max.m_fY) && (_boxA.m_max.m_fY >= _boxB.m_min.m_fY) &&
+               (_boxA.m_min.m_fZ <= _boxB.m_max.m_fZ) && (_boxA.m_max.m_fZ >= _boxB.m_min.m_fZ);
     }
 
 

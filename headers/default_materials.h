@@ -130,8 +130,9 @@ namespace LNF
     class SurfaceNormal : public Material
     {
      public:
-        SurfaceNormal(bool _bInside=false)
-            :m_bInside(_bInside)
+        SurfaceNormal(bool _bInside=false, float _fColorScale=1.0f)
+            :m_fColorScale(_fColorScale),
+             m_bInside(_bInside)
         {}
         
         /* Returns the scattered ray at the intersection point. */
@@ -141,7 +142,7 @@ namespace LNF
                 auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
                 auto color = Color((_hit.m_normal.m_fX + 1)/2, (_hit.m_normal.m_fY + 1)/2, (_hit.m_normal.m_fZ + 1)/2);
 
-                return ScatteredRay(scatteredRay, Color(), color);
+                return ScatteredRay(scatteredRay, Color(), color * m_fColorScale);
             }
             else {
                 auto passThroughRay = Ray(_hit.m_position, _hit.m_ray.m_direction);
@@ -150,15 +151,9 @@ namespace LNF
         }
 
      private:
+        float          m_fColorScale;
         bool           m_bInside;
     };
-    
-    
-    
-    
-    
-    // DEBUGGING -- draw normals
-
 
     
 };  // namespace LNF

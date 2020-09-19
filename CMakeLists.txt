@@ -49,6 +49,7 @@ SET(APP_SRC
 
 SET(LNF_HEADERS
     headers/box.h
+    headers/bvh.h
     headers/camera.h
     headers/color.h
     headers/constants.h

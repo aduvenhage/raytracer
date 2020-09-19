@@ -12,6 +12,8 @@
 #include "scene.h"
 #include "trace.h"
 
+#include <algorithm>
+
 
 namespace LNF
 {
@@ -49,7 +51,7 @@ namespace LNF
     class Frame
     {
      protected:
-        const static int PIXEL_BLOCK_SIZE = 16;     // size of blocks jobs work on
+        const static int PIXEL_BLOCK_SIZE = 64;     // size of blocks jobs work on
         
      public:
         Frame(const ViewportScreen *_pViewport,
@@ -105,6 +107,7 @@ namespace LNF
             // chop output image into smaller blocks
             int width = m_image.width();
             int height = m_image.height();
+            std::vector<std::unique_ptr<Job>> jobs;
 
             for (int j = 0; j < height; j += m_iPixelBlockSize) {
                 int iBlockHeight = m_iPixelBlockSize;
@@ -118,12 +121,16 @@ namespace LNF
                         iBlockWidth = width - i;
                     }
                     
-                   m_jobQueue.push(std::make_unique<PixelJob>(&m_image, m_pViewport,
-                                                              i, j, iBlockWidth, iBlockHeight,
-                                                              m_pScene,
-                                                              m_iSamplesPerPixel, m_iMaxTraceDepth));
+                    // create a job per block
+                    jobs.push_back(std::make_unique<PixelJob>(&m_image, m_pViewport,
+                                                               i, j, iBlockWidth, iBlockHeight,
+                                                               m_pScene,
+                                                               m_iSamplesPerPixel, m_iMaxTraceDepth));
                 }
             }
+            
+            // shuffle jobs a little
+            m_jobQueue.push_shuffle(jobs, m_generator);
         }
         
         // create worker threads
@@ -140,6 +147,7 @@ namespace LNF
         JobQueue                                m_jobQueue;
         std::vector<std::unique_ptr<Worker>>    m_workers;
         OutputImageBuffer                       m_image;
+        RandomGen                               m_generator;
         int                                     m_iPixelBlockSize;
         int                                     m_iSamplesPerPixel;
         int                                     m_iNumWorkers;

@@ -59,9 +59,10 @@ Busy:
 - add bounding volume hyrarchy to scene
 
 Todo:
+- triangle mesh loading (see https://github.com/assimp/assimp)
+- triangle mesh rendering
 - textured objects (texture images)
 - textured area lights
-- triangle mesh rendering
 - volumes / fog
 - de-noising
 

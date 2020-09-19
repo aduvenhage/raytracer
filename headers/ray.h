@@ -57,6 +57,9 @@ namespace LNF
     struct ScatteredRay
     {
         ScatteredRay() = default;
+        ScatteredRay(const ScatteredRay &) = default;
+        ScatteredRay(ScatteredRay &&) = default;
+        ScatteredRay(ScatteredRay &) = default;
         
         template <typename R, typename CC, typename CE>
         ScatteredRay(R &&_ray, CC &&_color, CE &&_emitted)

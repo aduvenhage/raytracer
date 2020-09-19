@@ -123,6 +123,14 @@ namespace LNF
         float      m_fGreen;
         float      m_fBlue;
     };
+    
+    
+    // scale color
+    Color operator*(float _fScale, const Color &_color) {
+        return _color * _fScale;
+    }
+        
+
 
 
 };  // namespace LNF

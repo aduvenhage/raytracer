@@ -1,4 +1,5 @@
 #include "headers/box.h"
+#include "headers/bvh.h"
 #include "headers/color.h"
 #include "headers/constants.h"
 #include "headers/default_materials.h"
@@ -67,10 +68,13 @@ class SimpleScene   : public Scene
      */
     virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
         bool bHit = false;
+        std::vector<Node*> nodes;
+        m_bvhRoot.intersect(nodes, _ray);
+        
         
         // find best hit
         Intersect nh;
-        for (auto &pNode : m_nodes) {
+        for (auto &pNode : nodes) {
             if ( (pNode->hit(nh, _ray) == true) &&
                  ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
             {
@@ -99,8 +103,16 @@ class SimpleScene   : public Scene
         m_nodes.push_back(std::move(_pNode));
     }
     
+    /*
+     Build scene graph.
+     */
+    void build() {
+        m_bvhRoot.build(m_nodes);
+    }
+    
  protected:
-    std::vector<std::unique_ptr<Node>>   m_nodes;
+    std::vector<std::shared_ptr<Node>>   m_nodes;
+    BvhNode                              m_bvhRoot;
 };
 
 
@@ -126,7 +138,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(width, height, fov);
-        m_pCamera = std::make_unique<Camera>(Vec(0, 20, 80), Vec(0, 1, 0), Vec(0, 0, -10));
+        m_pCamera = std::make_unique<Camera>(Vec(0, 40, 160), Vec(0, 1, 0), Vec(0, 0, -10));
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -153,7 +165,7 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 1024;
+            int samplesPerPixel = 64;
             int maxTraceDepth = 32;
             
             m_tpInit = clock_type::now();
@@ -191,6 +203,7 @@ int main(int argc, char *argv[])
 {
     // init
     auto pScene = std::make_unique<SimpleScene>();
+    RandomGen generator;
     
     // create scene
     auto pDiffuse0 = std::make_unique<Diffuse>(Color(0.4, 0.4, 0.4));
@@ -202,15 +215,23 @@ int main(int argc, char *argv[])
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0)));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 10))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 10))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisTranslation(Vec(30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0, Vec(-30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(10, 5.5, 30))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0, Vec(-10, 5.5, 30))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(10, 20, 40))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pNormalsInside.get()), axisEulerZYX(0, 0.3, 0, Vec(10, 3, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pDiffuse2.get()), axisEulerZYX(0, 0, 0, Vec(10, 20, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pDiffuse2.get()), axisEulerZYX(0, 0.3, 0, Vec(10, 3, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 60, 40))));
+    
+    std::uniform_real_distribution<float> dist(-400, 400);
+    
+    for (int i = 0; i < 5000; i++) {
+        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(5, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(dist(generator), 5, dist(generator)))));
+    }
+    
+    pScene->build();
 
     // start app
     QApplication app(argc, argv);

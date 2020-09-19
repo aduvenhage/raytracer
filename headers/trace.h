@@ -24,7 +24,7 @@ namespace LNF
     Color trace(const Ray &_ray,
                 const Scene *_pScene,
                 RandomGen &_randomGen,
-                int _maxTraceDepth)
+                int _iMaxTraceDepth)
     {
         Intersect hit;
         if (_pScene->hit(hit, _ray) == true) {
@@ -43,8 +43,8 @@ namespace LNF
                 scatteredRay.m_ray.m_origin = hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin);
 
                 // trace recursively and blend colors
-                if ( (_maxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
-                    auto tracedColor = trace(scatteredRay.m_ray, _pScene, _randomGen, _maxTraceDepth - 1);
+                if ( (_iMaxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
+                    auto tracedColor = trace(scatteredRay.m_ray, _pScene, _randomGen, _iMaxTraceDepth - 1);
                     return scatteredRay.m_emitted + scatteredRay.m_color * tracedColor;
                 }
                 else {
@@ -79,7 +79,7 @@ namespace LNF
                     auto ray = _pView->getRay(i, j, pixelDist(_generator), pixelDist(_generator));
 
                     // trace ray and add color result
-                    color += trace(ray, _scene, _generator, _iMaxDepth);
+                    color += trace(ray, _scene, _generator, _iMaxDepth - 1);
                 }
                                 
                 // write averaged color to output image
