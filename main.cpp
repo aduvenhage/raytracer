@@ -236,10 +236,13 @@ int main(int argc, char *argv[])
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
     
-    std::uniform_real_distribution<float> dist(-400, 400);
+    std::uniform_real_distribution<float> dp(-400, 400);
+    std::uniform_real_distribution<float> dr(0, LNF::pi);
     
     for (int i = 0; i < 1000; i++) {
-        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(5, materials[i%materials.size()]), axisEulerZYX(0, 0, 0, Vec(dist(generator), 5, dist(generator)))));
+        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(5,
+                                                                             materials[i % materials.size()]),
+                                                                             axisEulerZYX(0, dr(generator), 0, Vec(dp(generator), 5, dp(generator)))));
     }
     
     pScene->build();
