@@ -130,6 +130,7 @@ namespace LNF
             }
             
             // shuffle jobs a little
+            //m_jobQueue.push(jobs);
             m_jobQueue.push_shuffle(jobs, m_generator);
         }
         

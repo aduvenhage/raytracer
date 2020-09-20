@@ -67,10 +67,11 @@ class SimpleScene   : public Scene
        Could be accessed by multiple worker threads concurrently.
      */
     virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        static thread_local std::vector<Node*> nodes;
         bool bHit = false;
-        std::vector<Node*> nodes;
-        m_bvhRoot.intersect(nodes, _ray);
         
+        nodes.clear();
+        m_bvhRoot.intersect(nodes, _ray);
         
         // find best hit
         Intersect nh;
@@ -138,7 +139,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(width, height, fov);
-        m_pCamera = std::make_unique<Camera>(Vec(0, 40, 160), Vec(0, 1, 0), Vec(0, 0, -10));
+        m_pCamera = std::make_unique<Camera>(Vec(0, 60, 160), Vec(0, 1, 0), Vec(0, 0, -10));
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -165,7 +166,7 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 64;
+            int samplesPerPixel = 1024;
             int maxTraceDepth = 32;
             
             m_tpInit = clock_type::now();
@@ -212,7 +213,17 @@ int main(int argc, char *argv[])
     auto pGlass1 = std::make_unique<Glass>(Color(0.8, 0.8, 0.8), 0.01, 1.8);
     auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.04);
     auto pLight1 = std::make_unique<Light>(Color(10.0, 10.0, 10.0));
+    auto pLight2 = std::make_unique<Light>(Color(1.0, 1.0, 1.0));
+    auto pLight3 = std::make_unique<Light>(Color(1.0, 0.1, 0.1));
+    auto pLight4 = std::make_unique<Light>(Color(0.1, 1.0, 0.1));
+    auto pLight5 = std::make_unique<Light>(Color(0.1, 0.1, 1.0));
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
+    
+    auto materials = std::vector<Material*>{pDiffuse0.get(), pDiffuse1.get(), pDiffuse2.get(),
+                                            pGlass1.get(),
+                                            pMetal1.get(),
+                                            pLight2.get(), pLight3.get(), pLight4.get(), pLight5.get(),
+                                            pNormalsInside.get()};
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0)));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 10))));
@@ -223,12 +234,12 @@ int main(int argc, char *argv[])
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pDiffuse2.get()), axisEulerZYX(0, 0, 0, Vec(10, 20, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pDiffuse2.get()), axisEulerZYX(0, 0.3, 0, Vec(10, 3, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 60, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
     
     std::uniform_real_distribution<float> dist(-400, 400);
     
-    for (int i = 0; i < 5000; i++) {
-        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(5, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(dist(generator), 5, dist(generator)))));
+    for (int i = 0; i < 1000; i++) {
+        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(5, materials[i%materials.size()]), axisEulerZYX(0, 0, 0, Vec(dist(generator), 5, dist(generator)))));
     }
     
     pScene->build();
