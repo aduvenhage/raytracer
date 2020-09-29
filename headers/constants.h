@@ -16,11 +16,19 @@ constexpr float sqr(float _a) {
 }
 
 
+constexpr bool isPowerOf2(int _n) {
+    return (_n > 0) && ((_n & (_n-1)) == 0);
+}
+
+
 template <typename T>
 inline auto clamp(const T &_value, const T &_min, const T &_max) {
     auto v = (_value < _min) ? _min : _value;
     return (v > _max) ? _max : v;
 }
+
+
+
 
 
 namespace LNF

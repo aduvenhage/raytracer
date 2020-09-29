@@ -2,6 +2,7 @@
 #define LIBS_HEADER_JOBS_H
 
 #include "constants.h"
+#include "queue.h"
 
 #include <atomic>
 #include <memory>
@@ -25,82 +26,7 @@ namespace LNF
 
 
     /* collection of jobs for workers */
-    class JobQueue
-    {
-     public:
-        JobQueue()
-            :m_iSize(0)
-        {}
-        
-        ~JobQueue() = default;
-        
-        /* returns true if no more jobs */
-        bool empty() const {
-            return m_iSize == 0;
-        }
-        
-        /* returns true if no more jobs */
-        size_t size() const {
-            return m_iSize;
-        }
-        
-        /* add job to pool */
-        void push(std::unique_ptr<Job> &&_pJob) {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_jobs.push(std::move(_pJob));
-            m_iSize = (int)m_jobs.size();
-        }
-        
-        /* add job to pool */
-        void push(std::vector<std::unique_ptr<Job>> &_jobs) {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            for (auto &pJob : _jobs) {
-                m_jobs.push(std::move(pJob));
-            }
-            
-            m_iSize = (int)m_jobs.size();
-            _jobs.clear();
-        }
-        
-        /* add job to pool -- in a random order */
-        template <typename random_gen>
-        void push_shuffle(std::vector<std::unique_ptr<Job>> &_jobs, random_gen &_randomGen) {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            std::shuffle(_jobs.begin(), _jobs.end(), _randomGen);
-            
-            for (auto &pJob : _jobs) {
-                m_jobs.push(std::move(pJob));
-            }
-            
-            m_iSize = (int)m_jobs.size();
-            _jobs.clear();
-        }
-
-        /* take jobs from pool */
-        std::vector<std::unique_ptr<Job>> pop(size_t _uNumJobs) {
-            std::vector<std::unique_ptr<Job>> ret;
-            ret.reserve(_uNumJobs);
-            
-            std::lock_guard<std::mutex> lock(m_mutex);
-            int count = 0;
-            while (m_jobs.empty() == false) {
-                ret.push_back(std::move(m_jobs.front()));
-                m_jobs.pop();
-                m_iSize = (int)m_jobs.size();
-
-                if (++count >= (int)_uNumJobs) {
-                    break;
-                }
-            }
-            
-            return ret;
-        }
-        
-     protected:
-        std::queue<std::unique_ptr<Job>>    m_jobs;
-        std::atomic<int>                    m_iSize;
-        mutable std::mutex                  m_mutex;
-    };
+    using JobQueue = Queue<std::unique_ptr<Job>>;
 
 
     /* Worker that can execute jobs */

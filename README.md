@@ -54,16 +54,19 @@ Done:
 - sphere rotations (affects UV)
 - axis aligned box intersections
 - camera position and orientation
+- add bounding volume hyrarchy to scene
+- depth-of-field
 
 Busy:
-- add bounding volume hyrarchy to scene
 
 Todo:
-- triangle mesh loading (see https://github.com/assimp/assimp)
 - triangle mesh rendering
+- triangle mesh loading (see https://github.com/assimp/assimp)
 - textured objects (texture images)
 - textured area lights
 - volumes / fog
+- replace axis-math with matrix math
+- optisation through importance sampling (for lights)
 - de-noising
 
 

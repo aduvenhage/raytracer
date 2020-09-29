@@ -139,7 +139,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(width, height, fov);
-        m_pCamera = std::make_unique<Camera>(Vec(0, 60, 160), Vec(0, 1, 0), Vec(0, 0, -10));
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 30, 120), Vec(0, 1, 0), Vec(0, 0, -10), 1.0, 100);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -166,7 +166,7 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 1024;
+            int samplesPerPixel = 4096;
             int maxTraceDepth = 32;
             
             m_tpInit = clock_type::now();
@@ -236,10 +236,10 @@ int main(int argc, char *argv[])
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
     
-    std::uniform_real_distribution<float> dp(-400, 400);
+    std::uniform_real_distribution<float> dp(-500, 500);
     std::uniform_real_distribution<float> dr(0, LNF::pi);
     
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 5000; i++) {
         pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(5,
                                                                              materials[i % materials.size()]),
                                                                              axisEulerZYX(0, dr(generator), 0, Vec(dp(generator), 5, dp(generator)))));

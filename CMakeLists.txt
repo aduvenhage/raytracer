@@ -14,7 +14,7 @@ SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTORCC ON)
 SET(CMAKE_AUTOUIC ON)
 
-# NOTE: CMAKE_PREFIX_PATH=/usr/local/Cellar/qt/5.15.0
+MESSAGE("example Qt setup: 'CMAKE_PREFIX_PATH=/usr/local/Cellar/qt/5.15.0'")
 FIND_PACKAGE(Qt5 COMPONENTS Widgets REQUIRED)
 
 MESSAGE("Build tool: " ${CMAKE_BUILD_TOOL})
@@ -37,7 +37,8 @@ INCLUDE_DIRECTORIES(${LNF_INCLUDE_DIRS})
 LINK_DIRECTORIES(${LNF_LIB_DIRS})
 
 SET(PROJ_FILES
-    README.md
+    ${CMAKE_SOURCE_DIR}/README.md
+    ${CMAKE_SOURCE_DIR}/.gitignore
 )
 
 add_custom_target(proj_files SOURCES ${PROJ_FILES})
@@ -58,6 +59,7 @@ SET(LNF_HEADERS
     headers/intersect.h
     headers/jobs.h
     headers/jpeg.h
+    headers/queue.h
     headers/mandlebrot.h
     headers/material.h
     headers/outputimage.h
@@ -66,9 +68,10 @@ SET(LNF_HEADERS
     headers/ray.h
     headers/scene.h
     headers/node.h
-    headers/transform.h
     headers/sphere.h
+    headers/strutil.h
     headers/trace.h
+    headers/transform.h
     headers/uv.h
     headers/vec3.h
     headers/viewport.h

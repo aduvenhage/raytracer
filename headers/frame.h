@@ -51,7 +51,8 @@ namespace LNF
     class Frame
     {
      protected:
-        const static int PIXEL_BLOCK_SIZE = 64;     // size of blocks jobs work on
+        const static int    PIXEL_BLOCK_SIZE    = 16;     // size of pixel blocks jobs work on
+        const static int    JOB_CHUNK_SIZE      = 4;      // number of jobs grabbed by worker
         
      public:
         Frame(const ViewportScreen *_pViewport,
@@ -130,7 +131,6 @@ namespace LNF
             }
             
             // shuffle jobs a little
-            //m_jobQueue.push(jobs);
             m_jobQueue.push_shuffle(jobs, m_generator);
         }
         
@@ -138,7 +138,7 @@ namespace LNF
         void createWorkers() {
             std::vector<std::unique_ptr<Worker>> workers;
             for (int i = 0; i < m_iNumWorkers; i++) {
-                m_workers.push_back(std::make_unique<Worker>(&m_jobQueue, 4));
+                m_workers.push_back(std::make_unique<Worker>(&m_jobQueue, (int)JOB_CHUNK_SIZE));
             }
         }
         

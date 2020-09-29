@@ -6,6 +6,9 @@
 #include "ray.h"
 #include "vec3.h"
 
+#include <random>
+
+
 
 namespace LNF
 {
@@ -15,7 +18,7 @@ namespace LNF
      public:
         virtual ~Viewport() = default;
         
-        virtual Ray getRay(int _iX, int _iY, float _fX, float _fY) const = 0;
+        virtual Ray getRay(int _iX, int _iY, RandomGen &_generator) const = 0;
     };
 
 
@@ -34,16 +37,29 @@ namespace LNF
             m_pCamera = _pCam;
         }
         
-        Ray getRay(int _iX, int _iY, float _fX = 0.5f, float _fY = 0.5f) const override {
-            float x = (2 * (_iX + _fX) / (float)m_iWidth - 1) * m_fViewAspect * m_fScale;
-            float y = (1 - 2 * (_iY + _fY) / (float)m_iHeight) * m_fScale;
+        Ray getRay(int _iX, int _iY, RandomGen &_generator) const override {
+            std::uniform_real_distribution<float> pixelDist(-0.4, 0.4);
+
+            float x = (2 * (_iX + pixelDist(_generator)) / (float)m_iWidth - 1) * m_fViewAspect * m_fScale;
+            float y = (1 - 2 * (_iY + pixelDist(_generator)) / (float)m_iHeight) * m_fScale;
                 
             if (m_pCamera == nullptr) {
                 return Ray(Vec(x, y, -1).normalized());
             }
+            else if (m_pCamera->aperture() < 0.0001) {
+                return Ray(m_pCamera->origin(),
+                           m_pCamera->rotateFrom(Vec(-x, y, 1).normalized()));
+            }
             else {
-                return Ray(m_pCamera->m_axis.m_origin,
-                           m_pCamera->camera2world(Vec(-x, y, 1).normalized()));
+                auto rayOrigin = randomUnitDisc(_generator) * m_pCamera->aperture() * 0.5;
+                auto rayFocus = Vec(-x, y, 1).normalized() * m_pCamera->focusDistance();
+                
+                // transform from camera to world
+                rayOrigin = m_pCamera->transformFrom(rayOrigin);
+                rayFocus = m_pCamera->transformFrom(rayFocus);
+                
+                // create ray
+                return Ray(rayOrigin, (rayFocus - rayOrigin).normalized());
             }
         }
         
@@ -74,8 +90,8 @@ namespace LNF
              m_iStartY(_iStartY)
         {}
         
-        Ray getRay(int _iX, int _iY, float _fX = 0.5f, float _fY = 0.5f) const override {
-            return m_pViewport->getRay(_iX + m_iStartX, _iY + m_iStartY, _fX, _fY);
+        Ray getRay(int _iX, int _iY, RandomGen &_generator) const override {
+            return m_pViewport->getRay(_iX + m_iStartX, _iY + m_iStartY, _generator);
         }
         
      protected:

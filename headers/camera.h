@@ -8,31 +8,77 @@
 namespace LNF
 {
     /*
-     Moveable camera
+        Camera base class.
      */
-    struct Camera
+    class Camera
     {
-        Camera()
-        {}
-        
-        Camera(const Vec &_origin, const Vec &_up, const Vec &_lookat)
-            :m_axis(axisLookat(_lookat, _origin, _up))
-        {}
-        
-        Camera(const Camera &) = default;
-        Camera(Camera &&) = default;
-        Camera(Camera &) = default;
+     public:
+        virtual ~Camera() = default;
 
-        Camera &operator=(const Camera &) = default;
-        Camera &operator=(Camera &&) = default;
-        
+        // returns the camera position
+        virtual Vec origin() const = 0;
+
         // rotate from camera/view to world coordinates
-        Vec camera2world(const Vec &_view) {
-            return m_axis.rotateFrom(_view);
+        virtual Vec rotateFrom(const Vec &_vec) const = 0;
+
+        // transform from camera/view to world coordinates
+        virtual Vec transformFrom(const Vec &_vec) const = 0;
+
+        // returns camera focus distance
+        virtual float focusDistance() const = 0;
+
+        // returns camera aperture size
+        virtual float aperture() const = 0;
+    };
+
+
+    /*
+        Simple camera with origin, up and lookat point.
+     */
+    class SimpleCamera  : public Camera
+    {
+     public:
+        SimpleCamera(const Vec &_origin, const Vec &_up, const Vec &_lookat, float _fAperture, float _fFocusDist)
+            :m_axis(axisLookat(_lookat, _origin, _up)),
+             m_fAperture(_fAperture),
+             m_fFocusDist(_fFocusDist)
+        {}
+        
+        // returns the camera position
+        virtual Vec origin() const override {
+            return m_axis.m_origin;
         }
         
-        Axis    m_axis;       // [x=left, y=up, z=lookat]
+        // rotate from camera/view to world coordinates
+        virtual Vec rotateFrom(const Vec &_vec) const override {
+            return m_axis.rotateFrom(_vec);
+        }
+
+        // transform from camera/view to world coordinates
+        virtual Vec transformFrom(const Vec &_vec) const override {
+            return m_axis.transformFrom(_vec);
+        }
+
+        // returns camera focus distance
+        virtual float focusDistance() const override {
+            return m_fFocusDist;
+        }
+        
+        // returns camera aperture size
+        virtual float aperture() const override {
+            return m_fAperture;
+        }
+        
+     protected:
+        Axis    m_axis;
+        float   m_fAperture;
+        float   m_fFocusDist;
     };
+    
+    
+    /*
+        Camera positioned
+     */
 
 
 };  // namespace LNF

@@ -327,12 +327,33 @@ namespace LNF
     }
 
     
+    // returns a vector within the unit disc (-1..1, -1..1, 0)
+    inline Vec randomUnitSquare(RandomGen &_randomGen) {
+        std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+        return Vec(dist(_randomGen),
+                   dist(_randomGen),
+                   0);
+    }
+
+    
     // returns a vector within the unit sphere (radius of 1)
     inline Vec randomUnitSphere(RandomGen &_randomGen) {
         Vec ret = randomUnitCube(_randomGen);
         
         while (ret.sizeSqr() > 1) {
             ret = randomUnitCube(_randomGen);
+        }
+        
+        return ret;
+    }
+
+
+    // returns a vector within the unit disc (y/x plane, radius of 1)
+    inline Vec randomUnitDisc(RandomGen &_randomGen) {
+        Vec ret = randomUnitSquare(_randomGen);
+        
+        while (ret.sizeSqr() > 1) {
+            ret = randomUnitSquare(_randomGen);
         }
         
         return ret;
