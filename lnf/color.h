@@ -129,6 +129,15 @@ namespace LNF
     Color operator*(float _fScale, const Color &_color) {
         return _color * _fScale;
     }
+    
+    
+    // preset colors
+    namespace COLOR
+    {
+        static const Color  Red(1, 0, 0);
+        static const Color  Green(0, 1, 0);
+        static const Color  Blue(0, 0, 1);
+    }
         
 
 

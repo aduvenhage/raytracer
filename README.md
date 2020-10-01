@@ -58,9 +58,9 @@ Done:
 - depth-of-field
 
 Busy:
+- triangle mesh rendering
 
 Todo:
-- triangle mesh rendering
 - triangle mesh loading (see https://github.com/assimp/assimp)
 - textured objects (texture images)
 - textured area lights

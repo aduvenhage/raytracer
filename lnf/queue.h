@@ -13,9 +13,9 @@ namespace LNF
 {
 
     /*
-        Simple thread-safe queue.
         Uses lock internally and can handle multiple-producers and consumers.
         Push and pop do not block, except while waiting for locks.
+        Internal queue can grow to any size.
     */
     template <typename item_type>
     class Queue
@@ -153,6 +153,90 @@ namespace LNF
         std::atomic<uint32_t>          m_uBack;
     };
     
+    
+    
+    /*
+        Ring buffer based queue (thread-safe for multiple producers and consumers).
+        Pop and push operations may block.
+     */
+    template <typename payload_type, int N>
+    class BlockingQueue
+    {
+     static_assert(isPowerOf2(N), "Queue internal size should be a power of two.");
+     protected:
+        const size_t            MASK = N-1;
+        
+     public:
+        BlockingQueue()
+            :m_uSize(0),
+             m_uFront(0),
+             m_uBack(0)
+        {}
+        
+        // may block if queue is full
+        template <typename T>
+        bool push(T &&_p) {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_cv.wait(lock, [&]{return !full();});
+
+            m_array[m_uBack & MASK] = std::forward<T>(_p);
+            m_uBack++;
+            m_uSize = m_uBack - m_uFront;
+
+            lock.unlock();
+            m_cv.notify_one();
+            return true;
+        }
+        
+        // may block if queue is empty
+        bool pop(payload_type &_p) {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_cv.wait(lock, [&]{return !empty();});
+
+            _p = std::move(m_array[m_uFront & MASK]);
+            m_uFront++;
+            m_uSize = m_uBack - m_uFront;
+
+            lock.unlock();
+            m_cv.notify_one();
+            return true;
+        }
+        
+        // may block if queue is empty
+        payload_type pop() {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_cv.wait(lock, [&]{return !empty();});
+
+            auto p = std::move(m_array[m_uFront & MASK]);
+            m_uFront++;
+            m_uSize = m_uBack - m_uFront;
+
+            lock.unlock();
+            m_cv.notify_one();
+            return p;
+        }
+        
+        bool empty() const {
+            return m_uSize == 0;
+        }
+        
+        bool full() const {
+            return m_uSize >= N;
+        }
+        
+        size_t size() const {
+            return m_uSize;
+        }
+        
+     private:
+        std::array<payload_type, N>    m_array;
+        std::mutex                     m_mutex;
+        std::condition_variable        m_cv;
+        std::atomic<uint32_t>          m_uSize;
+        uint32_t                       m_uFront;
+        uint32_t                       m_uBack;
+    };
+
     
 };  // namespace LNF
 

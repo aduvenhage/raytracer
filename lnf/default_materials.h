@@ -130,9 +130,8 @@ namespace LNF
     class SurfaceNormal : public Material
     {
      public:
-        SurfaceNormal(bool _bInside=false, float _fColorScale=1.0f)
-            :m_fColorScale(_fColorScale),
-             m_bInside(_bInside)
+        SurfaceNormal(bool _bInside=false)
+            :m_bInside(_bInside)
         {}
         
         /* Returns the scattered ray at the intersection point. */
@@ -142,7 +141,7 @@ namespace LNF
                 auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
                 auto color = Color((_hit.m_normal.m_fX + 1)/2, (_hit.m_normal.m_fY + 1)/2, (_hit.m_normal.m_fZ + 1)/2);
 
-                return ScatteredRay(scatteredRay, Color(), color * m_fColorScale);
+                return ScatteredRay(scatteredRay, Color(), color);
             }
             else {
                 auto passThroughRay = Ray(_hit.m_position, _hit.m_ray.m_direction);
@@ -151,10 +150,26 @@ namespace LNF
         }
 
      private:
-        float          m_fColorScale;
         bool           m_bInside;
     };
 
+
+    // triangle tri-color surface
+    class TriangleRGB    : public Material
+    {
+     public:
+        TriangleRGB()
+        {}
+        
+        /* Returns the scattered ray at the intersection point. */
+        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+            auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
+            auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
+            
+            auto color = COLOR::Red * _hit.m_uv.m_fU + COLOR::Green * _hit.m_uv.m_fV + COLOR::Blue * (1 - _hit.m_uv.m_fU - _hit.m_uv.m_fV);
+            return ScatteredRay(scatteredRay, Color(), color);
+        }
+    };
     
 };  // namespace LNF
 

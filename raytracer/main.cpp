@@ -1,23 +1,24 @@
-#include "headers/box.h"
-#include "headers/bvh.h"
-#include "headers/color.h"
-#include "headers/constants.h"
-#include "headers/default_materials.h"
-#include "headers/frame.h"
-#include "headers/jobs.h"
-#include "headers/jpeg.h"
-#include "headers/mandlebrot.h"
-#include "headers/outputimage.h"
-#include "headers/plane.h"
-#include "headers/profile.h"
-#include "headers/ray.h"
-#include "headers/scene.h"
-#include "headers/transform.h"
-#include "headers/sphere.h"
-#include "headers/trace.h"
-#include "headers/uv.h"
-#include "headers/vec3.h"
-#include "headers/viewport.h"
+#include "lnf/box.h"
+#include "lnf/bvh.h"
+#include "lnf/color.h"
+#include "lnf/constants.h"
+#include "lnf/default_materials.h"
+#include "lnf/frame.h"
+#include "lnf/jobs.h"
+#include "lnf/jpeg.h"
+#include "lnf/mandlebrot.h"
+#include "lnf/outputimage.h"
+#include "lnf/plane.h"
+#include "lnf/profile.h"
+#include "lnf/ray.h"
+#include "lnf/scene.h"
+#include "lnf/transform.h"
+#include "lnf/sphere.h"
+#include "lnf/trace.h"
+#include "lnf/triangle.h"
+#include "lnf/uv.h"
+#include "lnf/vec3.h"
+#include "lnf/viewport.h"
 
 #include <vector>
 #include <memory>
@@ -139,7 +140,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(width, height, fov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 30, 120), Vec(0, 1, 0), Vec(0, 0, -10), 1.0, 100);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 20, 100), Vec(0, 1, 0), Vec(0, 0, -10), 0.5, 100);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -166,7 +167,7 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 4096;
+            int samplesPerPixel = 1024;
             int maxTraceDepth = 32;
             
             m_tpInit = clock_type::now();
@@ -210,7 +211,9 @@ int main(int argc, char *argv[])
     auto pDiffuse0 = std::make_unique<Diffuse>(Color(0.4, 0.4, 0.4));
     auto pDiffuse1 = std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8);
     auto pDiffuse2 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 8);
+    auto pDiffuse3 = std::make_unique<Diffuse>(Color(0.8, 0.4, 0.4));
     auto pGlass1 = std::make_unique<Glass>(Color(0.8, 0.8, 0.8), 0.01, 1.8);
+    auto pGlass2 = std::make_unique<Glass>(Color(0.5, 0.5, 0.5), 0.03, 1.8);
     auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.04);
     auto pLight1 = std::make_unique<Light>(Color(10.0, 10.0, 10.0));
     auto pLight2 = std::make_unique<Light>(Color(1.0, 1.0, 1.0));
@@ -218,6 +221,7 @@ int main(int argc, char *argv[])
     auto pLight4 = std::make_unique<Light>(Color(0.1, 1.0, 0.1));
     auto pLight5 = std::make_unique<Light>(Color(0.1, 0.1, 1.0));
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
+    auto pTraingleRgb1 = std::make_unique<TriangleRGB>();
     
     auto materials = std::vector<Material*>{pDiffuse0.get(), pDiffuse1.get(), pDiffuse2.get(),
                                             pGlass1.get(),
@@ -226,16 +230,25 @@ int main(int argc, char *argv[])
                                             pNormalsInside.get()};
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0)));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 10))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
+    
+    pScene->addNode(std::make_unique<Triangle>(Vec(10, 5, 20),
+                                               Vec(25, 25, 25),
+                                               Vec(5, 25, 25),
+                                               pTraingleRgb1.get()));
+    
+    
+    
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisTranslation(Vec(30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0, Vec(-30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(10, 5.5, 30))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0, Vec(-10, 5.5, 30))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pDiffuse2.get()), axisEulerZYX(0, 0, 0, Vec(10, 20, 40))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pDiffuse2.get()), axisEulerZYX(0, 0.3, 0, Vec(10, 3, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pGlass2.get()), axisEulerZYX(0, 0, 0, Vec(10, 20, 40))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pGlass2.get()), axisEulerZYX(0, 0.3, 0, Vec(10, 3, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
     
+    /*
     std::uniform_real_distribution<float> dp(-500, 500);
     std::uniform_real_distribution<float> dr(0, LNF::pi);
     
@@ -244,6 +257,7 @@ int main(int argc, char *argv[])
                                                                              materials[i % materials.size()]),
                                                                              axisEulerZYX(0, dr(generator), 0, Vec(dp(generator), 5, dp(generator)))));
     }
+    */
     
     pScene->build();
 
