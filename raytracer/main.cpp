@@ -167,7 +167,7 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 1024;
+            int samplesPerPixel = 32;
             int maxTraceDepth = 32;
             
             m_tpInit = clock_type::now();

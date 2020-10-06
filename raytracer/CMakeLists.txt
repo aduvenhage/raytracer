@@ -9,7 +9,7 @@ SET(APP_SRC
 INCLUDE_DIRECTORIES(${LNF_INCLUDE_DIRS})
   
 # linker settings
-LINK_DIRECTORIES(${PATH_LIB_OUTPUT} /usr/local/lib /opt/local/lib)
+LINK_DIRECTORIES(${LNF_LIB_DIRS})
 
 set(targetname "raytracer")
 ADD_EXECUTABLE(${targetname} ${APP_SRC})

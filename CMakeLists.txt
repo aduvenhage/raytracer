@@ -31,7 +31,7 @@ FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Widgets)
 # default compiler config
 IF (MAC)
     SET(LNF_INCLUDE_DIRS "/usr/local/include" ${CMAKE_CURRENT_SOURCE_DIR})
-    SET(LNF_LIB_DIRS "/usr/local/lib")
+    SET(LNF_LIB_DIRS "/usr/local/lib" "/opt/local/lib")
 
     SET(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym" CACHE STRING "")
     SET(CMAKE_XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "")
