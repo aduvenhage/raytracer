@@ -13,115 +13,116 @@ namespace LNF
     struct Color
     {
         Color()
-            :m_fRed(0),
-             m_fGreen(0),
-             m_fBlue(0)
+            :m_c{}
         {}
         
         Color(float _fRed, float _fGreen, float _fBlue)
-            :m_fRed(_fRed),
-             m_fGreen(_fGreen),
-             m_fBlue(_fBlue)
+            :m_c{_fRed, _fGreen, _fBlue}
         {}
         
         Color(const Color &) = default;
         Color(Color &&) = default;
         Color(Color &) = default;
+        
+        float red() const {return m_c[0];}
+        float &red() {return m_c[0];}
+        float green() const {return m_c[1];}
+        float &green() {return m_c[1];}
+        float blue() const {return m_c[2];}
+        float &blue() {return m_c[2];}
 
         Color &operator=(const Color &) = default;
         Color &operator=(Color &&) = default;
         
         Color operator+(const Color &_color) const {
-            return Color(m_fRed + _color.m_fRed,
-                         m_fGreen + _color.m_fGreen,
-                         m_fBlue + _color.m_fBlue);
+            return Color(m_c[0] + _color.m_c[0],
+                         m_c[1] + _color.m_c[1],
+                         m_c[2] + _color.m_c[2]);
         }
         
         Color operator-(const Color &_color) const {
-            return Color(m_fRed - _color.m_fRed,
-                         m_fGreen - _color.m_fGreen,
-                         m_fBlue - _color.m_fBlue);
+            return Color(m_c[0] - _color.m_c[0],
+                         m_c[1] - _color.m_c[1],
+                         m_c[2] - _color.m_c[2]);
         }
         
         Color &operator+=(const Color &_color) {
-            m_fRed += _color.m_fRed;
-            m_fGreen += _color.m_fGreen;
-            m_fBlue += _color.m_fBlue;
+            m_c[0] += _color.m_c[0];
+            m_c[1] += _color.m_c[1];
+            m_c[2] += _color.m_c[2];
             return *this;
         }
         
         Color &operator-=(const Color &_color) {
-            m_fRed -= _color.m_fRed;
-            m_fGreen -= _color.m_fGreen;
-            m_fBlue -= _color.m_fBlue;
+            m_c[0] -= _color.m_c[0];
+            m_c[1] -= _color.m_c[1];
+            m_c[2] -= _color.m_c[2];
             return *this;
         }
         
         Color operator*(float _fScale) const {
-            return Color(m_fRed * _fScale,
-                         m_fGreen * _fScale,
-                         m_fBlue * _fScale);
+            return Color(m_c[0] * _fScale,
+                         m_c[1] * _fScale,
+                         m_c[2] * _fScale);
         }
         
         Color &operator*=(float _fScale) {
-            m_fRed *= _fScale;
-            m_fGreen *= _fScale;
-            m_fBlue *= _fScale;
+            m_c[0] *= _fScale;
+            m_c[1] *= _fScale;
+            m_c[2] *= _fScale;
             return *this;
         }
         
         Color operator/(float _fScale) const {
-            return Color(m_fRed / _fScale,
-                         m_fGreen / _fScale,
-                         m_fBlue / _fScale);
+            return Color(m_c[0] / _fScale,
+                         m_c[1] / _fScale,
+                         m_c[2] / _fScale);
         }
         
         Color &operator/=(float _fScale) {
-            m_fRed /= _fScale;
-            m_fGreen /= _fScale;
-            m_fBlue /= _fScale;
+            m_c[0] /= _fScale;
+            m_c[1] /= _fScale;
+            m_c[2] /= _fScale;
             return *this;
         }
         
         // 3 element scale
         Color operator*(const Color &_color) const {
-            return Color(m_fRed * _color.m_fRed,
-                         m_fGreen * _color.m_fGreen,
-                         m_fBlue * _color.m_fBlue);
+            return Color(m_c[0] * _color.m_c[0],
+                         m_c[1] * _color.m_c[1],
+                         m_c[2] * _color.m_c[2]);
         }
         
         // 3 element scale
         Color &operator*=(const Color &_color) {
-            m_fRed *= _color.m_fRed;
-            m_fGreen *= _color.m_fGreen;
-            m_fBlue *= _color.m_fBlue;
+            m_c[0] *= _color.m_c[0];
+            m_c[1] *= _color.m_c[1];
+            m_c[2] *= _color.m_c[2];
             return *this;
         }
         
         // set color values to 0 if smaller and 1 if larger.
         Color &clamp() {
-            m_fRed = ::clamp(m_fRed, 0.0f, 1.0f);
-            m_fGreen = ::clamp(m_fGreen, 0.0f, 1.0f);
-            m_fBlue = ::clamp(m_fBlue, 0.0f, 1.0f);
+            m_c[0] = ::clamp(m_c[0], 0.0f, 1.0f);
+            m_c[1] = ::clamp(m_c[1], 0.0f, 1.0f);
+            m_c[2] = ::clamp(m_c[2], 0.0f, 1.0f);
             
             return *this;
         }
         
         // wrap color values and keep range [0...1]
         Color &wrap() {
-            m_fRed -= floor(m_fRed);
-            m_fGreen -= floor(m_fGreen);
-            m_fBlue -= floor(m_fBlue);
+            m_c[0] -= floor(m_c[0]);
+            m_c[1] -= floor(m_c[1]);
+            m_c[2] -= floor(m_c[2]);
             return *this;
         }
         
         bool isBlack() {
-            return m_fRed + m_fGreen + m_fBlue < 0.00001f;
+            return m_c[0] + m_c[1] + m_c[2] < 0.00001f;
         }
         
-        float      m_fRed;
-        float      m_fGreen;
-        float      m_fBlue;
+        float      m_c[3];
     };
     
     

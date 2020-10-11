@@ -7,6 +7,7 @@
 #include "lnf/jobs.h"
 #include "lnf/jpeg.h"
 #include "lnf/mandlebrot.h"
+#include "lnf/mesh.h"
 #include "lnf/outputimage.h"
 #include "lnf/plane.h"
 #include "lnf/profile.h"
@@ -47,7 +48,7 @@ class DiffuseMandlebrot : public Diffuse
     
     /* Returns the diffuse color at the given surface position */
     virtual Color color(const Intersect &_hit) const override {
-        return m_baseColor * (m_mandlebrot.value(_hit.m_uv.m_fU, _hit.m_uv.m_fV) * 0.1 + 0.1);
+        return m_baseColor * (m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v()) * 0.1 + 0.1);
     }
     
  private:
@@ -59,8 +60,13 @@ class DiffuseMandlebrot : public Diffuse
 // simple scene with a linear search for object hits
 class SimpleScene   : public Scene
 {
+ protected:
+    using clock_type = std::chrono::high_resolution_clock;
+    
  public:
     SimpleScene()
+        :m_dTimeOnBvhS(0),
+         m_dTimeOnHitsS(0)
     {}
     
     /*
@@ -68,11 +74,17 @@ class SimpleScene   : public Scene
        Could be accessed by multiple worker threads concurrently.
      */
     virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-        static thread_local std::vector<Node*> nodes;
         bool bHit = false;
         
+        // find possible hit nodes from BVH
+        auto tpInit = clock_type::now();
+
+        static thread_local std::vector<Node*> nodes;
         nodes.clear();
         m_bvhRoot.intersect(nodes, _ray);
+        auto tpBvh = clock_type::now();
+
+        //auto &nodes = m_nodes;
         
         // find best hit
         Intersect nh;
@@ -85,6 +97,12 @@ class SimpleScene   : public Scene
             }
         }
         
+        auto tpHit = clock_type::now();
+        
+        // update hit timing
+        m_dTimeOnBvhS += std::chrono::duration_cast<std::chrono::nanoseconds>(tpBvh - tpInit).count() * 1e-09;
+        m_dTimeOnHitsS += std::chrono::duration_cast<std::chrono::nanoseconds>(tpHit - tpBvh).count() * 1e-09;
+        
         return bHit;
     }
     
@@ -93,7 +111,7 @@ class SimpleScene   : public Scene
      Could be accessed by multiple worker threads concurrently.
      */
     virtual Color missColor(const Ray &_ray) const override {
-        float shift = _ray.m_direction.m_fY * _ray.m_direction.m_fY * 0.3f + 0.3f;
+        float shift = _ray.m_direction.y() * _ray.m_direction.y() * 0.3f + 0.3f;
         return Color(shift, shift, 0.6f);
     }
 
@@ -112,9 +130,19 @@ class SimpleScene   : public Scene
         m_bvhRoot.build(m_nodes);
     }
     
+    double getTimeOnBvhS() const {
+        return m_dTimeOnBvhS;
+    }
+    
+    double getTimeOnHitsS() const {
+        return m_dTimeOnHitsS;
+    }
+    
  protected:
     std::vector<std::shared_ptr<Node>>   m_nodes;
     BvhNode                              m_bvhRoot;
+    mutable double                       m_dTimeOnBvhS;
+    mutable double                       m_dTimeOnHitsS;
 };
 
 
@@ -129,18 +157,20 @@ class MainWindow : public QMainWindow
         :QMainWindow(),
          m_pScene(_pScene),
          m_iFrameCount(0),
-         m_bFrameDone(false)
+         m_bFrameDone(false),
+         m_iWidth(1024),
+         m_iHeight(768),
+         m_fFov(60),
+         m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
+         m_iSamplesPerPixel(64),
+         m_iMaxTraceDepth(32)
     {
-        int width = 1024;
-        int height = 768;
-        int fov = 60;
-
-        resize(width, height);
+        resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(std::chrono::milliseconds(100));
         
-        m_pView = std::make_unique<ViewportScreen>(width, height, fov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 20, 100), Vec(0, 1, 0), Vec(0, 0, -10), 0.5, 100);
+        m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 50, 100), Vec(0, 1, 0), Vec(0, 0, -10), 1.0, 120);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -166,12 +196,9 @@ class MainWindow : public QMainWindow
     virtual void timerEvent(QTimerEvent *_event) {
         if (m_pSource == nullptr)
         {
-            int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 4u);
-            int samplesPerPixel = 32;
-            int maxTraceDepth = 32;
             
             m_tpInit = clock_type::now();
-            m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, numWorkers, samplesPerPixel, maxTraceDepth);
+            m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, m_iNumWorkers, m_iSamplesPerPixel, m_iMaxTraceDepth);
         }
         else if (m_pSource->isFinished() == true) {
             if (m_bFrameDone == false) {
@@ -183,6 +210,10 @@ class MainWindow : public QMainWindow
                 
                 std::string title = std::string("Done ") + std::to_string((float)ns/1e09) + "s";
                 setWindowTitle(QString::fromStdString(title));
+                
+                printf("time on bvh = %.2f, time on hits = %.2f\n",
+                        (float)m_pScene->getTimeOnBvhS()/m_iNumWorkers,
+                        (float)m_pScene->getTimeOnHitsS()/m_iNumWorkers);
             }
         }
 
@@ -197,6 +228,12 @@ class MainWindow : public QMainWindow
     int                                 m_iFrameCount;
     bool                                m_bFrameDone;
     clock_type::time_point              m_tpInit;
+    int                                 m_iWidth;
+    int                                 m_iHeight;
+    float                               m_fFov;
+    int                                 m_iNumWorkers;
+    int                                 m_iSamplesPerPixel;
+    int                                 m_iMaxTraceDepth;
 };
 
 
@@ -230,7 +267,10 @@ int main(int argc, char *argv[])
                                             pNormalsInside.get()};
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0)));
+    
+    
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
+    
     
     pScene->addNode(std::make_unique<Triangle>(Vec(10, 5, 20),
                                                Vec(25, 25, 25),
@@ -238,16 +278,17 @@ int main(int argc, char *argv[])
                                                pTraingleRgb1.get()));
     
     
-    
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisTranslation(Vec(30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0, Vec(-30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(10, 5.5, 30))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 10, 5), pMetal1.get()), axisEulerZYX(0, 0.2, 0, Vec(-10, 5.5, 30))));
+    
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pGlass2.get()), axisEulerZYX(0, 0, 0, Vec(10, 20, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(5, 5, 5), pGlass2.get()), axisEulerZYX(0, 0.3, 0, Vec(10, 3, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
     
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
+
     /*
     std::uniform_real_distribution<float> dp(-500, 500);
     std::uniform_real_distribution<float> dr(0, LNF::pi);

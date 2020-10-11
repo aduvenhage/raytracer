@@ -6,6 +6,9 @@
 #include <random>
 
 
+#define ALIGN __attribute__((aligned(64)))
+
+
 constexpr float deg2rad(float _fDeg) {
     return _fDeg / 180.0f * (float)M_PI;
 }
@@ -26,9 +29,6 @@ inline auto clamp(const T &_value, const T &_min, const T &_max) {
     auto v = (_value < _min) ? _min : _value;
     return (v > _max) ? _max : v;
 }
-
-
-
 
 
 namespace LNF

@@ -79,9 +79,9 @@ namespace LNF
                                 
                 // write averaged color to output image
                 color = (color / _iRaysPerPixel).clamp();
-                *(pPixel++) = (int)(255 * color.m_fRed + 0.5);
-                *(pPixel++) = (int)(255 * color.m_fGreen + 0.5);
-                *(pPixel++) = (int)(255 * color.m_fBlue + 0.5);
+                *(pPixel++) = (int)(255 * color.red() + 0.5);
+                *(pPixel++) = (int)(255 * color.green() + 0.5);
+                *(pPixel++) = (int)(255 * color.blue() + 0.5);
             }
         }
     }

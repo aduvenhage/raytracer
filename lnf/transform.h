@@ -90,14 +90,14 @@ namespace LNF
             
             // construct cuboid
             std::array<Vec, 8> points = {
-                Vec{tb.m_min.m_fX, tb.m_min.m_fY, tb.m_min.m_fZ},
-                Vec{tb.m_max.m_fX, tb.m_min.m_fY, tb.m_min.m_fZ},
-                Vec{tb.m_max.m_fX, tb.m_min.m_fY, tb.m_max.m_fZ},
-                Vec{tb.m_min.m_fX, tb.m_min.m_fY, tb.m_max.m_fZ},
-                Vec{tb.m_min.m_fX, tb.m_max.m_fY, tb.m_min.m_fZ},
-                Vec{tb.m_max.m_fX, tb.m_max.m_fY, tb.m_min.m_fZ},
-                Vec{tb.m_max.m_fX, tb.m_max.m_fY, tb.m_max.m_fZ},
-                Vec{tb.m_min.m_fX, tb.m_max.m_fY, tb.m_max.m_fZ}
+                Vec{tb.m_min.x(), tb.m_min.y(), tb.m_min.z()},
+                Vec{tb.m_max.x(), tb.m_min.y(), tb.m_min.z()},
+                Vec{tb.m_max.x(), tb.m_min.y(), tb.m_max.z()},
+                Vec{tb.m_min.x(), tb.m_min.y(), tb.m_max.z()},
+                Vec{tb.m_min.x(), tb.m_max.y(), tb.m_min.z()},
+                Vec{tb.m_max.x(), tb.m_max.y(), tb.m_min.z()},
+                Vec{tb.m_max.x(), tb.m_max.y(), tb.m_max.z()},
+                Vec{tb.m_min.x(), tb.m_max.y(), tb.m_max.z()}
             };
             
             // rotate and translate
@@ -110,13 +110,13 @@ namespace LNF
             m_bounds.m_max = points[0];
             
             for (auto &vec : points) {
-                m_bounds.m_min.m_fX = vec.m_fX < m_bounds.m_min.m_fX ? vec.m_fX : m_bounds.m_min.m_fX;
-                m_bounds.m_min.m_fY = vec.m_fY < m_bounds.m_min.m_fY ? vec.m_fY : m_bounds.m_min.m_fY;
-                m_bounds.m_min.m_fZ = vec.m_fZ < m_bounds.m_min.m_fZ ? vec.m_fZ : m_bounds.m_min.m_fZ;
+                m_bounds.m_min.x() = vec.x() < m_bounds.m_min.x() ? vec.x() : m_bounds.m_min.x();
+                m_bounds.m_min.y() = vec.y() < m_bounds.m_min.y() ? vec.y() : m_bounds.m_min.y();
+                m_bounds.m_min.z() = vec.z() < m_bounds.m_min.z() ? vec.z() : m_bounds.m_min.z();
                 
-                m_bounds.m_max.m_fX = vec.m_fX > m_bounds.m_max.m_fX ? vec.m_fX : m_bounds.m_max.m_fX;
-                m_bounds.m_max.m_fY = vec.m_fY > m_bounds.m_max.m_fY ? vec.m_fY : m_bounds.m_max.m_fY;
-                m_bounds.m_max.m_fZ = vec.m_fZ > m_bounds.m_max.m_fZ ? vec.m_fZ : m_bounds.m_max.m_fZ;
+                m_bounds.m_max.x() = vec.x() > m_bounds.m_max.x() ? vec.x() : m_bounds.m_max.x();
+                m_bounds.m_max.y() = vec.y() > m_bounds.m_max.y() ? vec.y() : m_bounds.m_max.y();
+                m_bounds.m_max.z() = vec.z() > m_bounds.m_max.z() ? vec.z() : m_bounds.m_max.z();
             }
         }
         

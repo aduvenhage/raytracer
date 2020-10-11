@@ -10,6 +10,46 @@
 
 namespace LNF
 {
+    /*
+     Triangle intersect check.
+     Populates position on ray (t) and UV (barycentric) hit properties.
+     
+     Returns true on intersect.
+     */
+    bool triangleIntersect(Intersect &_hit,
+                           const Vec &_v0, const Vec &_v1, const Vec &_v2,
+                           const Ray &_ray) {
+        const float EPSILON = 0.0000001;
+        auto edge1 = _v1 - _v0;
+        auto edge2 = _v2 - _v0;
+        auto h = crossProduct(_ray.m_direction, edge2);
+        float a = edge1 * h;
+        
+        if (a > -EPSILON && a < EPSILON)
+            return false;    // ray is parallel to triangle.
+            
+        float f = 1.0/a;
+        auto s = _ray.m_origin - _v0;
+        float u = f * (s * h);
+        if ((u < 0.0) || (u > 1.0))
+            return false;
+            
+        auto q = crossProduct(s, edge1);
+        float v = f * _ray.m_direction * q;
+        if ((v < 0.0) || (u + v > 1.0))
+            return false;
+            
+        float t = f * (edge2 * q);
+        if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
+            _hit.m_fPositionOnRay = t;
+            _hit.m_uv = Uv(u, v);   // NOTE: Barycentric UV (u + v + w = 1)
+            return true;
+        }
+        
+        return false;
+    }
+    
+
     /* Traingle defined by 3 points  */
     class Triangle        : public Node
     {
@@ -35,36 +75,9 @@ namespace LNF
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-            const float EPSILON = 0.0000001;
-            auto edge1 = m_v1 - m_v0;
-            auto edge2 = m_v2 - m_v0;
-            auto h = crossProduct(_ray.m_direction, edge2);
-            float a = edge1 * h;
-            
-            if (a > -EPSILON && a < EPSILON)
-                return false;    // This ray is parallel to this triangle.
-                
-            float f = 1.0/a;
-            auto s = _ray.m_origin - m_v0;
-            float u = f * (s * h);
-            if ((u < 0.0) || (u > 1.0))
-                return false;
-                
-            auto q = crossProduct(s, edge1);
-            float v = f * _ray.m_direction * q;
-            if ((v < 0.0) || (u + v > 1.0))
-                return false;
-                
-            // At this stage we can compute t to find out where the intersection point is on the line.
-            float t = f * (edge2 * q);
-            if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
+            if (triangleIntersect(_hit, m_v0, m_v1, m_v2, _ray) == true) {
                 _hit.m_pNode = this;
-                _hit.m_fPositionOnRay = t;
                 _hit.m_ray = _ray;
-                _hit.m_normal = m_normal;
-                _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
-                _hit.m_uv = Uv(u, v);   // NOTE: Barycentric UV (u + v + w = 1)
-                
                 return true;
             }
             
@@ -73,8 +86,8 @@ namespace LNF
 
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const override {
-            //_hit.m_uv = Uv(_hit.m_position.m_fX * m_fUvScale, _hit.m_position.m_fZ * m_fUvScale).wrap();
-            
+            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_normal = m_normal;
             return _hit;
         }
 

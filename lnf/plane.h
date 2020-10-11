@@ -29,11 +29,10 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-            const static Vec normal(0, 1, 0);
-            const float denom = _ray.m_direction.m_fY;
+            const float denom = _ray.m_direction.y();
             if (denom < -0.0000001f) {
                 const auto vecRayPlane = -_ray.m_origin;
-                const float t = vecRayPlane.m_fY / denom;
+                const float t = vecRayPlane.y() / denom;
                 if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
                     _hit.m_pNode = this;
                     _hit.m_fPositionOnRay = t;
@@ -50,7 +49,7 @@ namespace LNF
         virtual Intersect &intersect(Intersect &_hit) const override {
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
             _hit.m_normal = Vec(0, 1, 0);
-            _hit.m_uv = Uv(_hit.m_position.m_fX * m_fUvScale, _hit.m_position.m_fZ * m_fUvScale).wrap();
+            _hit.m_uv = Uv(_hit.m_position.x() * m_fUvScale, _hit.m_position.z() * m_fUvScale).wrap();
             
             return _hit;
         }
@@ -113,8 +112,8 @@ namespace LNF
         virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
             if (Plane::hit(_hit, _ray) == true) {
                 // check rectangle bounds
-                return (fabs(_hit.m_position.m_fX) <= m_fWidth) &&
-                       (fabs(_hit.m_position.m_fZ) <= m_fLength);
+                return (fabs(_hit.m_position.x()) <= m_fWidth) &&
+                       (fabs(_hit.m_position.z()) <= m_fLength);
             }
             
             return false;

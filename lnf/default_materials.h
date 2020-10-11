@@ -47,7 +47,7 @@ namespace LNF
         
         /* Returns the diffuse color at the given surface position */
         virtual Color color(const Intersect &_hit) const override {
-            int c = ((int)(_hit.m_uv.m_fU * m_iBlockSize) + (int)(_hit.m_uv.m_fV * m_iBlockSize)) % 2;
+            int c = ((int)(_hit.m_uv.u() * m_iBlockSize) + (int)(_hit.m_uv.v() * m_iBlockSize)) % 2;
             return m_colorA * c + m_colorB * (1 - c);
         }
         
@@ -139,7 +139,7 @@ namespace LNF
             if (_hit.m_bInside == m_bInside) {
                 auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
                 auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
-                auto color = Color((_hit.m_normal.m_fX + 1)/2, (_hit.m_normal.m_fY + 1)/2, (_hit.m_normal.m_fZ + 1)/2);
+                auto color = Color((_hit.m_normal.x() + 1)/2, (_hit.m_normal.y() + 1)/2, (_hit.m_normal.z() + 1)/2);
 
                 return ScatteredRay(scatteredRay, Color(), color);
             }
@@ -166,7 +166,7 @@ namespace LNF
             auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
             auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
             
-            auto color = COLOR::Red * _hit.m_uv.m_fU + COLOR::Green * _hit.m_uv.m_fV + COLOR::Blue * (1 - _hit.m_uv.m_fU - _hit.m_uv.m_fV);
+            auto color = COLOR::Red * _hit.m_uv.u() + COLOR::Green * _hit.m_uv.v() + COLOR::Blue * (1 - _hit.m_uv.u() - _hit.m_uv.v());
             return ScatteredRay(scatteredRay, Color(), color);
         }
     };

@@ -47,9 +47,9 @@ namespace LNF
         virtual Intersect &intersect(Intersect &_hit) const override {
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
             
-            _hit.m_normal = Vec((int)(_hit.m_position.m_fX / m_vecDiv.m_fX),
-                                (int)(_hit.m_position.m_fY / m_vecDiv.m_fY),
-                                (int)(_hit.m_position.m_fZ / m_vecDiv.m_fZ));
+            _hit.m_normal = Vec((int)(_hit.m_position.x() / m_vecDiv.x()),
+                                (int)(_hit.m_position.y() / m_vecDiv.y()),
+                                (int)(_hit.m_position.z() / m_vecDiv.z()));
             
             auto e1 = crossProduct(_hit.m_normal, Vec(0.0f, 0.0f, 1.0f));
             if (e1.sizeSqr() < 0.0001f) {

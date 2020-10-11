@@ -58,10 +58,12 @@ Done:
 - depth-of-field
 
 Busy:
+- profile and update math operations
 - triangle mesh rendering
 
 Todo:
 - triangle mesh loading (see https://github.com/assimp/assimp)
+- look at instancing where shapes can be re-used in scene
 - textured objects (texture images)
 - textured area lights
 - volumes / fog
