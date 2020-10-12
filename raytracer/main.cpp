@@ -163,7 +163,7 @@ class MainWindow : public QMainWindow
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
          m_iSamplesPerPixel(64),
-         m_iMaxTraceDepth(32)
+         m_iMaxTraceDepth(16)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));

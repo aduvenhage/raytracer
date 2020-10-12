@@ -26,6 +26,22 @@ namespace LNF
         
         Uv &operator=(const Uv &) = default;
         Uv &operator=(Uv &&) = default;
+        
+        Uv operator+(const Uv &_uv) const {
+            return Uv(m_uv[0] + _uv.m_uv[0], m_uv[1] + _uv.m_uv[1]);
+        }
+
+        Uv operator-(const Uv &_uv) const {
+            return Uv(m_uv[0] - _uv.m_uv[0], m_uv[1] - _uv.m_uv[1]);
+        }
+
+        Uv operator*(float _fScale) const {
+            return Uv(m_uv[0] * _fScale, m_uv[1] * _fScale);
+        }
+
+        Uv operator/(float _fScale) const {
+            return Uv(m_uv[0] / _fScale, m_uv[1] / _fScale);
+        }
 
         /// set color values to 0 if smaller and 1 if larger.
         Uv &clamp() {
@@ -43,6 +59,13 @@ namespace LNF
         
         float m_uv[2];
     };
+    
+    
+    Uv operator*(float _fScale, const Uv &_uv) {
+        return Uv(_uv.u() * _fScale, _uv.v() * _fScale);
+    }
+
+
 
 };  // namespace LNF
 

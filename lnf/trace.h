@@ -29,7 +29,8 @@ namespace LNF
         Intersect hit;
         if (_pScene->hit(hit, _ray) == true) {
             if (hit.m_pNode != nullptr) {
-                // complete intercept
+            
+                // complete intercept (
                 auto pHitNode = hit.m_pNode;
                 pHitNode->intersect(hit);
             

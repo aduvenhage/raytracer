@@ -22,6 +22,7 @@ namespace LNF
             :m_pNode(nullptr),
              m_axis(axisIdentity()),
              m_fPositionOnRay(-1),
+             m_uTriangleIndex(0),
              m_bInside(false)
         {}
 
@@ -43,6 +44,7 @@ namespace LNF
         Vec                     m_normal;           // normal on surface of shape
         Uv                      m_uv;               // texture coordinate on surface of shape
         float                   m_fPositionOnRay;   // t0
+        uint32_t                m_uTriangleIndex;   // specific triangle hit on node
         bool                    m_bInside;          // true if ray is inside shape
     };
 

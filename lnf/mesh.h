@@ -22,7 +22,7 @@ namespace LNF
         
         struct Vertex {
             Vec         m_v;
-            Uv          m_uv[3];
+            Uv          m_uv;
         };
         
      public:
@@ -59,29 +59,33 @@ namespace LNF
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-            // find best hit
-            const Triangle *pHitTriangle = nullptr;
-            Intersect bestHit;
+            Intersect hits[2];
+            Intersect *pNewHit = hits + 0;
+            Intersect *pBestHit = hits + 1;
+            uint32_t hitCount = 0;
             
-            // TODO: avoid copying Intersect on each new triangle hit
-            for (const auto &t : m_triangles) {
-                const auto &v0 = m_vertices[t.m_v[0]].m_v;
-                const auto &v1 = m_vertices[t.m_v[1]].m_v;
-                const auto &v2 = m_vertices[t.m_v[2]].m_v;
+            
+            for (size_t i = 0; i < m_triangles.size(); i++) {
+                const auto &t = m_triangles[i];
+                const auto &v0 = m_vertices[t.m_v[0]];
+                const auto &v1 = m_vertices[t.m_v[1]];
+                const auto &v2 = m_vertices[t.m_v[2]];
                 
-                if (triangleIntersect(_hit, v0, v1, v2, _ray) == true) {
-                    if ( (pHitTriangle == nullptr) ||
-                         (_hit.m_fPositionOnRay < bestHit.m_fPositionOnRay) ) {
-                        pHitTriangle = &t;
-                        bestHit = _hit;
+                if (triangleIntersect(*pNewHit, v0.m_v, v1.m_v, v2.m_v, _ray) == true) {
+                    if ( (hitCount == 0) ||
+                         (pNewHit->m_fPositionOnRay < pBestHit->m_fPositionOnRay) )
+                    {
+                        std::swap(pNewHit, pBestHit);
+                        pBestHit->m_uTriangleIndex = i;
+                        hitCount++;
                     }
                 }
                 
-                if (pHitTriangle != nullptr)
+                if (hitCount > 0)
                 {
-                    _hit = bestHit;
+                    _hit = *pBestHit;
                     _hit.m_pNode = this;
-                    _hit.m_normal = pHitTriangle->m_normal;
+                    _hit.m_normal = m_triangles[_hit.m_uTriangleIndex].m_normal;
                     _hit.m_ray = _ray;
                     
                     return true;
@@ -93,10 +97,14 @@ namespace LNF
 
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const override {
-            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            const auto &t = m_triangles[_hit.m_uTriangleIndex];
+            const auto &v0 = m_vertices[t.m_v[0]];
+            const auto &v1 = m_vertices[t.m_v[1]];
+            const auto &v2 = m_vertices[t.m_v[2]];
             
-            //calc UV
-            // calc inside/outside
+            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_bInside = (_hit.m_normal * _hit.m_ray.m_direction) > 0;
+            _hit.m_uv = _hit.m_uv.u() * v0.m_uv + _hit.m_uv.v() * v1.m_uv + (1 - _hit.m_uv.u() - _hit.m_uv.v()) * v2.m_uv;
             
             return _hit;
         }

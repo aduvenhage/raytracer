@@ -16,6 +16,9 @@ namespace LNF
     /* ray with origin and direction */
     struct Ray
     {
+        static constexpr float MIN_DIST = 1e-4f;
+        static constexpr float MAX_DIST = std::numeric_limits<float>::max();
+        
         Ray() = default;
         Ray(const Ray &) = default;
         Ray(Ray &&) = default;
@@ -25,8 +28,8 @@ namespace LNF
         Ray(U &&_direction)
             :m_direction(std::forward<U>(_direction)),
              m_invDirection(1/_direction),
-             m_fMinDist(0.00001f),
-             m_fMaxDist(std::numeric_limits<float>::max())
+             m_fMinDist(MIN_DIST),
+             m_fMaxDist(MAX_DIST)
         {}
         
         template <typename U, typename V>
@@ -34,8 +37,8 @@ namespace LNF
             :m_origin(std::forward<U>(_origin)),
              m_direction(std::forward<V>(_direction)),
              m_invDirection(1/_direction),
-             m_fMinDist(0.00001f),
-             m_fMaxDist(std::numeric_limits<float>::max())
+             m_fMinDist(MIN_DIST),
+             m_fMaxDist(MAX_DIST)
         {}
 
         Ray &operator=(const Ray &) = default;
