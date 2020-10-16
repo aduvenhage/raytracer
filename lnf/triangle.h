@@ -19,14 +19,14 @@ namespace LNF
     bool triangleIntersect(Intersect &_hit,
                            const Vec &_v0, const Vec &_v1, const Vec &_v2,
                            const Ray &_ray) {
-        const float EPSILON = 0.0000001;
+        const float EPSILON = 0.000001;
         auto edge1 = _v1 - _v0;
         auto edge2 = _v2 - _v0;
         auto h = crossProduct(_ray.m_direction, edge2);
         float a = edge1 * h;
         
-        if (a > -EPSILON && a < EPSILON)
-            return false;    // ray is parallel to triangle.
+        if (fabs(a) < EPSILON)
+            return false;   // ray parallel to plane
             
         float f = 1.0/a;
         auto s = _ray.m_origin - _v0;
@@ -35,7 +35,7 @@ namespace LNF
             return false;
             
         auto q = crossProduct(s, edge1);
-        float v = f * _ray.m_direction * q;
+        float v = f * (_ray.m_direction * q);
         if ((v < 0.0) || (u + v > 1.0))
             return false;
             

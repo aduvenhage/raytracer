@@ -263,11 +263,13 @@ namespace LNF
     
     // split box on longest axis
     std::pair<Bounds, Bounds> splitBox(const Bounds &_bounds) {
+        static constexpr float epsilon = 0.0001;
+        
         Vec dist = _bounds.m_max - _bounds.m_min;
-        if ( (dist.x() > dist.y()) && (dist.x() > dist.z()) ) {
+        if ( (dist.x() + epsilon > dist.y()) && (dist.x() + epsilon >= dist.z()) ) {
             dist.x() *= 0.5;
         }
-        else if ( (dist.y() > dist.x()) && (dist.y() > dist.z()) ) {
+        else if ( (dist.y() + epsilon >= dist.x()) && (dist.y() + epsilon >= dist.z()) ) {
             dist.y() *= 0.5;
         }
         else {

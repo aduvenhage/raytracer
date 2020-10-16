@@ -127,7 +127,13 @@ class SimpleScene   : public Scene
      Build scene graph.
      */
     void build() {
-        m_bvhRoot.build(m_nodes);
+        std::vector<Node*> vecPtrs;
+        vecPtrs.reserve(m_nodes.size());
+        for (auto &p : m_nodes) {
+            vecPtrs.push_back(p.get());
+        }
+        
+        m_bvhRoot.build(vecPtrs);
     }
     
     double getTimeOnBvhS() const {
@@ -139,8 +145,8 @@ class SimpleScene   : public Scene
     }
     
  protected:
-    std::vector<std::shared_ptr<Node>>   m_nodes;
-    BvhNode                              m_bvhRoot;
+    std::vector<std::unique_ptr<Node>>   m_nodes;
+    BvhNode<Node>                        m_bvhRoot;
     mutable double                       m_dTimeOnBvhS;
     mutable double                       m_dTimeOnHitsS;
 };
@@ -162,7 +168,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iSamplesPerPixel(64),
+         m_iSamplesPerPixel(16),
          m_iMaxTraceDepth(16)
     {
         resize(m_iWidth, m_iHeight);
@@ -170,7 +176,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 50, 100), Vec(0, 1, 0), Vec(0, 0, -10), 1.0, 120);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, -200, 100), Vec(0, 1, 0), Vec(0, 0, 0), 1.5, 200);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -196,7 +202,6 @@ class MainWindow : public QMainWindow
     virtual void timerEvent(QTimerEvent *_event) {
         if (m_pSource == nullptr)
         {
-            
             m_tpInit = clock_type::now();
             m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, m_iNumWorkers, m_iSamplesPerPixel, m_iMaxTraceDepth);
         }
@@ -266,17 +271,23 @@ int main(int argc, char *argv[])
                                             pLight2.get(), pLight3.get(), pLight4.get(), pLight5.get(),
                                             pNormalsInside.get()};
 
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0)));
+    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0, Vec(0, -200, 0))));
     
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pNormalsInside.get()), axisEulerZYX(1, 0, 0, Vec(0, 0, 0))));
     
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
+    //pScene->addNode(std::make_unique<Transform>(buildSphereMesh(4, 4, 10, pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(0, 80, 0))));
     
-    
-    pScene->addNode(std::make_unique<Triangle>(Vec(10, 5, 20),
+    for (int x = -200; x < 200; x += 40) {
+        for (int y = -200; y < 200; y += 40) {
+            pScene->addNode(std::make_unique<Transform>(buildSphereMesh(36, 36, 10, pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(x, y, 0))));
+        }
+    }
+
+    /*
+    pScene->addNode(std::make_unique<Triangle>(Vec(15, 5, 25),
                                                Vec(25, 25, 25),
                                                Vec(5, 25, 25),
                                                pTraingleRgb1.get()));
-    
     
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisTranslation(Vec(30, 15, -20))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuse2.get()), axisEulerZYX(0, 0.5, 0, Vec(-30, 15, -20))));
@@ -288,8 +299,7 @@ int main(int argc, char *argv[])
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Box>(Vec(15, 9, 5), pGlass1.get()), axisEulerZYX(0, -0.2, 0, Vec(-10, 5, 40))));
     
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
-
-    /*
+    
     std::uniform_real_distribution<float> dp(-500, 500);
     std::uniform_real_distribution<float> dr(0, LNF::pi);
     

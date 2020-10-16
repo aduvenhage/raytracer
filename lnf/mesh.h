@@ -1,6 +1,7 @@
 #ifndef LIBS_HEADER_MESH_H
 #define LIBS_HEADER_MESH_H
 
+#include "bvh.h"
 #include "constants.h"
 #include "node.h"
 #include "material.h"
@@ -16,8 +17,12 @@ namespace LNF
     {
      public:
         struct Triangle {
+            const Bounds &bounds() {return m_bounds;}
+            
             Vec         m_normal;
+            Bounds      m_bounds;
             uint32_t    m_v[3];
+            uint32_t    m_index;
         };
         
         struct Vertex {
@@ -29,19 +34,21 @@ namespace LNF
         Mesh()
         {}
 
-        Mesh(const std::vector<Vertex> &_vertices, const std::vector<Triangle> &_triangles, const Material *_pMaterial)
-            :m_vertices(_vertices),
-             m_triangles(_triangles),
+        template <typename vertices_type, typename triangles_type>
+        Mesh(vertices_type &&_vertices, triangles_type &_triangles, const Material *_pMaterial)
+            :m_vertices(std::forward<vertices_type>(_vertices)),
+             m_triangles(std::forward<triangles_type>(_triangles)),
              m_pMaterial(_pMaterial)
         {
-            // calc bounds
+            // calc mesh bounds
             for (const auto &v : m_vertices) {
                 m_bounds.m_min = perElementMin(m_bounds.m_min, v.m_v);
                 m_bounds.m_max = perElementMax(m_bounds.m_max, v.m_v);
             }
 
-            // calc triangle normals
-            for (auto &t : m_triangles) {
+            // calc triangle normals and bounds
+            for (size_t i = 0; i < m_triangles.size(); i++) {
+                auto &t = m_triangles[i];
                 const auto &v0 = m_vertices[t.m_v[0]].m_v;
                 const auto &v1 = m_vertices[t.m_v[1]].m_v;
                 const auto &v2 = m_vertices[t.m_v[2]].m_v;
@@ -49,7 +56,20 @@ namespace LNF
                 auto e1 = v1 - v0;
                 auto e2 = v2 - v0;
                 t.m_normal = crossProduct(e1, e2).normalized();
+                t.m_bounds.m_min = perElementMin(v0, perElementMin(v1, v2));
+                t.m_bounds.m_max = perElementMax(v0, perElementMax(v1, v2));
+                t.m_index = (uint32_t)i;
             }
+            
+            // build BVH
+            std::vector<Triangle*> trianglePtrs;
+            trianglePtrs.reserve(m_triangles.size());
+            
+            for (auto &t : m_triangles) {
+                trianglePtrs.push_back(&t);
+            }
+            
+            m_bvhRoot.build(trianglePtrs);
         }
 
         /* Returns the material used for rendering, etc. */
@@ -59,40 +79,37 @@ namespace LNF
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-            Intersect hits[2];
-            Intersect *pNewHit = hits + 0;
-            Intersect *pBestHit = hits + 1;
-            uint32_t hitCount = 0;
+            static thread_local std::vector<Triangle*> nodes;
             
+            nodes.clear();
+            m_bvhRoot.intersect(nodes, _ray);
+
+            Intersect newHit;
+            _hit.m_pNode = nullptr;
             
-            for (size_t i = 0; i < m_triangles.size(); i++) {
-                const auto &t = m_triangles[i];
-                const auto &v0 = m_vertices[t.m_v[0]];
-                const auto &v1 = m_vertices[t.m_v[1]];
-                const auto &v2 = m_vertices[t.m_v[2]];
+            for (auto *pTriangle : nodes) {
+                const auto &v0 = m_vertices[pTriangle->m_v[0]];
+                const auto &v1 = m_vertices[pTriangle->m_v[1]];
+                const auto &v2 = m_vertices[pTriangle->m_v[2]];
                 
-                if (triangleIntersect(*pNewHit, v0.m_v, v1.m_v, v2.m_v, _ray) == true) {
-                    if ( (hitCount == 0) ||
-                         (pNewHit->m_fPositionOnRay < pBestHit->m_fPositionOnRay) )
+                if (triangleIntersect(newHit, v0.m_v, v1.m_v, v2.m_v, _ray) == true) {
+                    if ( (_hit.m_pNode == nullptr) ||
+                         (newHit.m_fPositionOnRay < _hit.m_fPositionOnRay) )
                     {
-                        std::swap(pNewHit, pBestHit);
-                        pBestHit->m_uTriangleIndex = i;
-                        hitCount++;
+                        _hit = newHit;
+                        _hit.m_uTriangleIndex = pTriangle->m_index;
+                        _hit.m_pNode = this;
                     }
                 }
-                
-                if (hitCount > 0)
-                {
-                    _hit = *pBestHit;
-                    _hit.m_pNode = this;
-                    _hit.m_normal = m_triangles[_hit.m_uTriangleIndex].m_normal;
-                    _hit.m_ray = _ray;
-                    
-                    return true;
-                }
             }
-            
-            return false;
+                
+            if (_hit.m_pNode != nullptr) {
+                _hit.m_ray = _ray;
+                return true;
+            }
+            else {
+                return false;
+            }
         }
 
         /* Completes the node intersect properties. */
@@ -103,7 +120,8 @@ namespace LNF
             const auto &v2 = m_vertices[t.m_v[2]];
             
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
-            _hit.m_bInside = (_hit.m_normal * _hit.m_ray.m_direction) > 0;
+            _hit.m_normal = m_triangles[_hit.m_uTriangleIndex].m_normal;
+            _hit.m_bInside = (_hit.m_normal * _hit.m_ray.m_direction) >= 0;
             _hit.m_uv = _hit.m_uv.u() * v0.m_uv + _hit.m_uv.v() * v1.m_uv + (1 - _hit.m_uv.u() - _hit.m_uv.v()) * v2.m_uv;
             
             return _hit;
@@ -117,10 +135,57 @@ namespace LNF
      private:
         std::vector<Vertex>     m_vertices;
         std::vector<Triangle>   m_triangles;
+        BvhNode<Triangle>       m_bvhRoot;
         Bounds                  m_bounds;
         const Material          *m_pMaterial;
     };
 
+
+    std::unique_ptr<Mesh> buildSphereMesh(int _iSlices, int _iDivs, float _fRadius, const Material *_pMaterial) {
+        std::vector<Mesh::Vertex> vertices;
+        std::vector<Mesh::Triangle> triangles;
+        
+        vertices.reserve((_iSlices+1) * (_iDivs+1));
+        triangles.reserve(_iSlices * _iDivs * 2);
+        
+        for (int d = 0; d <= _iDivs; d++) {
+            float angle = M_PI / _iDivs * d;
+            float y = _fRadius * cos(angle);
+            float r = _fRadius * sin(angle);
+            
+            for (int s = 0; s <= _iSlices; s++) {
+                float x = r * cos(M_PI / _iSlices * s * 2);
+                float z = r * sin(M_PI / _iSlices * s * 2);
+                
+                auto v = Mesh::Vertex();
+                v.m_v = Vec(x, y, z);
+                
+                vertices.push_back(v);
+                
+                if ( (d > 0) && (s > 0) ) {
+                    auto i = vertices.size() - 1;
+                    
+                    if (d > 1) {
+                        auto t1 = Mesh::Triangle();
+                        t1.m_v[0] = (uint32_t)i-_iSlices-2;
+                        t1.m_v[1] = (uint32_t)i-_iSlices-1;
+                        t1.m_v[2] = (uint32_t)i-1;
+                        triangles.push_back(t1);
+                    }
+                    
+                    if (d < _iDivs) {
+                        auto t2 = Mesh::Triangle();
+                        t2.m_v[0] = (uint32_t)i-_iSlices-1;
+                        t2.m_v[1] = (uint32_t)i;
+                        t2.m_v[2] = (uint32_t)i-1;
+                        triangles.push_back(t2);
+                    }
+                }
+            }
+        }
+        
+        return std::make_unique<Mesh>(vertices, triangles, _pMaterial);
+    }
 
 };  // namespace LNF
 

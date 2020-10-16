@@ -12,7 +12,8 @@
 namespace LNF
 {
     // sorted insert (and unique) into list
-    void sortedInsert(std::vector<Node*> &_nodes, Node *_pNode) {
+    template <typename node_type>
+    void sortedInsert(std::vector<node_type*> &_nodes, node_type *_pNode) {
         auto it = std::lower_bound(_nodes.begin(), _nodes.end(), _pNode);
         if ( (it == _nodes.end()) ||
              (*it != _pNode) )
@@ -24,6 +25,7 @@ namespace LNF
     /*
         Bounding volume hyrarchy node.
      */
+    template <typename node_type>
     class BvhNode
     {
      public:
@@ -34,14 +36,14 @@ namespace LNF
             :m_bounds(_bounds)
         {}
         
-        // check for possible bounding volume hyrarchy
-        bool intersect(std::vector<Node*> &_hitNodes, const Ray &_ray) const {
+        // search for hits in bounding volume hyrarchy
+        bool intersect(std::vector<node_type*> &_hitNodes, const Ray &_ray) const {
             bool bHit = false;
             if (aaboxIntersectCheck(m_bounds, _ray.m_origin, _ray.m_invDirection) == true) {
             
                 if (m_nodes.empty() == false) {
                     for (const auto &pNode : m_nodes) {
-                        sortedInsert(_hitNodes, pNode.get());
+                        sortedInsert(_hitNodes, pNode);
                     }
 
                     bHit = true;
@@ -55,12 +57,12 @@ namespace LNF
                     bHit |= m_right->intersect(_hitNodes, _ray);
                 }
             }
-            
+
             return bHit;
         }
         
         // build bounding volume hyrarchy
-        void build(const std::vector<std::shared_ptr<Node>> &_nodes) {
+        void build(const std::vector<node_type*> &_nodes) {
             if (_nodes.empty() == false) {
                 // find bounding volume
                 m_bounds = _nodes[0]->bounds();
@@ -72,16 +74,16 @@ namespace LNF
                 }
 
                 // build nodes recursively
-                buildTree(_nodes);
+                m_iLevels = buildTree(_nodes, 0);
             }
         }
         
       private:
         // build bounding volume hyrarchy
-        void buildTree(const std::vector<std::shared_ptr<Node>> &_nodes) {
+        int buildTree(const std::vector<node_type*> &_nodes, int _iLevel) {
             // build left and right sets
-            std::vector<std::shared_ptr<Node>> nodesLeft;
-            std::vector<std::shared_ptr<Node>> nodesRight;
+            std::vector<node_type*> nodesLeft;
+            std::vector<node_type*> nodesRight;
             auto boxes = splitBox(m_bounds);
             
             for (auto &pNode : _nodes) {
@@ -103,32 +105,39 @@ namespace LNF
                 }
             }
             
-            if ( (nodesLeft.size() > 4) &&
-                 (boxes.first.volume() > 100) )
-            {
-                m_left = std::make_unique<BvhNode>(boxes.first);
-                m_left->buildTree(nodesLeft);
-            }
-            else {
-                m_nodes.insert(m_nodes.begin(), nodesLeft.begin(), nodesLeft.end());
+            int levelsLeft = _iLevel;
+            if (nodesLeft.empty() == false) {
+                if (nodesLeft.size() < _nodes.size())
+                {
+                    m_left = std::make_unique<BvhNode>(boxes.first);
+                    levelsLeft = m_left->buildTree(nodesLeft, _iLevel + 1);
+                }
+                else {
+                    m_nodes.insert(m_nodes.begin(), nodesLeft.begin(), nodesLeft.end());
+                }
             }
             
-            if ( (nodesRight.size() > 4) &&
-                 (boxes.second.volume() > 100) )
-            {
-                m_right = std::make_unique<BvhNode>(boxes.second);
-                m_right->buildTree(nodesRight);
+            int levelsRight = _iLevel;
+            if (nodesRight.empty() == false) {
+                if (nodesRight.size() < _nodes.size())
+                {
+                    m_right = std::make_unique<BvhNode>(boxes.second);
+                    levelsRight = m_right->buildTree(nodesRight, _iLevel + 1);
+                }
+                else {
+                    m_nodes.insert(m_nodes.begin(), nodesRight.begin(), nodesRight.end());
+                }
             }
-            else {
-                m_nodes.insert(m_nodes.begin(), nodesRight.begin(), nodesRight.end());
-            }
+            
+            return std::max(levelsLeft, levelsRight);
         }
         
      private:
-        Bounds                              m_bounds;
-        std::unique_ptr<BvhNode>            m_left;
-        std::unique_ptr<BvhNode>            m_right;
-        std::vector<std::shared_ptr<Node>>  m_nodes;        // leaf nodes
+        Bounds                                   m_bounds;
+        std::unique_ptr<BvhNode>                 m_left;
+        std::unique_ptr<BvhNode>                 m_right;
+        std::vector<node_type*>                  m_nodes;        // leaf nodes
+        int                                      m_iLevels;
     };
 
 
