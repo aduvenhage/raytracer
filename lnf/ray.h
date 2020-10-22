@@ -113,6 +113,15 @@ namespace LNF
         }
     }
 
+    /* glass like reflection/refraction (includes surface scatter and inside/outside checks) */
+    inline Vec refract(const Vec &_vec, const Vec &_normal, float _fIndexOfRefraction, bool _bInside, float _fScatter, RandomGen &_randomGen) {
+        float dEtaiOverEtat = _bInside ? _fIndexOfRefraction : (1.0f/_fIndexOfRefraction);
+        auto normal = (_normal + randomUnitSphere(_randomGen) * _fScatter).normalized();
+        normal *= _bInside ? -1 : 1;
+        
+        return refract(_vec, normal, dEtaiOverEtat, _randomGen);
+    }
+        
 };  // namespace LNF
 
 

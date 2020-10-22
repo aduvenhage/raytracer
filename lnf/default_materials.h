@@ -111,12 +111,9 @@ namespace LNF
         
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            float dEtaiOverEtat = _hit.m_bInside ? m_fIndexOfRefraction : (1.0f/m_fIndexOfRefraction);
-            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_fScatter).normalized();
-            normal *= _hit.m_bInside ? -1 : 1;
-            
-            auto refractedRay = Ray(_hit.m_position, refract(_hit.m_ray.m_direction, normal, dEtaiOverEtat, _randomGen));
-            return ScatteredRay(refractedRay, m_color, Color());
+            return ScatteredRay(Ray(_hit.m_position,
+                                    refract(_hit.m_ray.m_direction, _hit.m_normal, m_fIndexOfRefraction, _hit.m_bInside, m_fScatter, _randomGen)),
+                                m_color, Color());
         }
 
      private:

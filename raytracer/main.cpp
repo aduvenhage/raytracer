@@ -85,8 +85,6 @@ class SimpleScene   : public Scene
         m_bvhRoot.intersect(nodes, _ray);
         auto tpBvh = clock_type::now();
 
-        //auto &nodes = m_nodes;
-        
         // find best hit
         Intersect nh;
         for (auto &pNode : nodes) {
@@ -169,7 +167,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iSamplesPerPixel(16),
+         m_iSamplesPerPixel(4096),
          m_iMaxTraceDepth(4)
     {
         resize(m_iWidth, m_iHeight);
@@ -177,7 +175,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(20, 20, 80), Vec(0, 1, 0), Vec(0, 0, 0), 1.0, 100);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 30, 80), Vec(0, 1, 0), Vec(0, 15, 0), 1.0, 90);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -252,7 +250,7 @@ int main(int argc, char *argv[])
     
     // create scene
     auto pDiffuse0 = std::make_unique<Diffuse>(Color(0.4, 0.4, 0.4));
-    auto pDiffuse1 = std::make_unique<DiffuseCheckered>(Color(1.0, 0.8, 0.1), Color(1.0, 0.2, 0.1), 8);
+    auto pDiffuse1 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(1.0, 0.2, 0.2), 4);
     auto pDiffuse2 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 8);
     auto pDiffuse3 = std::make_unique<Diffuse>(Color(0.8, 0.4, 0.4));
     auto pGlass1 = std::make_unique<Glass>(Color(0.8, 0.8, 0.8), 0.01, 1.8);
@@ -265,7 +263,7 @@ int main(int argc, char *argv[])
     auto pLight5 = std::make_unique<Light>(Color(0.1, 0.1, 1.0));
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
     auto pTraingleRgb1 = std::make_unique<TriangleRGB>();
-    auto pDiffuseMarched1 = std::make_unique<DiffuseMarched>(Color(0.9, 0.2, 0.2));
+    auto pDiffuseMarched1 = std::make_unique<MarchedGlass>();
     
     auto materials = std::vector<Material*>{pDiffuse0.get(), pDiffuse1.get(), pDiffuse2.get(),
                                             pGlass1.get(),
@@ -274,8 +272,8 @@ int main(int argc, char *argv[])
                                             pNormalsInside.get()};
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse0.get()), axisEulerZYX(0, 0, 0, Vec(0, -30, 0))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuseMarched1.get()), axisEulerZYX(0, 0, 0, Vec(0, 0, 0))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse1.get()), axisEulerZYX(0, 0, 0, Vec(0, 0, 0))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuseMarched1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
     
     //pScene->addNode(std::make_unique<Transform>(buildSphereMesh(4, 4, 10, pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(0, 80, 0))));
     

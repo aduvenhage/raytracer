@@ -16,6 +16,7 @@
 #include <vector>
 #include <random>
 #include <atomic>
+#include <functional>
 
 
 namespace LNF
@@ -86,6 +87,51 @@ namespace LNF
             }
         }
     }
+    
+    
+    // get marched normal from surface function
+    template <typename sdf_func>
+    Vec marchedNormal(const Vec &_intersect, const sdf_func &_sdf) {
+        const float e = 0.0001;
+        return Vec(_sdf(_intersect + Vec{e, 0, 0}) - _sdf(_intersect - Vec{e, 0, 0}),
+                   _sdf(_intersect + Vec{0, e, 0}) - _sdf(_intersect - Vec{0, e, 0}),
+                   _sdf(_intersect + Vec{0, 0, e}) - _sdf(_intersect - Vec{0, 0, e})).normalized();
+    }
+
+
+    // ray marching on provided signed distance function
+    template <typename sdf_func>
+    bool marchedTrace(Vec &_intersect,
+                      Vec &_normal,
+                      const Ray &_ray,
+                      const sdf_func &_sdf,
+                      float _fStepScale,
+                      float _fMaxDist)
+    {
+        const float e = 0.00001;
+        const int n = 1000;
+        _intersect = _ray.m_origin;
+        
+        for (int i = 0; i < n; i++) {
+            float distance = _sdf(_intersect);
+            if (distance > _fMaxDist) {
+                return false;   // missed
+            }
+            else if (fabs(distance) <= e) {
+                _normal = marchedNormal(_intersect, _sdf);
+                return true;    // hit
+            }
+            else if (distance < e) {
+                _intersect = _intersect + _ray.m_direction * distance * _fStepScale * 0.2;
+            }
+            else {
+                _intersect = _intersect + _ray.m_direction * distance * _fStepScale;
+            }
+        }
+        
+        return false;
+    }
+    
 
 };  // namespace LNF
 
