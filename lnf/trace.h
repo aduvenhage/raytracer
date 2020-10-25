@@ -121,7 +121,7 @@ namespace LNF
                 _normal = marchedNormal(_intersect, _sdf);
                 return true;    // hit
             }
-            else if (distance < e) {
+            else if (distance < 0) {
                 _intersect = _intersect + _ray.m_direction * distance * _fStepScale * 0.2;
             }
             else {

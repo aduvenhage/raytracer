@@ -167,7 +167,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iSamplesPerPixel(4096),
+         m_iSamplesPerPixel(256),
          m_iMaxTraceDepth(4)
     {
         resize(m_iWidth, m_iHeight);
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
     auto pLight5 = std::make_unique<Light>(Color(0.1, 0.1, 1.0));
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
     auto pTraingleRgb1 = std::make_unique<TriangleRGB>();
-    auto pDiffuseMarched1 = std::make_unique<MarchedGlass>();
+    auto pDiffuseMarched1 = std::make_unique<MarchedSwirl>(0.01, 0.01, 1.6);
     
     auto materials = std::vector<Material*>{pDiffuse0.get(), pDiffuse1.get(), pDiffuse2.get(),
                                             pGlass1.get(),
@@ -273,7 +273,8 @@ int main(int argc, char *argv[])
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 100, 40))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse1.get()), axisEulerZYX(0, 0, 0, Vec(0, 0, 0))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuseMarched1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuseMarched1.get()), axisEulerZYX(0, 0, 0, Vec(15, 15, 0))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pDiffuseMarched1.get()), axisEulerZYX(0, 1.5, 0, Vec(-15, 15, 0))));
     
     //pScene->addNode(std::make_unique<Transform>(buildSphereMesh(4, 4, 10, pNormalsInside.get()), axisEulerZYX(0, 0, 0, Vec(0, 80, 0))));
     
