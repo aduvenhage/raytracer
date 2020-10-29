@@ -35,14 +35,14 @@ namespace LNF
                 auto pHitNode = hit.m_pNode;
                 pHitNode->intersect(hit);
             
-                // create scattered, reflected, reftracted, etc. color
+                // create scattered, reflected, reftracted, etc. and color
                 auto pMaterial = pHitNode->material();
                 auto scatteredRay = pMaterial->scatter(hit, _randomGen);
                 scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
                 
                 // transform ray back to world space
-                scatteredRay.m_ray.m_direction = hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction);
-                scatteredRay.m_ray.m_origin = hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin);
+                scatteredRay.m_ray = Ray(hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin),
+                                         hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
 
                 // trace recursively and blend colors
                 if ( (_iMaxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
@@ -104,28 +104,37 @@ namespace LNF
     bool marchedTrace(Vec &_intersect,
                       Vec &_normal,
                       const Ray &_ray,
-                      const sdf_func &_sdf,
-                      float _fStepScale,
-                      float _fMaxDist)
+                      const sdf_func &_sdf)
     {
-        const float e = 0.00001;
+        const float MAX_DIST = 1000;
+        const float e = 0.000001;
         const int n = 1000;
+        float stepScale = 1.0;
+        bool outside = true;
+        
         _intersect = _ray.m_origin;
         
         for (int i = 0; i < n; i++) {
             float distance = _sdf(_intersect);
-            if (distance > _fMaxDist) {
+            if (distance > MAX_DIST) {
                 return false;   // missed
             }
             else if (fabs(distance) <= e) {
                 _normal = marchedNormal(_intersect, _sdf);
                 return true;    // hit
             }
-            else if (distance < 0) {
-                _intersect = _intersect + _ray.m_direction * distance * _fStepScale * 0.2;
+            else if (distance < -e) {
+                // decrease scale if we went too far
+                if (outside == true) {
+                    stepScale *= 0.5;
+                }
+                
+                outside = false;
+                _intersect = _intersect + _ray.m_direction * distance * stepScale;
             }
             else {
-                _intersect = _intersect + _ray.m_direction * distance * _fStepScale;
+                outside = true;
+                _intersect = _intersect + _ray.m_direction * distance * stepScale;
             }
         }
         

@@ -63,12 +63,13 @@ namespace LNF
     {
      public:
        Light(const Color &_color)
-           :m_color(_color)
+            :m_color(_color)
        {}
        
        /* Returns the scattered ray at the intersection point. */
        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-           return ScatteredRay(_hit.m_ray, Color(), m_color);
+            float fIntensity = fabs(_hit.m_normal * _hit.m_ray.m_direction);
+            return ScatteredRay(_hit.m_ray, Color(), m_color * fIntensity);
        }
        
      private:

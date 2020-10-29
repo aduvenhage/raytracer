@@ -40,7 +40,8 @@ namespace LNF
             if (aaboxIntersectCheck(m_bounds, _ray.m_origin, _ray.m_invDirection) == true)
             {
                 // transform ray and check target intersect
-                auto br = Ray(m_axis.transformTo(_ray.m_origin), m_axis.rotateTo(_ray.m_direction));
+                auto br = Ray(m_axis.transformTo(_ray.m_origin),
+                              m_axis.rotateTo(_ray.m_direction));
                 
                 // check target hit
                 _hit.m_axis = m_axis;

@@ -31,6 +31,11 @@ inline auto clamp(const T &_value, const T &_min, const T &_max) {
 }
 
 
+inline float frac(float _a) {
+    return _a - std::trunc(_a);
+}
+
+
 namespace LNF
 {
     const float pi     = M_PI;
