@@ -167,7 +167,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iSamplesPerPixel(128),
+         m_iSamplesPerPixel(512),
          m_iMaxTraceDepth(32)
     {
         resize(m_iWidth, m_iHeight);
