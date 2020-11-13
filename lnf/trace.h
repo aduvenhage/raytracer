@@ -101,8 +101,9 @@ namespace LNF
 
     // ray marching on provided signed distance function
     template <typename sdf_func>
-    bool marchedTrace(Vec &_intersect,
-                      Vec &_normal,
+    bool marchedTrace(Vec &_intersect,      // point on surface
+                      Vec &_normal,         // surface normal
+                      bool &_bInside,       // false if ray is entering surface; true if ray is exiting
                       const Ray &_ray,
                       const sdf_func &_sdf)
     {
@@ -110,32 +111,37 @@ namespace LNF
         const float e = 0.000001;
         const int n = 1000;
         float stepScale = 1.0;
-        bool outside = true;
         
+        _bInside = false;
         _intersect = _ray.m_origin;
+        float distance = _sdf(_intersect);
+        if (distance < 0) {
+            _bInside = true;
+            stepScale *= -1;
+        }
         
         for (int i = 0; i < n; i++) {
-            float distance = _sdf(_intersect);
-            if (distance > MAX_DIST) {
+            // check hit or miss
+            float absd = fabs(distance);
+            if (absd > MAX_DIST) {
+                _bInside = distance < 0;
                 return false;   // missed
             }
-            else if (fabs(distance) <= e) {
+            else if (absd <= e) {
                 _normal = marchedNormal(_intersect, _sdf);
                 return true;    // hit
             }
-            else if (distance < -e) {
-                // decrease scale if we went too far
-                if (outside == true) {
-                    stepScale *= 0.5;
-                }
-                
-                outside = false;
-                _intersect = _intersect + _ray.m_direction * distance * stepScale;
+            
+            // move forward
+            _intersect = _intersect + _ray.m_direction * distance * stepScale;
+            
+            // check for surface crossing
+            float newDistance = _sdf(_intersect);
+            if (distance * newDistance < -e) {
+                stepScale *= 0.5;
             }
-            else {
-                outside = true;
-                _intersect = _intersect + _ray.m_direction * distance * stepScale;
-            }
+            
+            distance = newDistance;
         }
         
         return false;
