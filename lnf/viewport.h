@@ -44,7 +44,7 @@ namespace LNF
             float y = (1 - 2 * (_iY + pixelDist(_generator)) / (float)m_iHeight) * m_fScale;
                 
             if (m_pCamera == nullptr) {
-                return Ray(Vec(x, y, -1).normalized());
+                return Ray(Vec(), Vec(x, y, -1).normalized());
             }
             else if (m_pCamera->aperture() < 0.0001) {
                 return Ray(m_pCamera->origin(),

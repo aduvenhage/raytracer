@@ -24,14 +24,6 @@ namespace LNF
         Ray(Ray &&) = default;
         Ray(Ray &) = default;
 
-        template <typename U>
-        Ray(U &&_direction)
-            :m_direction(std::forward<U>(_direction)),
-             m_invDirection(1/_direction),
-             m_fMinDist(MIN_DIST),
-             m_fMaxDist(MAX_DIST)
-        {}
-        
         template <typename U, typename V>
         Ray(U &&_origin, V &&_direction)
             :m_origin(std::forward<U>(_origin)),

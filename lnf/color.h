@@ -139,7 +139,111 @@ namespace LNF
         static const Color  Green(0, 1, 0);
         static const Color  Blue(0, 0, 1);
     }
+    
+    
+    //
+    class RunningStat
+    {
+     public:
+        RunningStat()
+            :m_n(0),
+             m_oldM(0),
+             m_newM(0),
+             m_oldS(0),
+             m_newS(0),
+             m_maturity(0)
+        {}
+
+        void clear(){
+            m_n = 0;
+            m_newM = 0;
+            m_oldS = 0;
+            m_newS = 0;
+            m_maturity = 0;
+        }
+
+        void push(double x) {
+            m_n++;
+            
+            if (m_n == 1) {
+                m_newM = x;
+                m_newS = 0.0;
+            }
+            else {
+                m_newM = m_oldM + (x - m_oldM) / m_n;
+                m_newS = m_oldS + (x - m_oldM) * (x - m_newM);
+            }
+            
+            m_maturity = fabs(m_newM - m_oldM);
+            m_oldM = m_newM;
+            m_oldS = m_newS;
+        }
+
+        int numDataValues() const {
+            return m_n;
+        }
+
+        double mean() const {
+            return m_newM;
+        }
+
+        double variance() const {
+            return ((m_n > 1) ? m_newS / (m_n - 1) : 0.0);
+        }
+
+        double standardDeviation() const {
+            return sqrt(variance());
+        }
         
+        double maturity() const {
+            return m_maturity;
+        }
+
+     private:
+        int         m_n;
+        double      m_oldM;
+        double      m_newM;
+        double      m_oldS;
+        double      m_newS;
+        double      m_maturity;
+    };
+
+    
+    //
+    class ColorStat {
+     public:
+        ColorStat()
+        {}
+        
+        void push(const Color &_color) {
+            m_red.push(_color.red());
+            m_green.push(_color.green());
+            m_blue.push(_color.blue());
+        }
+        
+        double variance() const {
+            return m_red.variance() +
+                   m_green.variance() +
+                   m_blue.variance();
+        }
+        
+        double maturity() const {
+            return m_red.maturity() +
+                   m_green.maturity() +
+                   m_blue.maturity();
+        }
+
+        Color mean() const {
+            return Color(m_red.mean(),
+                         m_green.mean(),
+                         m_blue.mean());
+        }
+
+     private:
+        RunningStat     m_red;
+        RunningStat     m_green;
+        RunningStat     m_blue;
+    };
 
 
 

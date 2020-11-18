@@ -21,42 +21,72 @@
 
 namespace LNF
 {
-    /* Trace ray (recursively) through scene */
-    Color trace(const Ray &_ray,
-                const Scene *_pScene,
-                RandomGen &_randomGen,
-                int _iMaxTraceDepth)
+    class Tracer
     {
-        Intersect hit;
-        if (_pScene->hit(hit, _ray) == true) {
-            if (hit.m_pNode != nullptr) {
-            
-                // complete intercept (
-                auto pHitNode = hit.m_pNode;
-                pHitNode->intersect(hit);
-            
-                // create scattered, reflected, reftracted, etc. and color
-                auto pMaterial = pHitNode->material();
-                auto scatteredRay = pMaterial->scatter(hit, _randomGen);
-                scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
-                
-                // transform ray back to world space
-                scatteredRay.m_ray = Ray(hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin),
-                                         hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
-
-                // trace recursively and blend colors
-                if ( (_iMaxTraceDepth > 0) && (scatteredRay.m_color.isBlack() == false) ) {
-                    auto tracedColor = trace(scatteredRay.m_ray, _pScene, _randomGen, _iMaxTraceDepth - 1);
-                    return scatteredRay.m_emitted + scatteredRay.m_color * tracedColor;
-                }
-                else {
-                    return scatteredRay.m_emitted;
-                }
-            }
+     public:
+        Tracer(const Scene *_pScene, RandomGen &_randomGen, int _iMaxTraceDepth)
+            :m_pScene(_pScene),
+             m_randomGen(_randomGen),
+             m_iTraceLimit(_iMaxTraceDepth),
+             m_iTraceDepth(0),
+             m_iTraceDepthMax(0)
+        {}
+        
+        Color trace(const Ray &_ray) {
+            m_iTraceDepth = 0;
+            return traceRay(_ray);
         }
         
-        return _pScene->missColor(_ray);  // background color
-    }
+        int traceDepth() const {return m_iTraceDepth;}
+        int traceDepthMax() const {return m_iTraceDepthMax;}
+
+     protected:
+        /* Trace ray (recursively) through scene */
+        Color traceRay(const Ray &_ray) {
+            m_iTraceDepth++;
+            m_iTraceDepthMax = std::max(m_iTraceDepth, m_iTraceDepthMax);
+            
+            Intersect hit;
+            if (m_pScene->hit(hit, _ray) == true) {
+                if (hit.m_pNode != nullptr) {
+                
+                    // complete intercept (
+                    auto pHitNode = hit.m_pNode;
+                    pHitNode->intersect(hit);
+                
+                    // create scattered, reflected, refracted, etc. ray and color
+                    auto scatteredRay = pHitNode->material()->scatter(hit, m_randomGen);
+                    
+                    // trace recursively and blend colors
+                    if ( (m_iTraceDepth < m_iTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
+                        // move slightly to avoid self intersection
+                        scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
+                        
+                        // transform ray back to world space
+                        scatteredRay.m_ray = Ray(hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin),
+                                                 hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
+
+                        // trace again
+                        auto tracedColor = traceRay(scatteredRay.m_ray);
+                        return scatteredRay.m_emitted + scatteredRay.m_color * tracedColor;
+                    }
+                    else {
+                        // max trace depth reached
+                        return scatteredRay.m_emitted;
+                    }
+                }
+            }
+            
+            return m_pScene->missColor(_ray);  // background color
+        }
+        
+     private:
+        const Scene     *m_pScene;
+        RandomGen       &m_randomGen;
+        int             m_iTraceLimit;
+        int             m_iTraceDepth;
+        int             m_iTraceDepthMax;
+    };
 
 
     /* raytrace for a specific view to a specific output block */
@@ -66,21 +96,32 @@ namespace LNF
                      RandomGen &_generator,
                      int _iRaysPerPixel, int _iMaxDepth)
     {
+        Tracer tracer(_scene, _generator, _iMaxDepth);
+
         // create rays and trace them for all pixels in block
         for (auto j = 0; j < _pOutput->height(); j++)
         {
             unsigned char *pPixel = _pOutput->row(j);
             for (auto i = 0; i < _pOutput->width(); i++)
             {
-                auto color = Color();
+                auto stats = ColorStat();
+                
                 for (int k = 0; k < _iRaysPerPixel; k++)
                 {
                     auto ray = _pView->getRay(i, j, _generator);
-                    color += trace(ray, _scene, _generator, _iMaxDepth - 1);
+                    auto color = tracer.trace(ray);
+                    stats.push(color);
+                    
+                    if ( (k > 4) && (k > tracer.traceDepthMax()) ) {
+                        if (stats.maturity() < 0.000001)
+                        {
+                            break;
+                        }
+                    }
                 }
                                 
                 // write averaged color to output image
-                color = (color / _iRaysPerPixel).clamp();
+                auto color = stats.mean().clamp();
                 *(pPixel++) = (int)(255 * color.red() + 0.5);
                 *(pPixel++) = (int)(255 * color.green() + 0.5);
                 *(pPixel++) = (int)(255 * color.blue() + 0.5);
