@@ -18,7 +18,7 @@ namespace LNF
      public:
         virtual ~Viewport() = default;
         
-        virtual Ray getRay(int _iX, int _iY, RandomGen &_generator) const = 0;
+        virtual Ray getRay(int _iX, int _iY, RandomGen &_generator, int _iPerPixelRayIndex) const = 0;
     };
 
 
@@ -37,8 +37,8 @@ namespace LNF
             m_pCamera = _pCam;
         }
         
-        Ray getRay(int _iX, int _iY, RandomGen &_generator) const override {
-            std::uniform_real_distribution<float> pixelDist(-0.4, 0.4);
+        Ray getRay(int _iX, int _iY, RandomGen &_generator, int _iPerPixelRayIndex) const override {
+            std::uniform_real_distribution<float> pixelDist(-0.49999, 0.49999);
 
             float x = (2 * (_iX + pixelDist(_generator)) / (float)m_iWidth - 1) * m_fViewAspect * m_fScale;
             float y = (1 - 2 * (_iY + pixelDist(_generator)) / (float)m_iHeight) * m_fScale;
@@ -90,8 +90,8 @@ namespace LNF
              m_iStartY(_iStartY)
         {}
         
-        Ray getRay(int _iX, int _iY, RandomGen &_generator) const override {
-            return m_pViewport->getRay(_iX + m_iStartX, _iY + m_iStartY, _generator);
+        Ray getRay(int _iX, int _iY, RandomGen &_generator, int _iPerPixelRayIndex) const override {
+            return m_pViewport->getRay(_iX + m_iStartX, _iY + m_iStartY, _generator, _iPerPixelRayIndex);
         }
         
      protected:

@@ -17,20 +17,19 @@ namespace LNF
      public:
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+            RayMarcher marcher;
+            
             // transform ray on shape boundary (raytraced hit)
             auto ray = getShapeScatter(_hit.m_ray.m_direction, _hit.m_normal, _hit.m_bInside, _randomGen);
             
             // try to hit surface inside (using raymarching)
             if (ray * _hit.m_normal < 0) {
-                Vec pos, normal;
-                bool inside;
-                bool bHit = marchedTrace(pos, normal, inside,
-                                         Ray(_hit.m_position, ray),
+                auto hit = marcher.march(Ray(_hit.m_position, ray),
                                          [this](const Vec &_p){return this->sdfSurface(_p);});
                                          
-                if (bHit == true) {
-                    auto raym = getSurfaceScatter(ray, normal, inside, _randomGen);
-                    return color(raym, pos, normal, true);
+                if (hit == true) {
+                    auto raym = getSurfaceScatter(hit.m_ray.m_direction, hit.m_normal, hit.m_bInside, _randomGen);
+                    return color(raym, hit.m_position, hit.m_normal, true);
                 }
             }
 
@@ -195,7 +194,7 @@ namespace LNF
         
         // surface signed distance function
         virtual float sdfSurface(const Vec &_p) const override {
-            const float scale = 0.1;
+            const float scale = 0.2;
             return std::min(sdfBubbles(_p, 0) * scale, sdfBubbles(_p, M_PI) * scale);
         }
         
@@ -212,7 +211,7 @@ namespace LNF
             int n = 16;
             for (int i = 0; i < n; i ++) {
                 float t = (float)i/n;
-                Vec origin(2*sin(t * M_PI * 4 + _dAngleY), (t - 0.5) * 20, 1.5*cos(t * M_PI * 4 + _dAngleY));
+                Vec origin(2*sin(t * M_PI * 4 + _dAngleY), (t - 0.5) * 30, 1.5*cos(t * M_PI * 4 + _dAngleY));
                 sdf += exp(-k * dfSphere(_p, origin,  frac(t/0.3) * 1 + 0.1));
             }
             
@@ -242,7 +241,7 @@ namespace LNF
 
         // surface signed distance function
         virtual float sdfSurface(const Vec &_p) const override {
-            const float scale = 0.1;
+            const float scale = 0.5;
             auto axis = axisEulerZYX(0, _p.y()/6, 0);
             auto pr = axis.rotateFrom(_p);
             
@@ -281,7 +280,7 @@ namespace LNF
 
         // surface signed distance function
         virtual float sdfSurface(const Vec &_p) const override {
-            return _p.size() - m_fRadius - 0 * sin(_p.x()/2) * sin(_p.y()/2) * sin(_p.z()/2);
+            return _p.size() - m_fRadius - 3 * sin(_p.x()/2) * sin(_p.y()/2) * sin(_p.z()/2);
         }
         
      private:

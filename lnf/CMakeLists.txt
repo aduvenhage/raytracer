@@ -23,6 +23,7 @@ SET(INCL_SRC
     ray.h
     scene.h
     sphere.h
+    stats.h
     strutil.h
     trace.h
     transform.h

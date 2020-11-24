@@ -18,7 +18,7 @@ namespace LNF
      */
     struct Intersect
     {
-        Intersect()
+        Intersect() 
             :m_pNode(nullptr),
              m_axis(axisIdentity()),
              m_fPositionOnRay(-1),

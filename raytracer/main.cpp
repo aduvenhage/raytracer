@@ -166,8 +166,9 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iSamplesPerPixel(256),
-         m_iMaxTraceDepth(32)
+         m_iSamplesPerPixel(4096),
+         m_iMaxTraceDepth(32),
+         m_fColorTollerance(0.001)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
@@ -201,7 +202,12 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             m_tpInit = clock_type::now();
-            m_pSource = std::make_unique<Frame>(m_pView.get(), m_pScene, m_iNumWorkers, m_iSamplesPerPixel, m_iMaxTraceDepth);
+            m_pSource = std::make_unique<Frame>(m_pView.get(),
+                                                m_pScene,
+                                                m_iNumWorkers,
+                                                m_iSamplesPerPixel,
+                                                m_iMaxTraceDepth,
+                                                m_fColorTollerance);
         }
         else if (m_pSource->isFinished() == true) {
             if (m_bFrameDone == false) {
@@ -237,6 +243,7 @@ class MainWindow : public QMainWindow
     int                                 m_iNumWorkers;
     int                                 m_iSamplesPerPixel;
     int                                 m_iMaxTraceDepth;
+    float                               m_fColorTollerance;
 };
 
 
@@ -267,7 +274,18 @@ int main(int argc, char *argv[])
     auto pMarched3 = std::make_unique<Swirl>(0.01, 1.8);
     auto pMarched4 = std::make_unique<MarchedSphere>(10, 0.01, 1.8);
 
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pLight1.get()), axisTranslation(Vec(0, 60, 60))));
+    
+    std::uniform_real_distribution<float> lightSizeDist(5, 15);
+    std::uniform_real_distribution<float> lightAngleDist(0, M_PI * 2);
+
+    int num_lights = 16;
+    for (int i = 0; i < num_lights; i++) {
+        float angle = lightAngleDist(generator);
+        float size = lightSizeDist(generator);
+
+        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(size, pLight1.get()), axisTranslation(Vec(120 * cos(angle), 120, 120 * sin(angle)))));
+    }
+
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse1.get()), axisEulerZYX(0, 0, 0, Vec(0, 0, 0))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pMarched1.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pMarched2.get()), axisEulerZYX(0, 0, 0, Vec(-30, 15, 10))));
