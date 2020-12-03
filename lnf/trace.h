@@ -190,8 +190,8 @@ namespace LNF
                     stats.push(color);
                     
                     if ( (_fColorTollerance > 0.0f) &&
-                         (k >= 16 * tracer.traceDepthMax()) &&
-                         (stats.variance() < _fColorTollerance) )
+                         (k >= 4 * tracer.traceDepthMax()) &&
+                         (stats.standardDeviation() < _fColorTollerance) )
                     {
                         break;
                     }

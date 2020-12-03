@@ -11,46 +11,30 @@ namespace LNF
     {
      public:
         RunningStat()
-            :m_n(0),
-             m_oldM(0),
-             m_newM(0),
-             m_oldS(0),
-             m_newS(0)
+            :m_uCount(0),
+             m_dMean(0),
+             m_dM2(0)
         {}
-
-        void clear(){
-            m_n = 0;
-            m_newM = 0;
-            m_oldS = 0;
-            m_newS = 0;
-        }
-
-        void push(double x) {
-            m_n++;
+    
+        void push(double _x) {
+            m_uCount++;
+            auto delta = _x - m_dMean;
+            m_dMean += delta / m_uCount;
             
-            if (m_n == 1) {
-                m_newM = x;
-                m_newS = 0.0;
-            }
-            else {
-                m_newM = m_oldM + (x - m_oldM) / m_n;
-                m_newS = m_oldS + (x - m_oldM) * (x - m_newM);
-            }
-            
-            m_oldM = m_newM;
-            m_oldS = m_newS;
+            auto delta2 = _x - m_dMean;
+            m_dM2 += delta * delta2;
         }
-
-        int numDataValues() const {
-            return m_n;
-        }
-
+    
         double mean() const {
-            return m_newM;
+            return m_dMean;
         }
 
         double variance() const {
-            return ((m_n > 1) ? m_newS / (m_n - 1) : 0.0);
+            return m_dM2 / m_uCount;
+        }
+
+        double sampleVariance() const {
+            return m_dM2 / (m_uCount-1);
         }
 
         double standardDeviation() const {
@@ -58,13 +42,12 @@ namespace LNF
         }
 
      private:
-        int         m_n;
-        double      m_oldM;
-        double      m_newM;
-        double      m_oldS;
-        double      m_newS;
+        uint64_t    m_uCount;
+        double      m_dMean;
+        double      m_dM2;
     };
-
+    
+        
     
 
 };  // namespace LNF

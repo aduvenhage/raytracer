@@ -56,11 +56,12 @@ Done:
 - camera position and orientation
 - add bounding volume hyrarchy to scene
 - depth-of-field
+- raymarched materials
 
 Busy:
-- raymarched materials
 - profile and update math operations
 - triangle mesh rendering
+- color variance based per pixel rays (quick exit)
 
 Todo:
 - triangle mesh loading (see https://github.com/assimp/assimp)

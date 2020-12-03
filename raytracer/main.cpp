@@ -168,7 +168,7 @@ class MainWindow : public QMainWindow
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
          m_iSamplesPerPixel(4096),
          m_iMaxTraceDepth(32),
-         m_fColorTollerance(0.001)
+         m_fColorTollerance(1)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
@@ -209,23 +209,29 @@ class MainWindow : public QMainWindow
                                                 m_iMaxTraceDepth,
                                                 m_fColorTollerance);
         }
-        else if (m_pSource->isFinished() == true) {
-            if (m_bFrameDone == false) {
-                m_pSource->writeJpegFile("raytraced.jpeg", 100);
-                m_bFrameDone = true;
-                
-                auto td = clock_type::now() - m_tpInit;
-                auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(td).count();
-                
-                std::string title = std::string("Done ") + std::to_string((float)ns/1e09) + "s";
-                setWindowTitle(QString::fromStdString(title));
-                
-                printf("time on bvh = %.2f, time on hits = %.2f\n",
-                        (float)m_pScene->getTimeOnBvhS()/m_iNumWorkers,
-                        (float)m_pScene->getTimeOnHitsS()/m_iNumWorkers);
+        else {
+            m_pSource->updateFrameProgress();
+            printf("active jobs = %d, progress = %.2f, time to finish = %.2fs, total time = %.2fs\n",
+                    m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal());
+            
+            if (m_pSource->isFinished() == true) {
+                if (m_bFrameDone == false) {
+                    m_pSource->writeJpegFile("raytraced.jpeg", 100);
+                    m_bFrameDone = true;
+                    
+                    auto td = clock_type::now() - m_tpInit;
+                    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(td).count();
+                    
+                    std::string title = std::string("Done ") + std::to_string((float)ns/1e09) + "s";
+                    setWindowTitle(QString::fromStdString(title));
+                    
+                    printf("time on bvh = %.2f, time on hits = %.2f\n",
+                            (float)m_pScene->getTimeOnBvhS()/m_iNumWorkers,
+                            (float)m_pScene->getTimeOnHitsS()/m_iNumWorkers);
+                }
             }
         }
-
+        
         update();
     }
     
@@ -262,7 +268,7 @@ int main(int argc, char *argv[])
     auto pGlass1 = std::make_unique<Glass>(Color(0.8, 0.8, 0.8), 0.01, 1.8);
     auto pGlass2 = std::make_unique<Glass>(Color(0.5, 0.5, 0.5), 0.01, 1.8);
     auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.04);
-    auto pLight1 = std::make_unique<Light>(Color(10.0, 10.0, 10.0));
+    auto pLight1 = std::make_unique<Light>(Color(20.0, 20.0, 20.0));
     auto pLight2 = std::make_unique<Light>(Color(1.0, 1.0, 1.0));
     auto pLight3 = std::make_unique<Light>(Color(1.0, 0.1, 0.1));
     auto pLight4 = std::make_unique<Light>(Color(0.1, 1.0, 0.1));
@@ -275,15 +281,16 @@ int main(int argc, char *argv[])
     auto pMarched4 = std::make_unique<MarchedSphere>(10, 0.01, 1.8);
 
     
-    std::uniform_real_distribution<float> lightSizeDist(5, 15);
+    std::uniform_real_distribution<float> lightSizeDist(2, 20);
     std::uniform_real_distribution<float> lightAngleDist(0, M_PI * 2);
 
-    int num_lights = 16;
+    int num_lights = 5;
     for (int i = 0; i < num_lights; i++) {
         float angle = lightAngleDist(generator);
         float size = lightSizeDist(generator);
+        float height = 200;
 
-        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(size, pLight1.get()), axisTranslation(Vec(120 * cos(angle), 120, 120 * sin(angle)))));
+        pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(size, pLight1.get()), axisTranslation(Vec(200 * cos(angle), height, 200 * sin(angle)))));
     }
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse1.get()), axisEulerZYX(0, 0, 0, Vec(0, 0, 0))));

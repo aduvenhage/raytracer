@@ -160,6 +160,12 @@ namespace LNF
                    m_blue.variance();
         }
         
+        double standardDeviation() const {
+            return m_red.standardDeviation() +
+                   m_green.standardDeviation() +
+                   m_blue.standardDeviation();
+        }
+        
         Color mean() const {
             return Color(m_red.mean(),
                          m_green.mean(),

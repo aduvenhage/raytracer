@@ -37,6 +37,7 @@ namespace LNF
             :m_pJobs(_pJobs),
              m_iJobChunkSize(_iJobChunkSize),
              m_iActiveJobs(0),
+             m_iCompletedJobs(0),
              m_bRunning(true)
         {
             m_thread = std::thread(&Worker::run, this);
@@ -66,6 +67,11 @@ namespace LNF
         virtual int activeJobs() const {
             return m_iActiveJobs;
         }
+        
+        /* return the number of jobs completed successfully */
+        virtual int completedJobs() const {
+            return m_iCompletedJobs;
+        }
 
      private:
         // thread entry point
@@ -84,6 +90,7 @@ namespace LNF
                     m_iActiveJobs = (int)m_localJobs.size() + 1;
 
                     pJobPtr->run();
+                    m_iCompletedJobs++;
                 }
                 else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -97,6 +104,7 @@ namespace LNF
         int                                         m_iJobChunkSize;
         std::vector<std::unique_ptr<Job>>           m_localJobs;
         std::atomic<int>                            m_iActiveJobs;
+        std::atomic<int>                            m_iCompletedJobs;
         std::atomic<bool>                           m_bRunning;
     };
 

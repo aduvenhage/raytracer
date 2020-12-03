@@ -13,6 +13,8 @@
 #include "trace.h"
 
 #include <algorithm>
+#include <chrono>
+
 
 
 namespace LNF
@@ -57,6 +59,8 @@ namespace LNF
      protected:
         const static int    PIXEL_BLOCK_SIZE    = 16;     // size of pixel blocks jobs work on
         const static int    JOB_CHUNK_SIZE      = 4;      // number of jobs grabbed by worker
+
+        using clock_type = std::chrono::high_resolution_clock;
         
      public:
         Frame(const ViewportScreen *_pViewport,
@@ -67,13 +71,21 @@ namespace LNF
               float _fColorTollerance)
             :m_pViewport(_pViewport),
              m_pScene(_pScene),
+             m_uJobCount(0),
              m_image(_pViewport->width(), _pViewport->height()),
              m_iPixelBlockSize(PIXEL_BLOCK_SIZE),
              m_iSamplesPerPixel(_iSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
              m_iMaxTraceDepth(_iMaxTraceDepth),
-             m_fColorTollerance(_fColorTollerance)
+             m_fColorTollerance(_fColorTollerance),
+             m_iActiveJobs(0),
+             m_fFrameProgress(0),
+             m_fTimeSpentS(0),
+             m_fTimeToFinishS(0),
+             m_bFinished(false)
         {
+            m_tpStart = m_clock.now();
+            
             createJobs();
             createWorkers();
         }
@@ -87,17 +99,52 @@ namespace LNF
             m_workers.clear();
         }
         
-        int activeJobs() const {
-            int numJobs = (int)m_jobQueue.size();
+        void updateFrameProgress() {
+            // calc active jobs
+            auto completedJobs = 0;
             for (const auto &pWorker : m_workers) {
-                numJobs += pWorker->activeJobs();
+                completedJobs += pWorker->completedJobs();
             }
+            
+            int activeJobs = (int)m_uJobCount - completedJobs;
+            if (activeJobs < 0) {
+                activeJobs = 0;
+            }
+
+            // calc time spent
+            auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now() - m_tpStart).count();
+            m_fTimeSpentS = ns * 1e-9f;
+
+            // calc progress and time to go
+            if (activeJobs != m_iActiveJobs) {
+                m_iActiveJobs = activeJobs;
+                m_fFrameProgress = (float)(m_uJobCount - m_iActiveJobs) / m_uJobCount;
+                m_bFinished = m_iActiveJobs == 0;
                 
-            return numJobs;
+                if (m_fFrameProgress > 0.01) {
+                    m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress * (1 - m_fFrameProgress);
+                }
+            }
+        }
+        
+        int activeJobs() const {
+            return m_iActiveJobs;
+        }
+        
+        float progress() const {
+            return m_fFrameProgress;
+        }
+        
+        float timeToFinish() const {
+            return m_fTimeToFinishS;
+        }
+        
+        float timeTotal() const {
+            return m_fTimeSpentS;
         }
         
         bool isFinished() const {
-            return activeJobs() == 0;
+            return m_bFinished;
         }
         
         // write current image to file
@@ -137,6 +184,8 @@ namespace LNF
                                                                m_iSamplesPerPixel,
                                                                m_iMaxTraceDepth,
                                                                m_fColorTollerance));
+                                                               
+                    m_uJobCount++;
                 }
             }
             
@@ -155,6 +204,7 @@ namespace LNF
      private:
         const ViewportScreen                    *m_pViewport;
         const Scene                             *m_pScene;
+        size_t                                  m_uJobCount;
         JobQueue                                m_jobQueue;
         std::vector<std::unique_ptr<Worker>>    m_workers;
         OutputImageBuffer                       m_image;
@@ -164,6 +214,15 @@ namespace LNF
         int                                     m_iNumWorkers;
         int                                     m_iMaxTraceDepth;
         float                                   m_fColorTollerance;
+        
+        clock_type                              m_clock;
+        clock_type::time_point                  m_tpStart;
+        clock_type::time_point                  m_tpEnd;
+        int                                     m_iActiveJobs;
+        float                                   m_fFrameProgress;
+        float                                   m_fTimeSpentS;
+        float                                   m_fTimeToFinishS;
+        bool                                    m_bFinished;
     };
     
     
