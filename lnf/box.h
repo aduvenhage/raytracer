@@ -23,6 +23,13 @@ namespace LNF
              m_fUvScale(_fUvScale)
         {}
         
+        Box(float _fSize, const Material *_pMaterial, float _fUvScale = 0.2f)
+            :m_bounds(boxVec(-_fSize*0.5), boxVec(_fSize*0.5)),
+             m_vecDiv(boxVec(_fSize*0.49999f)),
+             m_pMaterial(_pMaterial),
+             m_fUvScale(_fUvScale)
+        {}
+        
         /* Returns the material used for rendering, etc. */
         const Material *material() const override {
             return m_pMaterial;

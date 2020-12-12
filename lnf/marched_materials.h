@@ -15,26 +15,30 @@ namespace LNF
     class MarchedMaterial : public Material
     {
      public:
+        MarchedMaterial(int _iMaxSamples, float _fMaxDist)
+            :m_iMaxSamples(_iMaxSamples),
+             m_fMaxDist(_fMaxDist)
+        {}
+
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            RayMarcher marcher;
+            RayMarcher marcher(m_iMaxSamples, m_fMaxDist);
             
-            // transform ray on shape boundary (raytraced hit)
+            // transform ray on shape boundary (from raytraced hit)
             auto ray = getShapeScatter(_hit.m_ray.m_direction, _hit.m_normal, _hit.m_bInside, _randomGen);
             
             // try to hit surface inside (using raymarching)
-            if (ray * _hit.m_normal < 0) {
-                auto hit = marcher.march(Ray(_hit.m_position, ray),
-                                         [this](const Vec &_p){return this->sdfSurface(_p);});
-                                         
-                if (hit == true) {
-                    auto raym = getSurfaceScatter(hit.m_ray.m_direction, hit.m_normal, hit.m_bInside, _randomGen);
-                    return color(raym, hit.m_position, hit.m_normal, true);
-                }
+            auto hit = marcher.march(Ray(_hit.m_position, ray),
+                                     [this](const Vec &_p){return this->sdfSurface(_p);});
+                                     
+            if (hit == true) {
+                auto raym = getSurfaceScatter(hit.m_ray.m_direction, hit.m_normal, hit.m_bInside, _randomGen);
+                return color(raym, hit.m_position, hit.m_normal, hit.m_uIterationCount, true);
             }
-
-            // no inner hit, just return scattered ray
-            return color(ray, _hit.m_position, _hit.m_normal, false);
+            else {
+                // no inner hit, just return scattered ray
+                return color(ray, _hit.m_position, _hit.m_normal, hit.m_uIterationCount, false);
+            }
         }
         
      protected:
@@ -48,16 +52,21 @@ namespace LNF
         virtual float sdfSurface(const Vec &_p) const = 0;
         
         // calc surface color
-        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &_normal, bool _bSurfaceHit) const = 0;
+        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &_normal, uint16_t _uIterationCount, bool _bSurfaceHit) const = 0;
+        
+     private:
+        const int         m_iMaxSamples;
+        const float       m_fMaxDist;
     };
 
 
-    // glass material with ray marched surface inside
-    class MarchedGlass : public MarchedMaterial
+    // glass material with reflective ray marched surface inside
+    class MarchedMarble : public MarchedMaterial
     {
      public:
-        MarchedGlass(float _fGlassScatter, float _fSurfaceScatter, float _fIndexOfRefraction, float _fOpacity)
-            :m_fGlassScatter(_fGlassScatter),
+        MarchedMarble(float _fGlassScatter, float _fSurfaceScatter, float _fIndexOfRefraction, float _fOpacity)
+            :MarchedMaterial(1000, 100),
+             m_fGlassScatter(_fGlassScatter),
              m_fSurfaceScatter(_fSurfaceScatter),
              m_fIndexOfRefraction(_fIndexOfRefraction),
              m_fOpacity(_fOpacity)
@@ -89,12 +98,13 @@ namespace LNF
     };
 
 
-    // marched material in air
-    class MarchedSurface : public MarchedMaterial
+    // marched glass/transparent material in air
+    class MarchedGlassOrnament : public MarchedMaterial
     {
      public:
-        MarchedSurface(float _fSurfaceScatter, float _fIndexOfRefraction)
-            :m_fSurfaceScatter(_fSurfaceScatter),
+        MarchedGlassOrnament(float _fSurfaceScatter, float _fIndexOfRefraction)
+            :MarchedMaterial(1000, 100),
+             m_fSurfaceScatter(_fSurfaceScatter),
              m_fIndexOfRefraction(_fIndexOfRefraction)
         {}
 
@@ -117,16 +127,16 @@ namespace LNF
 
 
     // coloured swirls in glass
-    class GlassSwirl : public MarchedGlass
+    class GlassSwirl : public MarchedMarble
     {
      public:
         GlassSwirl(float _fGlassScatter, float _fSurfaceScatter, float _fIndexOfRefraction)
-            :MarchedGlass(_fGlassScatter, _fSurfaceScatter, _fIndexOfRefraction, 1.0)
+            :MarchedMarble(_fGlassScatter, _fSurfaceScatter, _fIndexOfRefraction, 1.0)
         {}
 
      protected:
         // calc surface color
-        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &_normal, bool _bSurfaceHit) const override {
+        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &_normal, uint16_t, bool _bSurfaceHit) const override {
             if (_bSurfaceHit == true) {
                 return ScatteredRay(
                     Ray(_pos, _ray),
@@ -155,16 +165,16 @@ namespace LNF
 
 
     // coloured bubbles in glass
-    class GlassBubbles : public MarchedGlass
+    class GlassBubbles : public MarchedMarble
     {
      public:
         GlassBubbles(float _fGlassScatter, float _fSurfaceScatter, float _fIndexOfRefraction)
-            :MarchedGlass(_fGlassScatter, _fSurfaceScatter, _fIndexOfRefraction, 0.8)
+            :MarchedMarble(_fGlassScatter, _fSurfaceScatter, _fIndexOfRefraction, 0.8)
         {}
 
      protected:
         // calc surface color
-        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &_normal, bool _bSurfaceHit) const override {
+        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &_normal, uint16_t, bool _bSurfaceHit) const override {
             if (_bSurfaceHit == true) {
                 float sd1 = sdfBubbles(_pos, 0);
                 float sd2 = sdfBubbles(_pos, M_PI);
@@ -218,30 +228,38 @@ namespace LNF
             return -log(sdf);
         }
     };
-    
 
 
-    // coloured swirls in glass
-    class Swirl : public MarchedSurface
+    // coloured swirls in air
+    class Swirl : public MarchedGlassOrnament
     {
      public:
         Swirl(float _fSurfaceScatter, float _fIndexOfRefraction)
-            :MarchedSurface(_fSurfaceScatter, _fIndexOfRefraction)
+            :MarchedGlassOrnament(_fSurfaceScatter, _fIndexOfRefraction)
         {}
 
      protected:
         // calc surface color
-        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &, bool) const override {
-            return ScatteredRay(
-                Ray(_pos, _ray),
-                Color(1.0f, 1.0f, 1.0f),
-                Color()
-            );
+        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &, uint16_t, bool _bSurfaceHit) const override {
+            if (_bSurfaceHit == false) {
+                return ScatteredRay(
+                    Ray(_pos, _ray),
+                    Color(1.0f, 1.0f, 1.0f),
+                    Color()
+                );
+            }
+            else {
+                return ScatteredRay(
+                    Ray(_pos, _ray),
+                    Color(0.2f, 0.9f, 0.2f),
+                    Color()
+                );
+            }
         }
 
         // surface signed distance function
         virtual float sdfSurface(const Vec &_p) const override {
-            const float scale = 0.5;
+            const float scale = 0.1;
             auto axis = axisEulerZYX(0, _p.y()/6, 0);
             auto pr = axis.rotateFrom(_p);
             
@@ -250,18 +268,18 @@ namespace LNF
     };
 
 
-    // coloured swirls in glass
-    class MarchedSphere : public MarchedSurface
+    // sphere (with some deformation) in air
+    class MarchedSphere : public MarchedGlassOrnament
     {
      public:
         MarchedSphere(float _fRadius, float _fSurfaceScatter, float _fIndexOfRefraction)
-            :MarchedSurface(_fSurfaceScatter, _fIndexOfRefraction),
+            :MarchedGlassOrnament(_fSurfaceScatter, _fIndexOfRefraction),
              m_fRadius(_fRadius)
         {}
 
      protected:
         // calc surface color
-        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &, bool _bSurfaceHit) const override {
+        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &, uint16_t, bool _bSurfaceHit) const override {
             if (_bSurfaceHit == false) {
                 return ScatteredRay(
                     Ray(_pos, _ray),
@@ -280,11 +298,62 @@ namespace LNF
 
         // surface signed distance function
         virtual float sdfSurface(const Vec &_p) const override {
-            return _p.size() - m_fRadius - 3 * sin(_p.x()/2) * sin(_p.y()/2) * sin(_p.z()/2);
+            return (_p.size() - m_fRadius - 3 * sin(_p.x()/2) * sin(_p.y()/2) * sin(_p.z()/2)) * 0.2;
         }
         
      private:
         float   m_fRadius;
+    };
+
+
+    // cloud marched material
+    class MarchedCloud : public MarchedMaterial
+    {
+     public:
+        MarchedCloud(float _fSurfaceScatter, float _fIndexOfRefraction)
+            :MarchedMaterial(1000, 100)
+        {}
+
+     protected:
+        // bounding shape scatter (raytraced hit)
+        virtual Vec getShapeScatter(const Vec &_ray, const Vec &_normal, bool _bInside, RandomGen &_randomGen) const override {
+            return _ray;
+        }
+        
+        // inner surface scatter (raymarched hit)
+        virtual Vec getSurfaceScatter(const Vec &_ray, const Vec &_normal, bool _bInside, RandomGen &_randomGen) const override {
+            return (_normal + randomUnitSphere(_randomGen)).normalized();
+        }
+
+        // calc surface color
+        virtual ScatteredRay color(const Vec &_ray, const Vec &_pos, const Vec &, uint16_t _uIterationCount, bool _bSurfaceHit) const override {
+            float glow = std::max((int)_uIterationCount - 20, 0);
+            glow = 0;//glow * glow * 0.1;
+            
+            if (_bSurfaceHit == false) {
+                return ScatteredRay(
+                    Ray(_pos, _ray),
+                    Color(1.0f, 1.0f, 1.0f),
+                    Color(0.04f, 0.02f, 0.0f) * glow
+                );
+            }
+            else {
+                return ScatteredRay(
+                    Ray(_pos, _ray),
+                    Color(0.9f, 0.9f, 0.9f),
+                    Color(0.04f, 0.02f, 0.0f) * glow
+                );
+            }
+        }
+        
+        // surface signed distance function
+        virtual float sdfSurface(const Vec &_p) const override {
+            auto p = _p + Vec(3, 3, 3);
+            p = mod(p.xz(), 6) + p.scale(0, 1, 0);
+            p -= Vec(3, 3, 3);
+
+            return (p.size() - 2) * 0.1;
+        }
     };
 
 

@@ -57,6 +57,7 @@ namespace LNF
                     // complete intercept (
                     auto pHitNode = hit.m_pNode;
                     pHitNode->intersect(hit);
+                    hit.m_uIterationCount = (uint16_t)m_iTraceDepth;
                 
                     // create scattered, reflected, refracted, etc. ray and color
                     auto scatteredRay = pHitNode->material()->scatter(hit, m_randomGen);
@@ -70,7 +71,7 @@ namespace LNF
                         scatteredRay.m_ray = Ray(hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin),
                                                  hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
 
-                        // trace again
+                        // trace again (recursively)
                         auto tracedColor = traceRay(scatteredRay.m_ray, _iPerPixelRayIndex);
                         return scatteredRay.m_emitted + scatteredRay.m_color * tracedColor;
                     }
@@ -100,6 +101,11 @@ namespace LNF
     class RayMarcher
     {
      public:
+        RayMarcher(int _iMaxSamples, float _fMaxDist)
+            :m_iMaxSamples(_iMaxSamples),
+             m_fMaxDist(_fMaxDist)
+        {}
+
         // get marched normal from surface function
         template <typename sdf_func>
         Vec normal(const Vec &_intersect, const sdf_func &_sdf) {
@@ -115,9 +121,7 @@ namespace LNF
         Intersect march(R &&_ray, const sdf_func &_sdf)
         {
             Intersect hit;
-            const float MAX_DIST = 1000;
             const float e = 0.000001;
-            const int n = 1000;
             float stepScale = 1.0;
             float distance = 0;
             
@@ -134,16 +138,18 @@ namespace LNF
             }
             
             // iterate until we hit or miss
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < m_iMaxSamples; i++) {
                 // check hit or miss
                 float absd = fabs(dT);
-                if (absd > MAX_DIST) {
+                if (absd > m_fMaxDist) {
+                    hit.m_uIterationCount = (uint16_t)i;
                     break;  // missed
                 }
                 else if (absd <= e) {
                     hit.m_fPositionOnRay = distance + dT * stepScale;
                     hit.m_position = hit.m_ray.position(hit.m_fPositionOnRay);
                     hit.m_normal = normal(hit.m_position, _sdf);
+                    hit.m_uIterationCount = (uint16_t)i;
                     break;    // hit
                 }
                 
@@ -161,6 +167,10 @@ namespace LNF
             
             return hit;
         }
+        
+     private:
+        const int         m_iMaxSamples;
+        const float       m_fMaxDist;
     };
 
 
@@ -169,7 +179,7 @@ namespace LNF
                        const Viewport *_pView,
                        const Scene *_scene,
                        RandomGen &_generator,
-                       int _iRaysPerPixel,
+                       int _iMaxSamplesPerPixel,
                        int _iMaxDepth,
                        float _fColorTollerance)
     {
@@ -183,14 +193,14 @@ namespace LNF
             {
                 auto stats = ColorStat();
                 
-                for (int k = 0; k < _iRaysPerPixel; k++)
+                for (int k = 0; k < _iMaxSamplesPerPixel; k++)
                 {
                     auto ray = _pView->getRay(i, j, _generator, k);
                     auto color = tracer.trace(ray, k);
                     stats.push(color);
                     
                     if ( (_fColorTollerance > 0.0f) &&
-                         (k >= 4 * tracer.traceDepthMax()) &&
+                         (k >= 8 * tracer.traceDepthMax()) &&
                          (stats.standardDeviation() < _fColorTollerance) )
                     {
                         break;

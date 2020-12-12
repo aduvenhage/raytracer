@@ -124,9 +124,21 @@ namespace LNF
             return Vec(fabs(m_v[0]), fabs(m_v[1]), fabs(m_v[2]));
         }
         
+        Vec xy() const {return Vec(m_v[0], m_v[1], 0);}
+        Vec xz() const {return Vec(m_v[0], 0, m_v[2]);}
+        Vec yz() const {return Vec(0, m_v[1], m_v[2]);}
+        
+        Vec scale(float _dX, float _dY, float _dZ) {
+            return Vec(m_v[0] * _dX, m_v[1] * _dY, m_v[2] * _dZ);
+        }
+        
         float m_v[3];
     };
-
+    
+    
+    inline Vec boxVec(float _fSize) {
+        return Vec(_fSize, _fSize, _fSize);
+    }
 
     inline Vec operator*(float _fScale, const Vec &_vec) {
         return Vec(_vec.x() * _fScale,
@@ -175,6 +187,14 @@ namespace LNF
 
     inline float maxElement(const Vec &_vec) {
         return fmax(fmax(_vec.x(), _vec.y()), _vec.z());
+    }
+
+    inline Vec mod(const Vec &_p, float _d) {
+        return Vec(
+            _p.x() - _d * floor(_p.x() / _d),
+            _p.y() - _d * floor(_p.y() / _d),
+            _p.z() - _d * floor(_p.z() / _d)
+        );
     }
 
 

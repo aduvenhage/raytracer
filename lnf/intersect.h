@@ -23,6 +23,7 @@ namespace LNF
              m_axis(axisIdentity()),
              m_fPositionOnRay(-1),
              m_uTriangleIndex(0),
+             m_uIterationCount(0),
              m_bInside(false)
         {}
 
@@ -45,6 +46,7 @@ namespace LNF
         Uv                      m_uv;               // texture coordinate on surface of shape
         float                   m_fPositionOnRay;   // t0
         uint32_t                m_uTriangleIndex;   // specific triangle hit on node
+        uint16_t                m_uIterationCount;  // number of ray iterations before hit
         bool                    m_bInside;          // true if ray is inside shape
     };
 

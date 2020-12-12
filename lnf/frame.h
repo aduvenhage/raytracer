@@ -26,13 +26,13 @@ namespace LNF
         PixelJob(OutputImageBuffer *_pImage, const Viewport *_pViewport,
                  int _i, int _j, int _iBlockWidth, int _iBlockHeight,
                  const Scene *_pScene,
-                 int _iRaysPerPixel,
+                 int _iMaxSamplesPerPixel,
                  int _iMaxDepth,
                  float _fColorTollerance)
             :m_output(_pImage, _i, _j, _iBlockWidth, _iBlockHeight),
              m_view(_pViewport, _i, _j),
              m_pScene(_pScene),
-             m_iRaysPerPixel(_iRaysPerPixel),
+             m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iMaxDepth(_iMaxDepth),
              m_fColorTollerance(_fColorTollerance)
         {}
@@ -40,14 +40,14 @@ namespace LNF
         void run()
         {
             thread_local static RandomGen generator;
-            rayTraceImage(&m_output, &m_view, m_pScene, generator, m_iRaysPerPixel, m_iMaxDepth, m_fColorTollerance);
+            rayTraceImage(&m_output, &m_view, m_pScene, generator, m_iMaxSamplesPerPixel, m_iMaxDepth, m_fColorTollerance);
         }
 
      private:
         OutputImageBlock               m_output;
         ViewportBlock                  m_view;
         const Scene                    *m_pScene;
-        int                            m_iRaysPerPixel;
+        int                            m_iMaxSamplesPerPixel;
         int                            m_iMaxDepth;
         float                          m_fColorTollerance;
     };
@@ -66,7 +66,7 @@ namespace LNF
         Frame(const ViewportScreen *_pViewport,
               const Scene *_pScene,
               int _iNumWorkers,
-              int _iSamplesPerPixel,
+              int _iMaxSamplesPerPixel,
               int _iMaxTraceDepth,
               float _fColorTollerance)
             :m_pViewport(_pViewport),
@@ -74,7 +74,7 @@ namespace LNF
              m_uJobCount(0),
              m_image(_pViewport->width(), _pViewport->height()),
              m_iPixelBlockSize(PIXEL_BLOCK_SIZE),
-             m_iSamplesPerPixel(_iSamplesPerPixel),
+             m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
              m_iMaxTraceDepth(_iMaxTraceDepth),
              m_fColorTollerance(_fColorTollerance),
@@ -181,7 +181,7 @@ namespace LNF
                     jobs.push_back(std::make_unique<PixelJob>(&m_image, m_pViewport,
                                                                i, j, iBlockWidth, iBlockHeight,
                                                                m_pScene,
-                                                               m_iSamplesPerPixel,
+                                                               m_iMaxSamplesPerPixel,
                                                                m_iMaxTraceDepth,
                                                                m_fColorTollerance));
                                                                
@@ -210,7 +210,7 @@ namespace LNF
         OutputImageBuffer                       m_image;
         RandomGen                               m_generator;
         int                                     m_iPixelBlockSize;
-        int                                     m_iSamplesPerPixel;
+        int                                     m_iMaxSamplesPerPixel;
         int                                     m_iNumWorkers;
         int                                     m_iMaxTraceDepth;
         float                                   m_fColorTollerance;
