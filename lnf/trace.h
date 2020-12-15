@@ -28,42 +28,39 @@ namespace LNF
     class RayTracer
     {
      public:
-        RayTracer(const Scene *_pScene, RandomGen &_randomGen, int _iMaxTraceDepth)
+        RayTracer(const Scene *_pScene, RandomGen &_randomGen, uint16_t _uMaxTraceDepth)
             :m_pScene(_pScene),
              m_randomGen(_randomGen),
-             m_iTraceLimit(_iMaxTraceDepth),
-             m_iTraceDepth(0),
-             m_iTraceDepthMax(0)
+             m_uTraceLimit(_uMaxTraceDepth),
+             m_uTraceDepthMax(0)
         {}
         
         Color trace(const Ray &_ray, int _iPerPixelRayIndex) {
-            m_iTraceDepth = 0;
-            return traceRay(_ray, _iPerPixelRayIndex);
+            return traceRay(_ray, _iPerPixelRayIndex, 0);
         }
         
-        int traceDepth() const {return m_iTraceDepth;}
-        int traceDepthMax() const {return m_iTraceDepthMax;}
+        int traceDepthMax() const {return m_uTraceDepthMax;}
 
      protected:
         /* Trace ray (recursively) through scene */
-        Color traceRay(const Ray &_ray, int _iPerPixelRayIndex) {
-            m_iTraceDepth++;
-            m_iTraceDepthMax = std::max(m_iTraceDepth, m_iTraceDepthMax);
+        Color traceRay(const Ray &_ray, int _iPerPixelRayIndex, int _iDepth) {
             
+            // check for hits on scene
             Intersect hit;
             if (m_pScene->hit(hit, _ray) == true) {
                 if (hit.m_pNode != nullptr) {
-                
-                    // complete intercept (
                     auto pHitNode = hit.m_pNode;
                     pHitNode->intersect(hit);
-                    hit.m_uIterationCount = (uint16_t)m_iTraceDepth;
-                
+                    
+                    hit.m_uIterationCount = _iDepth+1;
+                    m_uTraceDepthMax = std::max(hit.m_uIterationCount, m_uTraceDepthMax);
+                    
                     // create scattered, reflected, refracted, etc. ray and color
                     auto scatteredRay = pHitNode->material()->scatter(hit, m_randomGen);
-                    
+                    auto tracedColor = scatteredRay.m_emitted;
+
                     // trace recursively and blend colors
-                    if ( (m_iTraceDepth < m_iTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
+                    if ( (hit.m_uIterationCount < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
                         // move slightly to avoid self intersection
                         scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
                         
@@ -72,25 +69,26 @@ namespace LNF
                                                  hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
 
                         // trace again (recursively)
-                        auto tracedColor = traceRay(scatteredRay.m_ray, _iPerPixelRayIndex);
-                        return scatteredRay.m_emitted + scatteredRay.m_color * tracedColor;
+                        tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iPerPixelRayIndex, _iDepth + 1);
                     }
-                    else {
-                        // max trace depth reached
-                        return scatteredRay.m_emitted;
-                    }
+                    
+                    // check atmosphere hit
+                    float fVisibility = std::min(1.0f / (hit.m_fPositionOnRay * 0.005f), 1.0f);
+                    tracedColor *= fVisibility;
+                    tracedColor += (1 - fVisibility) * m_pScene->backgroundColor();
+
+                    return tracedColor;
                 }
             }
-            
-            return m_pScene->missColor(_ray);  // background color
+
+            return m_pScene->backgroundColor();
         }
         
      private:
         const Scene     *m_pScene;
         RandomGen       &m_randomGen;
-        int             m_iTraceLimit;
-        int             m_iTraceDepth;
-        int             m_iTraceDepthMax;
+        uint16_t        m_uTraceLimit;
+        uint16_t        m_uTraceDepthMax;
     };
     
     

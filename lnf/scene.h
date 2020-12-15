@@ -31,7 +31,12 @@ namespace LNF
          Checks for the background color (miss handler).
          Could be accessed by multiple worker threads concurrently.
          */
-        virtual Color missColor(const Ray &_ray) const = 0;
+        virtual Color backgroundColor() const = 0;
+        
+        /*
+         Visibility scale (fog scale, [0..1])
+        */
+        virtual float visibility() const = 0;
         
         /*
          Add a new node to the scene.
