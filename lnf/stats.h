@@ -17,12 +17,14 @@ namespace LNF
         {}
     
         void push(double _x) {
-            m_uCount++;
-            auto delta = _x - m_dMean;
-            m_dMean += delta / m_uCount;
-            
-            auto delta2 = _x - m_dMean;
-            m_dM2 += delta * delta2;
+            if (isnan(_x) == false) {
+                m_uCount++;
+                auto delta = _x - m_dMean;
+                m_dMean += delta / m_uCount;
+                
+                auto delta2 = _x - m_dMean;
+                m_dM2 += delta * delta2;
+            }
         }
     
         double mean() const {

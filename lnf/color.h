@@ -120,7 +120,7 @@ namespace LNF
         }
         
         bool isBlack() {
-            return m_c[0] + m_c[1] + m_c[2] < 0.00001f;
+            return m_c[0] + m_c[1] + m_c[2] < 0.0001f;
         }
         
         float      m_c[3];

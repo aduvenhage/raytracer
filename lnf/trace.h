@@ -45,15 +45,28 @@ namespace LNF
         /* Trace ray (recursively) through scene */
         Color traceRay(const Ray &_ray, int _iPerPixelRayIndex, int _iDepth) {
             
+            std::uniform_real_distribution<float>();
+            
             // check for hits on scene
             Intersect hit;
             if (m_pScene->hit(hit, _ray) == true) {
                 if (hit.m_pNode != nullptr) {
-                    auto pHitNode = hit.m_pNode;
-                    pHitNode->intersect(hit);
-                    
+                    // update stats
                     hit.m_uIterationCount = _iDepth+1;
                     m_uTraceDepthMax = std::max(hit.m_uIterationCount, m_uTraceDepthMax);
+                    
+                    // check atmosphere hit
+                    std::uniform_real_distribution<float> dist(0, 200);
+                    float fDist = dist(m_randomGen) * 2;
+                    
+                    if (fDist < hit.m_fPositionOnRay) {
+                        auto scatteredDirection = (_ray.m_direction + randomUnitSphere(m_randomGen)).normalized();
+                        return Color(0.8, 0.8, 0.8) * traceRay(Ray(_ray.position(fDist), scatteredDirection), _iPerPixelRayIndex, _iDepth + 1);
+                    }
+    
+                    // normal hit -- complete hit
+                    auto pHitNode = hit.m_pNode;
+                    pHitNode->intersect(hit);
                     
                     // create scattered, reflected, refracted, etc. ray and color
                     auto scatteredRay = pHitNode->material()->scatter(hit, m_randomGen);
@@ -71,17 +84,21 @@ namespace LNF
                         // trace again (recursively)
                         tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iPerPixelRayIndex, _iDepth + 1);
                     }
-                    
-                    // check atmosphere hit
-                    float fVisibility = std::min(1.0f / (hit.m_fPositionOnRay * 0.005f), 1.0f);
-                    tracedColor *= fVisibility;
-                    tracedColor += (1 - fVisibility) * m_pScene->backgroundColor();
 
                     return tracedColor;
                 }
             }
 
-            return m_pScene->backgroundColor();
+            // check atmosphere hit
+            if (_iDepth < m_uTraceLimit) {
+                std::uniform_real_distribution<float> dist(0, 200);
+                float fDist = dist(m_randomGen);
+                auto scatteredDirection = (_ray.m_direction + randomUnitSphere(m_randomGen)).normalized();
+                return Color(0.8, 0.8, 0.8) * traceRay(Ray(_ray.position(fDist), scatteredDirection), _iPerPixelRayIndex, _iDepth + 1);
+            }
+            else {
+                return m_pScene->backgroundColor();
+            }
         }
         
      private:
@@ -198,7 +215,7 @@ namespace LNF
                     stats.push(color);
                     
                     if ( (_fColorTollerance > 0.0f) &&
-                         (k >= 8 * tracer.traceDepthMax()) &&
+                         (k >= 4 + 8 * tracer.traceDepthMax()) &&
                          (stats.standardDeviation() < _fColorTollerance) )
                     {
                         break;
@@ -207,6 +224,11 @@ namespace LNF
                                 
                 // write averaged color to output image
                 auto color = stats.mean().clamp();
+                if (color.isBlack() == true)
+                {
+                    break;
+                }
+                
                 *(pPixel++) = (int)(255 * color.red() + 0.5);
                 *(pPixel++) = (int)(255 * color.green() + 0.5);
                 *(pPixel++) = (int)(255 * color.blue() + 0.5);
