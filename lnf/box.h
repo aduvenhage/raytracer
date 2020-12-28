@@ -36,15 +36,18 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
             auto bi = aaboxIntersect(m_bounds, _ray.m_origin, _ray.m_invDirection);
-            if ( (bi.first >= _ray.m_fMinDist) && (bi.first <= _ray.m_fMaxDist) ) {
-                _hit.m_pNode = this;
-                _hit.m_fPositionOnRay = bi.first;
-                _hit.m_ray = _ray;
-                _hit.m_bInside = bi.second;
+            if (bi.m_intersect == true) {
+                auto t = bi.m_inside ? bi.m_tmax : bi.m_tmin;
+                if ( (t >= _ray.m_fMinDist) && (t <= _ray.m_fMaxDist) ) {
+                    _hit.m_pNode = this;
+                    _hit.m_fPositionOnRay = t;
+                    _hit.m_ray = _ray;
+                    _hit.m_bInside = bi.m_inside;
 
-                return true;
+                    return true;
+                }
             }
             
             return false;
@@ -83,6 +86,76 @@ namespace LNF
         Vec                    m_vecDiv;
         const Material         *m_pMaterial;
         float                  m_fUvScale;
+    };
+
+
+
+    /* Axis aligned box shape class -- fixed at origin [0, 0, 0] (with random intersection for smoke, fog, etc.) */
+    class SmokeBox        : public Node
+    {
+     public:
+        SmokeBox()
+        {}
+        
+        SmokeBox(const Vec &_size, const Material *_pMaterial)
+            :m_bounds(-_size * 0.5f, _size * 0.5f),
+             m_pMaterial(_pMaterial)
+        {}
+        
+        SmokeBox(float _fSize, const Material *_pMaterial, float _fUvScale = 0.2f)
+            :m_bounds(boxVec(-_fSize*0.5), boxVec(_fSize*0.5)),
+             m_pMaterial(_pMaterial)
+        {}
+        
+        /* Returns the material used for rendering, etc. */
+        const Material *material() const override {
+            return m_pMaterial;
+        }
+        
+        /* Quick node hit check (populates at least node and time properties of intercept) */
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+            static thread_local std::uniform_real_distribution<float> dist(0, 300);
+            
+            auto bi = aaboxIntersect(m_bounds, _ray.m_origin, _ray.m_invDirection);
+            if (bi.m_intersect == true) {
+                if ( (bi.m_inside == true) ||
+                     ((bi.m_tmin >= _ray.m_fMinDist) && (bi.m_tmin <= _ray.m_fMaxDist)) )
+                {
+                    auto tdist = bi.m_inside ? bi.m_tmax : (bi.m_tmax - bi.m_tmin);
+                    auto rdist = dist(_randomGen);
+
+                    if (rdist < tdist) {
+                        _hit.m_pNode = this;
+                        _hit.m_ray = _ray;
+                        _hit.m_bInside = bi.m_inside;
+                        
+                        _hit.m_fPositionOnRay = bi.m_inside ? rdist : (bi.m_tmin + rdist);
+
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        /* Completes the node intersect properties. */
+        virtual Intersect &intersect(Intersect &_hit) const override {
+            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_normal = _hit.m_ray.m_direction;
+            
+            return _hit;
+        }
+                
+        /* returns bounds for shape */
+        virtual const Bounds &bounds() const override {
+            return  m_bounds;
+        }
+        
+     private:
+        Axis                                    m_axis;
+        Bounds                                  m_bounds;
+        const Material                          *m_pMaterial;
     };
 
 

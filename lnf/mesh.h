@@ -78,7 +78,7 @@ namespace LNF
         }
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
             static thread_local std::vector<Triangle*> nodes;
             
             nodes.clear();

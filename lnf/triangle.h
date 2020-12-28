@@ -74,7 +74,7 @@ namespace LNF
         }
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
             if (triangleIntersect(_hit, m_v0, m_v1, m_v2, _ray) == true) {
                 _hit.m_pNode = this;
                 _hit.m_ray = _ray;

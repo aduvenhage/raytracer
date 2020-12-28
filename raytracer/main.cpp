@@ -74,7 +74,7 @@ class SimpleScene   : public Scene
        Checks for an intersect with a scene object.
        Could be accessed by multiple worker threads concurrently.
      */
-    virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+    virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
         bool bHit = false;
         
         // find possible hit nodes from BVH
@@ -88,7 +88,7 @@ class SimpleScene   : public Scene
         // find best hit
         Intersect nh;
         for (auto &pNode : nodes) {
-            if ( (pNode->hit(nh, _ray) == true) &&
+            if ( (pNode->hit(nh, _ray, _randomGen) == true) &&
                  ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
             {
                 _hit = nh;
@@ -110,7 +110,7 @@ class SimpleScene   : public Scene
      Could be accessed by multiple worker threads concurrently.
      */
     virtual Color backgroundColor() const override {
-        return Color(0.1f, 0.2f, 0.1f);
+        return Color(0.1f, 0.1f, 0.1f);
     }
 
     /*
@@ -173,7 +173,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iMaxSamplesPerPixel(1024 * 8),
+         m_iMaxSamplesPerPixel(512),
          m_iMaxTraceDepth(16),
          m_fColorTollerance(0.0001)
     {
@@ -274,13 +274,14 @@ int main(int argc, char *argv[])
     auto pDiffuse3 = std::make_unique<Diffuse>(Color(0.9, 0.1, 0.1));
     auto pDiffuse4 = std::make_unique<Diffuse>(Color(0.1, 0.9, 0.1));
     auto pDiffuse5 = std::make_unique<Diffuse>(Color(0.1, 0.1, 0.9));
+    auto pDiffuse6 = std::make_unique<Diffuse>(Color(0.9, 0.9, 0.9));
     auto pGlass1 = std::make_unique<Glass>(Color(0.8, 0.8, 0.8), 0.01, 1.8);
     auto pGlass2 = std::make_unique<Glass>(Color(0.5, 0.5, 0.5), 0.01, 1.8);
     auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.04);
     auto pLight1 = std::make_unique<Light>(Color(20.0, 20.0, 20.0));
     auto pLight2 = std::make_unique<Light>(Color(1.0, 1.0, 1.0));
     auto pLight3 = std::make_unique<Light>(Color(1.0, 0.1, 0.1));
-    auto pLight4 = std::make_unique<Light>(Color(0.1, 10.0, 0.1));
+    auto pLight4 = std::make_unique<Light>(Color(0.1, 30.0, 0.1));
     auto pLight5 = std::make_unique<Light>(Color(0.1, 0.1, 1.0));
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
     auto pTraingleRgb1 = std::make_unique<TriangleRGB>();
@@ -290,21 +291,17 @@ int main(int argc, char *argv[])
     auto pMarched4 = std::make_unique<MarchedSphere>(10, 0.01, 1.8);
     auto pMarched5 = std::make_unique<MarchedCloud>(0.01, 1.8);
 
-    
-    std::uniform_real_distribution<float> lightSizeDist(10, 20);
-    std::uniform_real_distribution<float> lightAngleDist(0, M_PI * 2);
-
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(50, pLight1.get()), axisTranslation(Vec(0, 200, 0))));
+    pScene->addNode(std::make_unique<SmokeBox>(300, pGlass1.get()));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse1.get()), axisEulerZYX(0, 0, 0, Vec(0, 0, 0))));
-    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pMarched5.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
-    
+
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 20, 60))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse4.get()), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse5.get()), axisEulerZYX(0, 3, 0, Vec(40, 20, 10))));
-    
+
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(8, pLight4.get()), axisEulerZYX(0, 0, 0, Vec(200, 8, -150))));
     
-    
+    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pMarched5.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
     //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(4, pDiffuse2.get()), axisEulerZYX(0, 0, 1, Vec(-20, 8, 20))));
     //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(4, pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(20, 8, 20))));
     

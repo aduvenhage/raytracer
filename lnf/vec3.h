@@ -314,23 +314,39 @@ namespace LNF
         return tmin < tmax;
     }
 
-    
+
+    // aaboxIntersect return
+    struct AABoxItersect
+    {
+        AABoxItersect()
+            :m_tmin(0),
+             m_tmax(0),
+             m_intersect(false),
+             m_inside(false)
+        {}
+        
+        float   m_tmin;
+        float   m_tmax;
+        bool    m_intersect;
+        bool    m_inside;
+    };
+
+
     // ray-box intersection (_invDir = 1 / ray_direction)
-    inline std::pair<float, bool> aaboxIntersect(const Bounds &_box, const Vec &_origin, const Vec &_invDir) {
+    inline AABoxItersect aaboxIntersect(const Bounds &_box, const Vec &_origin, const Vec &_invDir) {
+        AABoxItersect ret;
         auto t1 = perElementScale(_box.m_min - _origin, _invDir);
         auto t2 = perElementScale(_box.m_max - _origin, _invDir);
         
         auto tmn = perElementMin(t1, t2);
         auto tmx = perElementMax(t1, t2);
         
-        auto tmin = maxElement(tmn);
-        auto tmax = minElement(tmx);
-        
-        auto intersect = tmin < tmax;
-        auto inside = intersect && (tmin < 0) && (tmax > 0);
-        auto t = inside ? tmax : tmin;
+        ret.m_tmin = maxElement(tmn);
+        ret.m_tmax = minElement(tmx);
+        ret.m_intersect = ret.m_tmin < ret.m_tmax;
+        ret.m_inside = ret.m_intersect && (ret.m_tmin < 0) && (ret.m_tmax > 0);
 
-        return std::make_pair(intersect ? t : -1.0f, inside);
+        return ret;
     }
     
     

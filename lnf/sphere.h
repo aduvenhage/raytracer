@@ -31,7 +31,7 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
             float dRayLength = -_ray.m_origin * _ray.m_direction;
             const float dIntersectRadiusSqr = _ray.m_origin.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr <= m_fRadiusSqr) {

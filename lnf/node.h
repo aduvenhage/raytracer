@@ -26,7 +26,7 @@ namespace LNF
         virtual const Material *material() const = 0;
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const = 0;
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const = 0;
         
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const = 0;

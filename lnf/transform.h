@@ -35,7 +35,7 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
             // check AA bounding volume first
             if (aaboxIntersectCheck(m_bounds, _ray.m_origin, _ray.m_invDirection) == true)
             {
@@ -45,7 +45,7 @@ namespace LNF
                 
                 // check target hit
                 _hit.m_axis = m_axis;
-                return m_pTarget->hit(_hit, br);
+                return m_pTarget->hit(_hit, br, _randomGen);
             }
     
             return false;

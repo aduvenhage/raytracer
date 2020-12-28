@@ -28,7 +28,7 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
             const float denom = _ray.m_direction.y();
             if (denom < -0.0000001f) {
                 const auto vecRayPlane = -_ray.m_origin;
@@ -74,8 +74,8 @@ namespace LNF
         {}
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-            if (Plane::hit(_hit, _ray) == true) {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+            if (Plane::hit(_hit, _ray, _randomGen) == true) {
                 // check disc bounds
                 return _hit.m_position.sizeSqr() < m_fRadiusSqr;
             }
@@ -109,8 +109,8 @@ namespace LNF
         {}
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray) const override {
-            if (Plane::hit(_hit, _ray) == true) {
+        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+            if (Plane::hit(_hit, _ray, _randomGen) == true) {
                 // check rectangle bounds
                 return (fabs(_hit.m_position.x()) <= m_fWidth) &&
                        (fabs(_hit.m_position.z()) <= m_fLength);
