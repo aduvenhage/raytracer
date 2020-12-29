@@ -167,6 +167,58 @@ namespace LNF
         const int         m_iMaxSamples;
         const float       m_fMaxDist;
     };
+    
+    
+    // ray marching on provided signed distance function
+    template <typename sdf_func>
+    bool check_marched_hit(Intersect &_hit, const Ray &_ray, int _iMaxSamples, float _fMaxDist, const sdf_func &_sdf)
+    {
+        const float e = 0.0001;
+        float stepScale = 0.5;
+        float distance = 0;
+        
+        // first step (check inside/outside)
+        _hit.m_ray = _ray;
+        _hit.m_position = _hit.m_ray.position(0);
+        float dT = _sdf(_hit.m_position);
+        
+        if (dT < 0) {
+            _hit.m_bInside = true;
+            stepScale *= -1;
+        }
+        else {
+            _hit.m_bInside = false;
+        }
+        
+        // iterate until we hit or miss
+        for (int i = 0; i < _iMaxSamples; i++) {
+            // check hit or miss
+            float absd = fabs(dT);
+            if (absd > _fMaxDist) {
+                //_hit.m_uIterationCount = (uint16_t)i;
+                return false;  // missed
+            }
+            else if (absd <= e) {
+                _hit.m_fPositionOnRay = distance + dT * stepScale;
+                //_hit.m_uIterationCount = (uint16_t)i;
+                return true;    // hit
+            }
+            
+            // move forward
+            distance += dT * stepScale;
+            
+            // check for surface crossing
+            _hit.m_position = _hit.m_ray.position(distance);
+            auto dM = _sdf(_hit.m_position);
+            if (dT * dM < -e) {
+                stepScale *= 0.8;
+            }
+            
+            dT = dM;
+        }
+        
+        return false;       // missed
+    }
 
 
     /* raytrace for a specific view to a specific output block */
@@ -195,7 +247,7 @@ namespace LNF
                     stats.push(color);
                     
                     if ( (_fColorTollerance > 0.0f) &&
-                         (k >= 4 + 8 * tracer.traceDepthMax()) &&
+                         (k >= 16 * (tracer.traceDepthMax() + 1)) &&
                          (stats.standardDeviation() < _fColorTollerance) )
                     {
                         break;

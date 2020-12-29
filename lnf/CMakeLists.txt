@@ -14,6 +14,7 @@ SET(INCL_SRC
     mandlebrot.h
     material.h
     marched_materials.h
+    marched_node.h
     mesh.h
     node.h
     outputimage.h
@@ -22,6 +23,7 @@ SET(INCL_SRC
     queue.h
     ray.h
     scene.h
+    smoke_box.h
     sphere.h
     stats.h
     strutil.h

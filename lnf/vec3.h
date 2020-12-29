@@ -276,6 +276,10 @@ namespace LNF
             return dist.x() * dist.y() * dist.z();
         }
         
+        Vec size() const {
+            return m_max - m_min;
+        }
+        
         Vec     m_min;
         Vec     m_max;
     };
@@ -397,6 +401,16 @@ namespace LNF
         }
         
         return ret;
+    }
+
+
+    // get normal from surface function
+    template <typename sdf_func>
+    Vec surfaceNormal(const Vec &_p, const sdf_func &_sdf) {
+        const float e = 0.0001;
+        return Vec(_sdf(_p + Vec{e, 0, 0}) - _sdf(_p - Vec{e, 0, 0}),
+                   _sdf(_p + Vec{0, e, 0}) - _sdf(_p - Vec{0, e, 0}),
+                   _sdf(_p + Vec{0, 0, e}) - _sdf(_p - Vec{0, 0, e})).normalized();
     }
 
 

@@ -69,7 +69,7 @@ namespace LNF
         
         Disc(float _fRadius, const Material *_pMaterial, float _fUvScale=0.02f)
             :Plane(_pMaterial, _fUvScale),
-             m_bounds(Vec(_fRadius, 1, _fRadius), Vec(-_fRadius, -1, -_fRadius)),
+             m_bounds(Vec(-_fRadius, -1, -_fRadius), Vec(_fRadius, 1, _fRadius)),
              m_fRadiusSqr(_fRadius * _fRadius)
         {}
         
@@ -103,7 +103,7 @@ namespace LNF
         
         Rectangle(float _fWidth, float _fLength, const Material *_pMaterial, float _fUvScale=0.02f)
             :Plane(_pMaterial, _fUvScale),
-             m_bounds(Vec(_fWidth, 1, _fLength), Vec(-_fWidth, -1, -_fLength)),
+             m_bounds(Vec(-_fWidth, -1, -_fLength), Vec(_fWidth, 1, _fLength)),
              m_fWidth(_fWidth),
              m_fLength(_fLength)
         {}

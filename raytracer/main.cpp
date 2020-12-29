@@ -8,6 +8,7 @@
 #include "lnf/jpeg.h"
 #include "lnf/mandlebrot.h"
 #include "lnf/marched_materials.h"
+#include "lnf/marched_node.h"
 #include "lnf/mesh.h"
 #include "lnf/outputimage.h"
 #include "lnf/plane.h"
@@ -15,6 +16,7 @@
 #include "lnf/ray.h"
 #include "lnf/scene.h"
 #include "lnf/transform.h"
+#include "lnf/smoke_box.h"
 #include "lnf/sphere.h"
 #include "lnf/trace.h"
 #include "lnf/triangle.h"
@@ -86,8 +88,8 @@ class SimpleScene   : public Scene
         auto tpBvh = clock_type::now();
 
         // find best hit
-        Intersect nh;
         for (auto &pNode : nodes) {
+            Intersect nh;
             if ( (pNode->hit(nh, _ray, _randomGen) == true) &&
                  ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
             {
@@ -110,16 +112,9 @@ class SimpleScene   : public Scene
      Could be accessed by multiple worker threads concurrently.
      */
     virtual Color backgroundColor() const override {
-        return Color(0.1f, 0.1f, 0.1f);
+        return Color(0.5f, 0.5f, 0.5f);
     }
 
-    /*
-     Visibility scale (fog scale, [0..1])
-     */
-    virtual float visibility() const override {
-        return 0.99;
-    }
-        
     /*
      Add a new node to the scene.
      The scene is expected to be static (thread-safe).  Only do this when not rendering.
@@ -173,16 +168,16 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iMaxSamplesPerPixel(512),
+         m_iMaxSamplesPerPixel(64),
          m_iMaxTraceDepth(16),
-         m_fColorTollerance(0.0001)
+         m_fColorTollerance(0.00001)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 30, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.0, 150);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 20, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.0, 150);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -291,11 +286,12 @@ int main(int argc, char *argv[])
     auto pMarched4 = std::make_unique<MarchedSphere>(10, 0.01, 1.8);
     auto pMarched5 = std::make_unique<MarchedCloud>(0.01, 1.8);
 
+    pScene->addNode(std::make_unique<Disc>(500, pDiffuse1.get()));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(50, pLight1.get()), axisTranslation(Vec(0, 200, 0))));
-    pScene->addNode(std::make_unique<SmokeBox>(300, pGlass1.get()));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Disc>(500, pDiffuse1.get()), axisEulerZYX(0, 0, 0, Vec(0, 0, 0))));
+    
+    //pScene->addNode(std::make_unique<SmokeBox>(300, pGlass1.get(), 250));
 
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pGlass1.get()), axisEulerZYX(0, 0, 0, Vec(0, 20, 60))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<MarchedSwirl>(40, pMetal1.get(), 100), axisEulerZYX(0, 0, 0, Vec(0, 20, 60))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse4.get()), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse5.get()), axisEulerZYX(0, 3, 0, Vec(40, 20, 10))));
 

@@ -20,7 +20,7 @@ namespace LNF
         
         Sphere(float _fRadius, const Material *_pMaterial)
             :m_pMaterial(_pMaterial),
-             m_bounds(Vec(_fRadius, _fRadius, _fRadius), Vec(-_fRadius, -_fRadius, -_fRadius)),
+             m_bounds(Vec(-_fRadius, -_fRadius, -_fRadius), Vec(_fRadius, _fRadius, _fRadius)),
              m_fRadius(_fRadius),
              m_fRadiusSqr(_fRadius * _fRadius)
         {}

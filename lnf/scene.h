@@ -34,11 +34,6 @@ namespace LNF
         virtual Color backgroundColor() const = 0;
         
         /*
-         Visibility scale (fog scale, [0..1])
-        */
-        virtual float visibility() const = 0;
-        
-        /*
          Add a new node to the scene.
          The scene is expected to be thread-safe.
          */
