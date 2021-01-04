@@ -50,8 +50,8 @@ namespace LNF
             if (m_pScene->hit(hit, _ray, m_randomGen) == true) {
                 if (hit.m_pNode != nullptr) {
                     // update stats
-                    hit.m_uIterationCount = _iDepth+1;
-                    m_uTraceDepthMax = std::max(hit.m_uIterationCount, m_uTraceDepthMax);
+                    hit.m_uTraceDepth = _iDepth+1;
+                    m_uTraceDepthMax = std::max(hit.m_uTraceDepth, m_uTraceDepthMax);
                     
                     // normal hit -- complete hit
                     auto pHitNode = hit.m_pNode;
@@ -62,7 +62,7 @@ namespace LNF
                     auto tracedColor = scatteredRay.m_emitted;
 
                     // trace recursively and blend colors
-                    if ( (hit.m_uIterationCount < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
+                    if ( (hit.m_uTraceDepth < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
                         // move slightly to avoid self intersection
                         scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
                         
@@ -87,94 +87,14 @@ namespace LNF
         uint16_t        m_uTraceLimit;
         uint16_t        m_uTraceDepthMax;
     };
-    
-    
-    /*
-        Ray marching functions and stats.
-        Low level ray marching, producing surface hits from signed distance functions.
-    */
-    class RayMarcher
-    {
-     public:
-        RayMarcher(int _iMaxSamples, float _fMaxDist)
-            :m_iMaxSamples(_iMaxSamples),
-             m_fMaxDist(_fMaxDist)
-        {}
-
-        // get marched normal from surface function
-        template <typename sdf_func>
-        Vec normal(const Vec &_intersect, const sdf_func &_sdf) {
-            const float e = 0.0001;
-            return Vec(_sdf(_intersect + Vec{e, 0, 0}) - _sdf(_intersect - Vec{e, 0, 0}),
-                       _sdf(_intersect + Vec{0, e, 0}) - _sdf(_intersect - Vec{0, e, 0}),
-                       _sdf(_intersect + Vec{0, 0, e}) - _sdf(_intersect - Vec{0, 0, e})).normalized();
-        }
 
 
-        // ray marching on provided signed distance function
-        template <typename R, typename sdf_func>
-        Intersect march(R &&_ray, const sdf_func &_sdf)
-        {
-            Intersect hit;
-            const float e = 0.000001;
-            float stepScale = 1.0;
-            float distance = 0;
-            
-            // first step
-            hit.m_ray = std::forward<R>(_ray);
-            float dT = _sdf(hit.m_ray.position(0));
-            
-            if (dT < 0) {
-                hit.m_bInside = true;
-                stepScale *= -1;
-            }
-            else {
-                hit.m_bInside = false;
-            }
-            
-            // iterate until we hit or miss
-            for (int i = 0; i < m_iMaxSamples; i++) {
-                // check hit or miss
-                float absd = fabs(dT);
-                if (absd > m_fMaxDist) {
-                    hit.m_uIterationCount = (uint16_t)i;
-                    break;  // missed
-                }
-                else if (absd <= e) {
-                    hit.m_fPositionOnRay = distance + dT * stepScale;
-                    hit.m_position = hit.m_ray.position(hit.m_fPositionOnRay);
-                    hit.m_normal = normal(hit.m_position, _sdf);
-                    hit.m_uIterationCount = (uint16_t)i;
-                    break;    // hit
-                }
-                
-                // move forward
-                distance += dT * stepScale;
-                
-                // check for surface crossing
-                auto dM = _sdf(hit.m_ray.position(distance));
-                if (dT * dM < -e) {
-                    stepScale *= 0.8;
-                }
-                
-                dT = dM;
-            }
-            
-            return hit;
-        }
-        
-     private:
-        const int         m_iMaxSamples;
-        const float       m_fMaxDist;
-    };
-    
-    
     // ray marching on provided signed distance function
     template <typename sdf_func>
     bool check_marched_hit(Intersect &_hit, const Ray &_ray, int _iMaxSamples, float _fMaxDist, const sdf_func &_sdf)
     {
         const float e = 0.0001;
-        float stepScale = 0.5;
+        float stepScale = 0.1;
         float distance = 0;
         
         // first step (check inside/outside)
@@ -195,12 +115,12 @@ namespace LNF
             // check hit or miss
             float absd = fabs(dT);
             if (absd > _fMaxDist) {
-                //_hit.m_uIterationCount = (uint16_t)i;
+                _hit.m_uHitIterationCount = (uint16_t)i;
                 return false;  // missed
             }
             else if (absd <= e) {
                 _hit.m_fPositionOnRay = distance + dT * stepScale;
-                //_hit.m_uIterationCount = (uint16_t)i;
+                _hit.m_uHitIterationCount = (uint16_t)i;
                 return true;    // hit
             }
             
@@ -247,7 +167,7 @@ namespace LNF
                     stats.push(color);
                     
                     if ( (_fColorTollerance > 0.0f) &&
-                         (k >= 16 * (tracer.traceDepthMax() + 1)) &&
+                         (k >= 8 * (tracer.traceDepthMax() + 1)) &&
                          (stats.standardDeviation() < _fColorTollerance) )
                     {
                         break;

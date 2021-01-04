@@ -3,6 +3,7 @@
 
 #include "constants.h"
 #include "node.h"
+#include "signed_distance_functions.h"
 #include "trace.h"
 #include "uv.h"
 #include "vec3.h"
@@ -79,16 +80,16 @@ namespace LNF
     };
 
 
-    // squishy blob thingy
-    class MarchedSwirl        : public MarchedBox
+    // simple marched sphere
+    class MarchedSphere        : public MarchedBox
     {
      public:
-        MarchedSwirl(const Vec &_size, const Material *_pMaterial, int _iMaxSamples)
+        MarchedSphere(const Vec &_size, const Material *_pMaterial, int _iMaxSamples)
             :MarchedBox(_size, _pMaterial, _iMaxSamples),
              m_fSize(_size.size() * 0.5)
         {}
         
-        MarchedSwirl(float _fSize, const Material *_pMaterial, int _iMaxSamples)
+        MarchedSphere(float _fSize, const Material *_pMaterial, int _iMaxSamples)
             :MarchedBox(_fSize, _pMaterial, _iMaxSamples),
              m_fSize(_fSize * 0.5)
         {}
@@ -96,7 +97,7 @@ namespace LNF
      protected:
         // surface signed distance function
         virtual float sdfSurface(const Vec &_p) const override {
-            return (_p.size() - m_fSize * (1 + 0.2 * sin(_p.x()/2) * sin(_p.y()/2) * sin(_p.z()/2)));
+            return sdfSphereDeformed(_p, m_fSize * 0.9, m_fSize * 0.1);
         }
         
      private:

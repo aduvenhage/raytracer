@@ -7,7 +7,6 @@
 #include "lnf/jobs.h"
 #include "lnf/jpeg.h"
 #include "lnf/mandlebrot.h"
-#include "lnf/marched_materials.h"
 #include "lnf/marched_node.h"
 #include "lnf/mesh.h"
 #include "lnf/outputimage.h"
@@ -168,8 +167,8 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iMaxSamplesPerPixel(64),
-         m_iMaxTraceDepth(16),
+         m_iMaxSamplesPerPixel(256),
+         m_iMaxTraceDepth(64),
          m_fColorTollerance(0.00001)
     {
         resize(m_iWidth, m_iHeight);
@@ -280,30 +279,17 @@ int main(int argc, char *argv[])
     auto pLight5 = std::make_unique<Light>(Color(0.1, 0.1, 1.0));
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
     auto pTraingleRgb1 = std::make_unique<TriangleRGB>();
-    auto pMarched1 = std::make_unique<GlassSwirl>(0.01, 0.1, 1.8);
-    auto pMarched2 = std::make_unique<GlassBubbles>(0.01, 0.1, 1.8);
-    auto pMarched3 = std::make_unique<Swirl>(0.01, 1.8);
-    auto pMarched4 = std::make_unique<MarchedSphere>(10, 0.01, 1.8);
-    auto pMarched5 = std::make_unique<MarchedCloud>(0.01, 1.8);
 
     pScene->addNode(std::make_unique<Disc>(500, pDiffuse1.get()));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(50, pLight1.get()), axisTranslation(Vec(0, 200, 0))));
     
-    //pScene->addNode(std::make_unique<SmokeBox>(300, pGlass1.get(), 250));
+    pScene->addNode(std::make_unique<SmokeBox>(400, pGlass1.get(), 350));
 
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<MarchedSwirl>(40, pMetal1.get(), 100), axisEulerZYX(0, 0, 0, Vec(0, 20, 60))));
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<MarchedSphere>(40, pGlass1.get(), 1000), axisEulerZYX(0, 0, 0, Vec(0, 20, 60))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse4.get()), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse5.get()), axisEulerZYX(0, 3, 0, Vec(40, 20, 10))));
 
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(8, pLight4.get()), axisEulerZYX(0, 0, 0, Vec(200, 8, -150))));
-    
-    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(15, pMarched5.get()), axisEulerZYX(0, 0, 0, Vec(0, 15, 0))));
-    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(4, pDiffuse2.get()), axisEulerZYX(0, 0, 1, Vec(-20, 8, 20))));
-    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(4, pDiffuse2.get()), axisEulerZYX(0, 1, 0, Vec(20, 8, 20))));
-    
-    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(8, pMetal1.get()), axisEulerZYX(0, 1, 0, Vec(-8, 8, 0))));
-    //pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(8, pMetal1.get()), axisEulerZYX(0, 0, 0, Vec(8, 8, 0))));
-    
     
     pScene->build();
 

@@ -13,7 +13,6 @@ SET(INCL_SRC
     jpeg.h
     mandlebrot.h
     material.h
-    marched_materials.h
     marched_node.h
     mesh.h
     node.h
