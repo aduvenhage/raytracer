@@ -31,9 +31,14 @@ namespace LNF
         Intersect(const Intersect &) = default;
         Intersect(Intersect &&) = default;
         Intersect(Intersect &) = default;
-
+        
         Intersect &operator=(const Intersect &) = default;
         Intersect &operator=(Intersect &&) = default;
+
+        Intersect(const Axis &_axis, const Ray &_ray)
+            :m_axis(_axis),
+             m_ray(_ray)
+        {}
 
         operator bool () const {
             return m_fPositionOnRay > 0;

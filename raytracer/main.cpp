@@ -74,12 +74,12 @@ class SimpleScene   : public Scene
      */
     virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
         bool bHit = false;
+            auto rayAxis = _hit.m_axis;
+            auto ray = _hit.m_ray;
         
         // find best hit
         for (auto &pObj : m_objects) {
-            Intersect nh;
-            nh.m_axis = _hit.m_axis;
-            nh.m_ray = _hit.m_ray;
+            Intersect nh(rayAxis, ray);
                         
             if ( (pObj->hit(nh, _randomGen) == true) &&
                  ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
@@ -240,36 +240,38 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
-    auto pDiffuse1 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
-    auto pDiffuse0 = std::make_unique<Diffuse>(Color(0.2, 0.2, 0.2));
-    auto pDiffuse2 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 2);
-    auto pDiffuse3 = std::make_unique<Diffuse>(Color(0.9, 0.1, 0.1));
-    auto pDiffuse4 = std::make_unique<Diffuse>(Color(0.1, 0.9, 0.1));
-    auto pDiffuse5 = std::make_unique<Diffuse>(Color(0.1, 0.1, 0.9));
-    auto pDiffuse6 = std::make_unique<Diffuse>(Color(0.9, 0.9, 0.9));
-    auto pGlass1 = std::make_unique<Glass>(Color(0.8, 0.8, 0.8), 0.01, 1.8);
-    auto pGlass2 = std::make_unique<Glass>(Color(0.5, 0.5, 0.5), 0.01, 1.8);
-    auto pMetal1 = std::make_unique<Metal>(Color(0.8, 0.8, 0.8), 0.04);
-    auto pLight1 = std::make_unique<Light>(Color(20.0, 20.0, 20.0));
-    auto pLight2 = std::make_unique<Light>(Color(1.0, 1.0, 1.0));
-    auto pLight3 = std::make_unique<Light>(Color(1.0, 0.1, 0.1));
-    auto pLight4 = std::make_unique<Light>(Color(0.1, 30.0, 0.1));
-    auto pLight5 = std::make_unique<Light>(Color(0.1, 0.1, 1.0));
-    auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
-    auto pTraingleRgb1 = std::make_unique<TriangleRGB>();
+    auto pDiffuse0 = createMaterial<Diffuse>(pScene.get(), Color(0.2, 0.2, 0.2));
+    auto pDiffuse1 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
+    auto pDiffuse2 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 2);
+    auto pDiffuse3 = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.1, 0.1));
+    auto pDiffuse4 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
+    auto pDiffuse5 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
+    auto pDiffuse6 = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
+    
+
+    auto pGlass1 = createMaterial<Glass>(pScene.get(), Color(0.8, 0.8, 0.8), 0.01, 1.8);
+    auto pGlass2 = createMaterial<Glass>(pScene.get(), Color(0.5, 0.5, 0.5), 0.01, 1.8);
+    auto pMetal1 = createMaterial<Metal>(pScene.get(), Color(0.8, 0.8, 0.8), 0.04);
+    auto pLight1 = createMaterial<Light>(pScene.get(), Color(20.0, 20.0, 20.0));
+    auto pLight2 = createMaterial<Light>(pScene.get(), Color(1.0, 1.0, 1.0));
+    auto pLight3 = createMaterial<Light>(pScene.get(), Color(1.0, 0.1, 0.1));
+    auto pLight4 = createMaterial<Light>(pScene.get(), Color(0.1, 30.0, 0.1));
+    auto pLight5 = createMaterial<Light>(pScene.get(), Color(0.1, 0.1, 1.0));
+    auto pNormalsInside = createMaterial<SurfaceNormal>(pScene.get(), false);
+    auto pTraingleRgb1 = createMaterial<TriangleRGB>(pScene.get());
 
 
-    createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1.get());
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4.get());
+    createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
+    createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 350);
+    
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 20, pLight1);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
 
-    /*
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(50, pLight1.get()), axisTranslation(Vec(0, 200, 0))));
-    pScene->addNode(std::make_unique<SmokeBox>(400, pGlass1.get(), 350));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<MarchedSphere>(40, pGlass1.get(), 1000), axisEulerZYX(0, 0, 0, Vec(0, 20, 60))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse4.get()), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse5.get()), axisEulerZYX(0, 3, 0, Vec(40, 20, 10))));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(8, pLight4.get()), axisEulerZYX(0, 0, 0, Vec(200, 8, -150))));
-    */
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
+
+    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
 
     //pScene->build();
 

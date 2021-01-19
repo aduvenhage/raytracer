@@ -52,8 +52,10 @@ namespace LNF
     // create primitive and add to scene as a resource
     template <typename primitive_type, class... T>
     Primitive *createPrimitive(Scene *_pScene, T ... t) {
-        return _pScene->addResource(
-            std::make_unique<primitive_type>(t ...)
+        return static_cast<Primitive*>(
+            _pScene->addResource(
+                std::make_unique<primitive_type>(t ...)
+            )
         );
     }
 
@@ -84,8 +86,11 @@ namespace LNF
     // create material and add to scene as a resource
     template <typename material_type, class... T>
     Material *createMaterial(Scene *_pScene, T ... t) {
-        auto ptr = std::make_unique<material_type>(t ...);
-        return _pScene->addResource(std::move(ptr));
+        return static_cast<Material*>(
+            _pScene->addResource(
+                std::make_unique<material_type>(t ...)
+            )
+        );
     }
 
 
