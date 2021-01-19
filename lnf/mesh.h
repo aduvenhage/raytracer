@@ -3,7 +3,7 @@
 
 #include "bvh.h"
 #include "constants.h"
-#include "node.h"
+#include "primitive.h"
 #include "material.h"
 #include "triangle.h"
 #include "vec3.h"
@@ -13,7 +13,7 @@
 namespace LNF
 {
     /* Mesh defined by vertices, triangle indices and a material */
-    class Mesh        : public Node
+    class Mesh        : public Primitive
     {
      public:
         struct Triangle {
@@ -69,7 +69,21 @@ namespace LNF
                 trianglePtrs.push_back(&t);
             }
             
-            m_bvhRoot.build(trianglePtrs);
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            //m_bvhRoot.build(trianglePtrs);
+            
+            
+            
+            
+            
         }
 
         /* Returns the material used for rendering, etc. */
@@ -78,33 +92,32 @@ namespace LNF
         }
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
+        virtual bool hit(Intersect &_hit, RandomGen &) const override {
             static thread_local std::vector<Triangle*> nodes;
             
             nodes.clear();
-            m_bvhRoot.intersect(nodes, _ray);
+            m_bvhRoot.intersect(nodes, _hit.m_ray);
 
             Intersect newHit;
-            _hit.m_pNode = nullptr;
+            bool bHit = false;
             
             for (auto *pTriangle : nodes) {
                 const auto &v0 = m_vertices[pTriangle->m_v[0]];
                 const auto &v1 = m_vertices[pTriangle->m_v[1]];
                 const auto &v2 = m_vertices[pTriangle->m_v[2]];
                 
-                if (triangleIntersect(newHit, v0.m_v, v1.m_v, v2.m_v, _ray) == true) {
-                    if ( (_hit.m_pNode == nullptr) ||
+                if (triangleIntersect(newHit, v0.m_v, v1.m_v, v2.m_v) == true) {
+                    if ( (bHit == false) ||
                          (newHit.m_fPositionOnRay < _hit.m_fPositionOnRay) )
                     {
                         _hit = newHit;
                         _hit.m_uTriangleIndex = pTriangle->m_index;
-                        _hit.m_pNode = this;
+                        bHit = true;
                     }
                 }
             }
                 
-            if (_hit.m_pNode != nullptr) {
-                _hit.m_ray = _ray;
+            if (bHit == true) {
                 return true;
             }
             else {

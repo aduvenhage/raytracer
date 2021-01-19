@@ -2,7 +2,7 @@
 #define LIBS_HEADER_SMOKE_BOX_H
 
 #include "constants.h"
-#include "node.h"
+#include "primitive.h"
 #include "vec3.h"
 #include "uv.h"
 
@@ -10,7 +10,7 @@
 namespace LNF
 {
     /* Axis aligned box shape class -- fixed at origin [0, 0, 0] (with random intersection for smoke, fog, etc.) */
-    class SmokeBox        : public Node
+    class SmokeBox        : public Primitive
     {
      public:
         SmokeBox(const Vec &_size, const Material *_pMaterial, float _fVisibility)
@@ -31,21 +31,19 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+        virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
             static thread_local std::uniform_real_distribution<float> dist(0, m_fVisibility);
             
-            auto bi = aaboxIntersect(m_bounds, _ray.m_origin, _ray.m_invDirection);
+            auto bi = aaboxIntersect(m_bounds, _hit.m_ray.m_origin, _hit.m_ray.m_invDirection);
             if (bi.m_intersect == true) {
                 if ( (bi.m_inside == true) ||
-                     ((bi.m_tmin >= _ray.m_fMinDist) && (bi.m_tmin <= _ray.m_fMaxDist)) )
+                     ((bi.m_tmin >= _hit.m_ray.m_fMinDist) && (bi.m_tmin <= _hit.m_ray.m_fMaxDist)) )
                 {
                     // calculate random hit point on ray inside volume
                     auto tdist = bi.m_inside ? bi.m_tmax : (bi.m_tmax - bi.m_tmin);
                     auto rdist = dist(_randomGen);
 
                     if (rdist < tdist) {
-                        _hit.m_pNode = this;
-                        _hit.m_ray = _ray;
                         _hit.m_bInside = bi.m_inside;
                         _hit.m_fPositionOnRay = bi.m_inside ? rdist : (bi.m_tmin + rdist);
                         

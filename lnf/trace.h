@@ -47,35 +47,34 @@ namespace LNF
             
             // check for hits on scene
             Intersect hit;
-            if (m_pScene->hit(hit, _ray, m_randomGen) == true) {
-                if (hit.m_pNode != nullptr) {
-                    // update stats
-                    hit.m_uTraceDepth = _iDepth+1;
-                    m_uTraceDepthMax = std::max(hit.m_uTraceDepth, m_uTraceDepthMax);
+            hit.m_ray = _ray;
+            
+            if (m_pScene->hit(hit, m_randomGen) == true) {
+                // update stats
+                hit.m_uTraceDepth = _iDepth+1;
+                m_uTraceDepthMax = std::max(hit.m_uTraceDepth, m_uTraceDepthMax);
+                
+                // normal hit -- complete hit
+                hit.m_pPrimitive->intersect(hit);
+                
+                // create scattered, reflected, refracted, etc. ray and color
+                auto scatteredRay = hit.m_pPrimitive->material()->scatter(hit, m_randomGen);
+                auto tracedColor = scatteredRay.m_emitted;
+
+                // trace recursively and blend colors
+                if ( (hit.m_uTraceDepth < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
+                    // move slightly to avoid self intersection
+                    scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
                     
-                    // normal hit -- complete hit
-                    auto pHitNode = hit.m_pNode;
-                    pHitNode->intersect(hit);
-                    
-                    // create scattered, reflected, refracted, etc. ray and color
-                    auto scatteredRay = pHitNode->material()->scatter(hit, m_randomGen);
-                    auto tracedColor = scatteredRay.m_emitted;
+                    // transform ray back to world space
+                    scatteredRay.m_ray = Ray(hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin),
+                                             hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
 
-                    // trace recursively and blend colors
-                    if ( (hit.m_uTraceDepth < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
-                        // move slightly to avoid self intersection
-                        scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
-                        
-                        // transform ray back to world space
-                        scatteredRay.m_ray = Ray(hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin),
-                                                 hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
-
-                        // trace again (recursively)
-                        tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iPerPixelRayIndex, _iDepth + 1);
-                    }
-
-                    return tracedColor;
+                    // trace again (recursively)
+                    tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iPerPixelRayIndex, _iDepth + 1);
                 }
+
+                return tracedColor;
             }
 
             return m_pScene->backgroundColor();
@@ -91,14 +90,13 @@ namespace LNF
 
     // ray marching on provided signed distance function
     template <typename sdf_func>
-    bool check_marched_hit(Intersect &_hit, const Ray &_ray, int _iMaxSamples, float _fMaxDist, const sdf_func &_sdf)
+    bool check_marched_hit(Intersect &_hit, int _iMaxSamples, float _fMaxDist, const sdf_func &_sdf)
     {
         const float e = 0.0001;
         float stepScale = 0.1;
         float distance = 0;
         
         // first step (check inside/outside)
-        _hit.m_ray = _ray;
         _hit.m_position = _hit.m_ray.position(0);
         float dT = _sdf(_hit.m_position);
         

@@ -2,7 +2,7 @@
 #define LIBS_HEADER_SPHERE_H
 
 #include "constants.h"
-#include "node.h"
+#include "primitive.h"
 #include "vec3.h"
 #include "uv.h"
 
@@ -10,7 +10,7 @@
 namespace LNF
 {
     /* Sphere shape class -- fixed at origin [0, 0, 0] */
-    class Sphere        : public Node
+    class Sphere        : public Primitive
     {
      public:
         Sphere()
@@ -31,9 +31,9 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
-            float dRayLength = -_ray.m_origin * _ray.m_direction;
-            const float dIntersectRadiusSqr = _ray.m_origin.sizeSqr() - dRayLength*dRayLength;
+        virtual bool hit(Intersect &_hit, RandomGen &) const override {
+            float dRayLength = -_hit.m_ray.m_origin * _hit.m_ray.m_direction;
+            const float dIntersectRadiusSqr = _hit.m_ray.m_origin.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr <= m_fRadiusSqr) {
                 const float dt = sqrt(m_fRadiusSqr - dIntersectRadiusSqr);
                 if (dt <= dRayLength) {
@@ -48,11 +48,8 @@ namespace LNF
                 }
 
                 // check ray limits
-                if ( (dRayLength >= _ray.m_fMinDist) && (dRayLength <= _ray.m_fMaxDist) ) {
-                    _hit.m_pNode = this;
+                if ( (dRayLength >= _hit.m_ray.m_fMinDist) && (dRayLength <= _hit.m_ray.m_fMaxDist) ) {
                     _hit.m_fPositionOnRay = dRayLength;
-                    _hit.m_ray = _ray;
-
                     return true;
                 }
             }

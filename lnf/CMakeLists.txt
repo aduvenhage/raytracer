@@ -15,9 +15,9 @@ SET(INCL_SRC
     material.h
     marched_node.h
     mesh.h
-    node.h
     outputimage.h
     plane.h
+    primitive.h
     profile.h
     queue.h
     ray.h
@@ -27,7 +27,6 @@ SET(INCL_SRC
     stats.h
     strutil.h
     trace.h
-    transform.h
     triangle.h
     uv.h
     vec3.h

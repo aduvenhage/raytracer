@@ -2,7 +2,7 @@
 #define LIBS_HEADER_MARCHED_NODE_H
 
 #include "constants.h"
-#include "node.h"
+#include "primitive.h"
 #include "signed_distance_functions.h"
 #include "trace.h"
 #include "uv.h"
@@ -12,7 +12,7 @@
 namespace LNF
 {
     /* Axis aligned box shape class -- fixed at origin [0, 0, 0]; base class for raymarched nodes */
-    class MarchedBox        : public Node
+    class MarchedBox        : public Primitive
     {
      public:
         MarchedBox(const Vec &_size, const Material *_pMaterial, int _iMaxSamples)
@@ -33,21 +33,19 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
-            auto bi = aaboxIntersect(m_bounds, _ray.m_origin, _ray.m_invDirection);
+        virtual bool hit(Intersect &_hit, RandomGen &) const override {
+            auto bi = aaboxIntersect(m_bounds, _hit.m_ray.m_origin, _hit.m_ray.m_invDirection);
             if (bi.m_intersect == true) {
                 // try to hit surface inside (using raymarching)
                 // TODO: calc surface UV
                 bool is_hit = check_marched_hit(_hit,
-                                                _ray,
                                                 m_iMaxSamples,
                                                 bi.m_tmax,
                                                 [this](const Vec &_p){return this->sdfSurface(_p);});
 
                 if ( (is_hit == true) &&
-                     ((_hit.m_fPositionOnRay >= _ray.m_fMinDist) && (_hit.m_fPositionOnRay <= _ray.m_fMaxDist)) )
+                     ((_hit.m_fPositionOnRay >= _hit.m_ray.m_fMinDist) && (_hit.m_fPositionOnRay <= _hit.m_ray.m_fMaxDist)) )
                 {
-                    _hit.m_pNode = this;
                     return true;
                 }
             }

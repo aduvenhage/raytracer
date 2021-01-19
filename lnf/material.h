@@ -4,12 +4,13 @@
 #include "color.h"
 #include "intersect.h"
 #include "ray.h"
+#include "resource.h"
 
 
 namespace LNF
 {
     /* Material/texture base class */
-    class Material
+    class Material      : public Resource
     {
      public:
         virtual ~Material() = default;

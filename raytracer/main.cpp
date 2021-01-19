@@ -14,7 +14,6 @@
 #include "lnf/profile.h"
 #include "lnf/ray.h"
 #include "lnf/scene.h"
-#include "lnf/transform.h"
 #include "lnf/smoke_box.h"
 #include "lnf/sphere.h"
 #include "lnf/trace.h"
@@ -67,41 +66,28 @@ class SimpleScene   : public Scene
     
  public:
     SimpleScene()
-        :m_dTimeOnBvhS(0),
-         m_dTimeOnHitsS(0)
     {}
     
     /*
        Checks for an intersect with a scene object.
        Could be accessed by multiple worker threads concurrently.
      */
-    virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
+    virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
         bool bHit = false;
         
-        // find possible hit nodes from BVH
-        auto tpInit = clock_type::now();
-
-        static thread_local std::vector<Node*> nodes;
-        nodes.clear();
-        m_bvhRoot.intersect(nodes, _ray);
-        auto tpBvh = clock_type::now();
-
         // find best hit
-        for (auto &pNode : nodes) {
+        for (auto &pObj : m_objects) {
             Intersect nh;
-            if ( (pNode->hit(nh, _ray, _randomGen) == true) &&
+            nh.m_axis = _hit.m_axis;
+            nh.m_ray = _hit.m_ray;
+                        
+            if ( (pObj->hit(nh, _randomGen) == true) &&
                  ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
             {
                 _hit = nh;
                 bHit = true;
             }
         }
-        
-        auto tpHit = clock_type::now();
-        
-        // update hit timing
-        m_dTimeOnBvhS += std::chrono::duration_cast<std::chrono::nanoseconds>(tpBvh - tpInit).count() * 1e-09;
-        m_dTimeOnHitsS += std::chrono::duration_cast<std::chrono::nanoseconds>(tpHit - tpBvh).count() * 1e-09;
         
         return bHit;
     }
@@ -115,41 +101,27 @@ class SimpleScene   : public Scene
     }
 
     /*
-     Add a new node to the scene.
-     The scene is expected to be static (thread-safe).  Only do this when not rendering.
-     */
-    virtual void addNode(std::unique_ptr<Node> &&_pNode) override {
-        m_nodes.push_back(std::move(_pNode));
+     Add a new resource (material, primitive, instance) to the scene.
+     May not be safe to call while worker threads are calling 'hit'/
+    */
+    virtual Resource *addResource(std::unique_ptr<Resource> &&_pResource) override {
+        m_resources.push_back(std::move(_pResource));
+        return m_resources.back().get();
     }
-    
-    /*
-     Build scene graph.
-     */
-    void build() {
-        std::vector<Node*> vecPtrs;
-        vecPtrs.reserve(m_nodes.size());
-        for (auto &p : m_nodes) {
-            vecPtrs.push_back(p.get());
-        }
-        
-        m_bvhRoot.build(vecPtrs);
-    }
-    
-    double getTimeOnBvhS() const {
-        return m_dTimeOnBvhS;
-    }
-    
-    double getTimeOnHitsS() const {
-        return m_dTimeOnHitsS;
-    }
-    
- protected:
-    std::vector<std::unique_ptr<Node>>   m_nodes;
-    BvhNode<Node>                        m_bvhRoot;
-    mutable double                       m_dTimeOnBvhS;
-    mutable double                       m_dTimeOnHitsS;
-};
 
+    /*
+     Add a new primitive instance to the scene.
+     May not be safe to call while worker threads are calling 'hit'/
+     */
+    virtual PrimitiveInstance *addPrimitiveInstance(std::unique_ptr<PrimitiveInstance> &&_pInstance) override {
+        m_objects.push_back(std::move(_pInstance));
+        return m_objects.back().get();
+    }
+
+ protected:
+    std::vector<std::unique_ptr<Resource>>           m_resources;
+    std::vector<std::unique_ptr<PrimitiveInstance>>  m_objects;
+};
 
 
 class MainWindow : public QMainWindow
@@ -225,10 +197,16 @@ class MainWindow : public QMainWindow
                     
                     std::string title = std::string("Done ") + std::to_string((float)ns/1e09) + "s";
                     setWindowTitle(QString::fromStdString(title));
-                    
+
+
+                    /*
                     printf("time on bvh = %.2f, time on hits = %.2f\n",
                             (float)m_pScene->getTimeOnBvhS()/m_iNumWorkers,
                             (float)m_pScene->getTimeOnHitsS()/m_iNumWorkers);
+                    */
+
+
+
                 }
             }
         }
@@ -262,8 +240,8 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
-    auto pDiffuse0 = std::make_unique<Diffuse>(Color(0.2, 0.2, 0.2));
     auto pDiffuse1 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
+    auto pDiffuse0 = std::make_unique<Diffuse>(Color(0.2, 0.2, 0.2));
     auto pDiffuse2 = std::make_unique<DiffuseCheckered>(Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 2);
     auto pDiffuse3 = std::make_unique<Diffuse>(Color(0.9, 0.1, 0.1));
     auto pDiffuse4 = std::make_unique<Diffuse>(Color(0.1, 0.9, 0.1));
@@ -280,23 +258,25 @@ int main(int argc, char *argv[])
     auto pNormalsInside = std::make_unique<SurfaceNormal>(false);
     auto pTraingleRgb1 = std::make_unique<TriangleRGB>();
 
-    pScene->addNode(std::make_unique<Disc>(500, pDiffuse1.get()));
-    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(50, pLight1.get()), axisTranslation(Vec(0, 200, 0))));
-    
-    pScene->addNode(std::make_unique<SmokeBox>(400, pGlass1.get(), 350));
 
+    createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1.get());
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4.get());
+
+    /*
+    pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(50, pLight1.get()), axisTranslation(Vec(0, 200, 0))));
+    pScene->addNode(std::make_unique<SmokeBox>(400, pGlass1.get(), 350));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<MarchedSphere>(40, pGlass1.get(), 1000), axisEulerZYX(0, 0, 0, Vec(0, 20, 60))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse4.get()), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10))));
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(20, pDiffuse5.get()), axisEulerZYX(0, 3, 0, Vec(40, 20, 10))));
-
     pScene->addNode(std::make_unique<Transform>(std::make_unique<Sphere>(8, pLight4.get()), axisEulerZYX(0, 0, 0, Vec(200, 8, -150))));
-    
-    pScene->build();
+    */
+
+    //pScene->build();
 
     // start app
     QApplication app(argc, argv);
     MainWindow window(pScene.get());
     window.show();
-    
+
     return app.exec();
 }

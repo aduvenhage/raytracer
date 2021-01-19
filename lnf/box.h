@@ -2,7 +2,7 @@
 #define LIBS_HEADER_BOX_H
 
 #include "constants.h"
-#include "node.h"
+#include "primitive.h"
 #include "vec3.h"
 #include "uv.h"
 
@@ -10,7 +10,7 @@
 namespace LNF
 {
     /* Axis aligned box shape class -- fixed at origin [0, 0, 0] */
-    class Box        : public Node
+    class Box        : public Primitive
     {
      public:
         Box()
@@ -36,14 +36,12 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
-            auto bi = aaboxIntersect(m_bounds, _ray.m_origin, _ray.m_invDirection);
+        virtual bool hit(Intersect &_hit, RandomGen &) const override {
+            auto bi = aaboxIntersect(m_bounds, _hit.m_ray.m_origin, _hit.m_ray.m_invDirection);
             if (bi.m_intersect == true) {
                 auto t = bi.m_inside ? bi.m_tmax : bi.m_tmin;
-                if ( (t >= _ray.m_fMinDist) && (t <= _ray.m_fMaxDist) ) {
-                    _hit.m_pNode = this;
+                if ( (t >= _hit.m_ray.m_fMinDist) && (t <= _hit.m_ray.m_fMaxDist) ) {
                     _hit.m_fPositionOnRay = t;
-                    _hit.m_ray = _ray;
                     _hit.m_bInside = bi.m_inside;
 
                     return true;

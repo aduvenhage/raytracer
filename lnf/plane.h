@@ -2,7 +2,7 @@
 #define LIBS_HEADER_PLANE_H
 
 #include "constants.h"
-#include "node.h"
+#include "primitive.h"
 #include "material.h"
 #include "vec3.h"
 #include "uv.h"
@@ -11,7 +11,7 @@
 namespace LNF
 {
     /* Plane shape class -- fixed ZX plane with normal [0, 1, 0] and origin [0, 0, 0] */
-    class Plane        : public Node
+    class Plane        : public Primitive
     {
      public:
         Plane()
@@ -28,16 +28,13 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &) const override {
-            const float denom = _ray.m_direction.y();
+        virtual bool hit(Intersect &_hit, RandomGen &) const override {
+            const float denom = _hit.m_ray.m_direction.y();
             if (denom < -0.0000001f) {
-                const auto vecRayPlane = -_ray.m_origin;
+                const auto vecRayPlane = -_hit.m_ray.m_origin;
                 const float t = vecRayPlane.y() / denom;
-                if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
-                    _hit.m_pNode = this;
+                if ( (t > _hit.m_ray.m_fMinDist) && (t < _hit.m_ray.m_fMaxDist) ) {
                     _hit.m_fPositionOnRay = t;
-                    _hit.m_ray = _ray;
-
                     return true;
                 }
             }
@@ -74,8 +71,8 @@ namespace LNF
         {}
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
-            if (Plane::hit(_hit, _ray, _randomGen) == true) {
+        virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
+            if (Plane::hit(_hit, _randomGen) == true) {
                 // check disc bounds
                 return _hit.m_position.sizeSqr() < m_fRadiusSqr;
             }
@@ -109,8 +106,8 @@ namespace LNF
         {}
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, const Ray &_ray, RandomGen &_randomGen) const override {
-            if (Plane::hit(_hit, _ray, _randomGen) == true) {
+        virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
+            if (Plane::hit(_hit, _randomGen) == true) {
                 // check rectangle bounds
                 return (fabs(_hit.m_position.x()) <= m_fWidth) &&
                        (fabs(_hit.m_position.z()) <= m_fLength);
