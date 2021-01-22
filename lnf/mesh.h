@@ -96,7 +96,7 @@ namespace LNF
             static thread_local std::vector<Triangle*> nodes;
             
             nodes.clear();
-            m_bvhRoot.intersect(nodes, _hit.m_ray);
+            //m_bvhRoot.intersect(nodes, _hit.m_ray);
 
             Intersect newHit;
             bool bHit = false;

@@ -74,11 +74,14 @@ class SimpleScene   : public Scene
      */
     virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
         bool bHit = false;
-            auto rayAxis = _hit.m_axis;
-            auto ray = _hit.m_ray;
+        auto rayAxis = _hit.m_axis;
+        auto ray = _hit.m_ray;
         
-        // find best hit
-        for (auto &pObj : m_objects) {
+        std::vector<PrimitiveInstance*> primeObjects;
+        BvhTree<PrimitiveInstance>::intersect(primeObjects, m_root, ray);
+        
+        // find best hit from potentials
+        for (auto &pObj : primeObjects) {
             Intersect nh(rayAxis, ray);
                         
             if ( (pObj->hit(nh, _randomGen) == true) &&
@@ -118,9 +121,23 @@ class SimpleScene   : public Scene
         return m_objects.back().get();
     }
 
+    /*
+        Build acceleration structures
+     */
+     void build() {
+        std::vector<PrimitiveInstance*> rawObjects;
+        rawObjects.reserve(m_objects.size());
+        for (auto &pObj : m_objects) {
+            rawObjects.push_back(pObj.get());
+        }
+        
+        m_root = BvhTree<PrimitiveInstance>::build(rawObjects);
+     }
+
  protected:
     std::vector<std::unique_ptr<Resource>>           m_resources;
     std::vector<std::unique_ptr<PrimitiveInstance>>  m_objects;
+    std::unique_ptr<BvhNode<PrimitiveInstance>>      m_root;
 };
 
 
@@ -148,7 +165,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 20, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.0, 150);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.0, 220);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -262,18 +279,29 @@ int main(int argc, char *argv[])
 
 
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
-    createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 350);
+    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 350);
     
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 20, pLight1);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
+    //createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 20, pLight1);
+    //createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
 
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
+    //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
+    //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
+    //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
 
-    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
+    //createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
 
-    //pScene->build();
+    int n = 500;
+    for (int i = 0; i < n; i++) {
+        
+        float x = 100 * sin((float)i / n * LNF::pi * 2);
+        float y = 20 * (cos((float)i / n * LNF::pi * 8) + 1);
+        float z = 100 * cos((float)i / n * LNF::pi * 2);
+
+        createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
+    }
+
+
+    pScene->build();
 
     // start app
     QApplication app(argc, argv);

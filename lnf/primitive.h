@@ -161,26 +161,7 @@ namespace LNF
         mutable std::atomic<bool>   m_bDirtyBounds;
     };
     
-    
-    /*
-     Bounding volume hyrarchy nodes.
-     */
-    struct PrimitiveNode
-    {
-        PrimitiveNode()
-            :m_iLevel(0)
-        {}
-        
-        Bounds                                   m_bounds;
-        std::unique_ptr<PrimitiveNode>           m_left;
-        std::unique_ptr<PrimitiveNode>           m_right;
-        std::vector<PrimitiveInstance*>          m_primitives;       // primitives (leaf nodes)
-        int                                      m_iLevel;
-    };
-    
-    
-    
-    
+
 
 };  // namespace LNF
 

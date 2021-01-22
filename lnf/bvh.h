@@ -11,6 +11,21 @@
 
 namespace LNF
 {
+    // calculates bouds of nodes
+    template <typename node_type>
+    Bounds findBounds(const std::vector<node_type*> &_nodes) {
+        Bounds bounds = _nodes[0]->bounds();
+                
+        for (auto &pNode : _nodes) {
+            const auto &nb = pNode->bounds();
+            bounds.m_min = perElementMin(bounds.m_min, nb.m_min);
+            bounds.m_max = perElementMax(bounds.m_max, nb.m_max);
+        }
+        
+        return bounds;
+    }
+
+
     // sorted insert (and unique) into list
     template <typename node_type>
     void sortedInsert(std::vector<node_type*> &_nodes, node_type *_pNode) {
@@ -22,122 +37,114 @@ namespace LNF
         }
     }
     
+
+    // split nodes into 'inside' and 'outside' bounds
+    template <typename node_type>
+    void splitNodes(std::vector<node_type*> &_nodesLeft, std::vector<node_type*> &_nodesRight,
+                    const std::vector<node_type*> &_nodes,
+                    const Bounds &_boundsLeft, const Bounds &_boundsRight)
+    {
+        for (auto &pNode : _nodes) {
+            const auto &nb = pNode->bounds();
+            
+            if (aaboxIntersectCheck(nb, _boundsLeft) == true) {
+                _nodesLeft.push_back(pNode);
+            }
+
+            if (aaboxIntersectCheck(nb, _boundsRight) == true) {
+                _nodesRight.push_back(pNode);
+            }
+        }
+    }
+
+
     /*
-        Bounding volume hyrarchy node.
+     Bounding volume hyrarchy nodes.
      */
     template <typename node_type>
-    class BvhNode
+    struct BvhNode
     {
-     public:
         BvhNode()
         {}
         
-        BvhNode(const Bounds &_bounds)
-            :m_bounds(_bounds)
-        {}
-        
-        // search for hits in bounding volume hyrarchy
-        bool intersect(std::vector<node_type*> &_hitNodes, const Ray &_ray) const {
-            bool bHit = false;
-            if (aaboxIntersectCheck(m_bounds, _ray.m_origin, _ray.m_invDirection) == true) {
-            
-                if (m_nodes.empty() == false) {
-                    for (const auto &pNode : m_nodes) {
-                        sortedInsert(_hitNodes, pNode);
-                    }
+        Bounds                        m_bounds;
+        std::unique_ptr<BvhNode>      m_left;
+        std::unique_ptr<BvhNode>      m_right;
+        std::vector<node_type*>       m_primitives;       // primitives (leaf nodes)
+    };
 
-                    bHit = true;
+
+    // create bounding volume tree
+    template <typename node_type>
+    class BvhTree
+    {
+     protected:
+        static const int    MAX_DEPTH       = 16;
+        static const int    MIN_LEAF_SIZE   = 1;
+        
+     public:
+        // build BVH tree
+        static std::unique_ptr<BvhNode<node_type>> build(const std::vector<node_type*> &_nodes) {
+            Bounds bounds = findBounds(_nodes);
+            return _buildBvhNode(_nodes, bounds, 0);
+        }
+
+        // find list of hittable nodes
+        static bool intersect(std::vector<node_type*> &_hitNodes, const std::unique_ptr<BvhNode<node_type>> &_root, const Ray &_ray) {
+            bool bHit = false;
+            if (_root->m_primitives.empty() == false) {
+                for (const auto &pObj : _root->m_primitives) {
+                    sortedInsert(_hitNodes, pObj);
                 }
-                
-                if (m_left != nullptr) {
-                    bHit |= m_left->intersect(_hitNodes, _ray);
-                }
-                
-                if (m_right != nullptr) {
-                    bHit |= m_right->intersect(_hitNodes, _ray);
-                }
+
+                bHit = true;
             }
 
+            if (_root->m_left != nullptr) {
+                if (aaboxIntersectCheck(_root->m_left->m_bounds, _ray.m_origin, _ray.m_invDirection) == true) {
+                    bHit |= intersect(_hitNodes, _root->m_left, _ray);
+                }
+            }
+            
+            if (_root->m_right != nullptr) {
+                if (aaboxIntersectCheck(_root->m_right->m_bounds, _ray.m_origin, _ray.m_invDirection) == true) {
+                    bHit |= intersect(_hitNodes, _root->m_right, _ray);
+                }
+            }
+            
             return bHit;
         }
         
-        // build bounding volume hyrarchy
-        void build(const std::vector<node_type*> &_nodes) {
-            if (_nodes.empty() == false) {
-                // find bounding volume
-                m_bounds = _nodes[0]->bounds();
-                
-                for (auto &pNode : _nodes) {
-                    const auto &nb = pNode->bounds();
-                    m_bounds.m_min = perElementMin(m_bounds.m_min, nb.m_min);
-                    m_bounds.m_max = perElementMax(m_bounds.m_max, nb.m_max);
-                }
+     private:
+        static std::unique_ptr<BvhNode<node_type>> _buildBvhNode(const std::vector<node_type*> &_nodes, const Bounds &_bounds, int _iDepth) {
+            // create node
+            auto node = std::make_unique<BvhNode<node_type>>();
+            node->m_bounds = _bounds;
 
-                // build nodes recursively
-                m_iLevels = buildTree(_nodes, 0);
-            }
-        }
-        
-      private:
-        // build bounding volume hyrarchy
-        int buildTree(const std::vector<node_type*> &_nodes, int _iLevel) {
-            // build left and right sets
+            // split in left, right and outside
+            auto boxes = splitBox(_bounds);
             std::vector<node_type*> nodesLeft;
             std::vector<node_type*> nodesRight;
-            auto boxes = splitBox(m_bounds);
-            
-            for (auto &pNode : _nodes) {
-                const auto &nb = pNode->bounds();
-                bool bAllocated = false;
-                
-                if (aaboxIntersectCheck(nb, boxes.first) == true) {
-                    nodesLeft.push_back(pNode);
-                    bAllocated = true;
-                }
-                
-                if (aaboxIntersectCheck(nb, boxes.second) == true) {
-                    nodesRight.push_back(pNode);
-                    bAllocated = true;
-                }
-                
-                if (bAllocated == false) {
-                    m_nodes.push_back(pNode);
-                }
+            splitNodes(nodesLeft, nodesRight, _nodes, boxes.first, boxes.second);
+
+            // left nodes go down the tree
+            if ( (nodesLeft.size() > MIN_LEAF_SIZE) && (_iDepth < MAX_DEPTH) ) {
+                node->m_left = _buildBvhNode(nodesLeft, boxes.first, _iDepth + 1);
+            }
+            else if (nodesLeft.size() > 0) {
+                node->m_primitives.insert(node->m_primitives.end(), nodesLeft.begin(), nodesLeft.end());
             }
             
-            int levelsLeft = _iLevel;
-            if (nodesLeft.empty() == false) {
-                if (nodesLeft.size() < _nodes.size())
-                {
-                    m_left = std::make_unique<BvhNode>(boxes.first);
-                    levelsLeft = m_left->buildTree(nodesLeft, _iLevel + 1);
-                }
-                else {
-                    m_nodes.insert(m_nodes.begin(), nodesLeft.begin(), nodesLeft.end());
-                }
+            // right nodes go down the tree
+            if ( (nodesRight.size() > MIN_LEAF_SIZE) && (_iDepth < MAX_DEPTH)  ) {
+                node->m_right = _buildBvhNode(nodesRight, boxes.second, _iDepth + 1);
             }
-            
-            int levelsRight = _iLevel;
-            if (nodesRight.empty() == false) {
-                if (nodesRight.size() < _nodes.size())
-                {
-                    m_right = std::make_unique<BvhNode>(boxes.second);
-                    levelsRight = m_right->buildTree(nodesRight, _iLevel + 1);
-                }
-                else {
-                    m_nodes.insert(m_nodes.begin(), nodesRight.begin(), nodesRight.end());
-                }
+            else if (nodesRight.size() > 0) {
+                node->m_primitives.insert(node->m_primitives.end(), nodesRight.begin(), nodesRight.end());
             }
-            
-            return std::max(levelsLeft, levelsRight);
+
+            return node;
         }
-        
-     private:
-        Bounds                                   m_bounds;
-        std::unique_ptr<BvhNode>                 m_left;
-        std::unique_ptr<BvhNode>                 m_right;
-        std::vector<node_type*>                  m_nodes;        // leaf nodes
-        int                                      m_iLevels;
     };
 
 
