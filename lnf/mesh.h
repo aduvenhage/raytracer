@@ -17,12 +17,11 @@ namespace LNF
     {
      public:
         struct Triangle {
-            const Bounds &bounds() {return m_bounds;}
+            const Bounds &bounds() const {return m_bounds;}
             
             Vec         m_normal;
             Bounds      m_bounds;
             uint32_t    m_v[3];
-            uint32_t    m_index;
         };
         
         struct Vertex {
@@ -31,60 +30,10 @@ namespace LNF
         };
         
      public:
-        Mesh()
+        Mesh(const Material *_pMaterial)
+            :m_pMaterial(_pMaterial),
+             m_bBoundsInit(false)
         {}
-
-        template <typename vertices_type, typename triangles_type>
-        Mesh(vertices_type &&_vertices, triangles_type &_triangles, const Material *_pMaterial)
-            :m_vertices(std::forward<vertices_type>(_vertices)),
-             m_triangles(std::forward<triangles_type>(_triangles)),
-             m_pMaterial(_pMaterial)
-        {
-            // calc mesh bounds
-            for (const auto &v : m_vertices) {
-                m_bounds.m_min = perElementMin(m_bounds.m_min, v.m_v);
-                m_bounds.m_max = perElementMax(m_bounds.m_max, v.m_v);
-            }
-
-            // calc triangle normals and bounds
-            for (size_t i = 0; i < m_triangles.size(); i++) {
-                auto &t = m_triangles[i];
-                const auto &v0 = m_vertices[t.m_v[0]].m_v;
-                const auto &v1 = m_vertices[t.m_v[1]].m_v;
-                const auto &v2 = m_vertices[t.m_v[2]].m_v;
-                
-                auto e1 = v1 - v0;
-                auto e2 = v2 - v0;
-                t.m_normal = crossProduct(e1, e2).normalized();
-                t.m_bounds.m_min = perElementMin(v0, perElementMin(v1, v2));
-                t.m_bounds.m_max = perElementMax(v0, perElementMax(v1, v2));
-                t.m_index = (uint32_t)i;
-            }
-            
-            // build BVH
-            std::vector<Triangle*> trianglePtrs;
-            trianglePtrs.reserve(m_triangles.size());
-            
-            for (auto &t : m_triangles) {
-                trianglePtrs.push_back(&t);
-            }
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            //m_bvhRoot.build(trianglePtrs);
-            
-            
-            
-            
-            
-        }
 
         /* Returns the material used for rendering, etc. */
         const Material *material() const override {
@@ -96,7 +45,14 @@ namespace LNF
             static thread_local std::vector<Triangle*> nodes;
             
             nodes.clear();
+            
+            
             //m_bvhRoot.intersect(nodes, _hit.m_ray);
+            
+            
+            
+            
+            
 
             Intersect newHit;
             bool bHit = false;
@@ -111,7 +67,7 @@ namespace LNF
                          (newHit.m_fPositionOnRay < _hit.m_fPositionOnRay) )
                     {
                         _hit = newHit;
-                        _hit.m_uTriangleIndex = pTriangle->m_index;
+                        _hit.m_uTriangleIndex = getIndex(pTriangle);
                         bHit = true;
                     }
                 }
@@ -144,61 +100,149 @@ namespace LNF
         virtual const Bounds &bounds() const override {
             return m_bounds;
         }
+        
+        /* set vertices */
+        template <typename vertices_type>
+        void setVertices(vertices_type &&_vertices) {
+            m_vertices = std::forward<vertices_type>(_vertices);
+        }
+        
+        /* set triangles */
+        template <typename triangles_type>
+        void setTriangles(triangles_type &&_triangles) {
+            m_triangles = std::forward<triangles_type>(_triangles);
+        }
+        
+        /* calc triangle normals */
+        void buildTriangleNormals() {
+            for (size_t i = 0; i < m_triangles.size(); i++) {
+                auto &t = m_triangles[i];
+                const auto &v0 = m_vertices[t.m_v[0]].m_v;
+                const auto &v1 = m_vertices[t.m_v[1]].m_v;
+                const auto &v2 = m_vertices[t.m_v[2]].m_v;
+                
+                auto e1 = v1 - v0;
+                auto e2 = v2 - v0;
+                t.m_normal = crossProduct(e1, e2).normalized();
+            }
+        }
+
+        /* calc mesh bounds */
+        void buildBounds() {
+            if (m_bBoundsInit == false) {
+                // calc mesh bounds
+                for (const auto &v : m_vertices) {
+                    m_bounds.m_min = perElementMin(m_bounds.m_min, v.m_v);
+                    m_bounds.m_max = perElementMax(m_bounds.m_max, v.m_v);
+                }
+
+                // calc triangle bounds
+                for (size_t i = 0; i < m_triangles.size(); i++) {
+                    auto &t = m_triangles[i];
+                    const auto &v0 = m_vertices[t.m_v[0]].m_v;
+                    const auto &v1 = m_vertices[t.m_v[1]].m_v;
+                    const auto &v2 = m_vertices[t.m_v[2]].m_v;
+                    
+                    t.m_bounds.m_min = perElementMin(v0, perElementMin(v1, v2));
+                    t.m_bounds.m_max = perElementMax(v0, perElementMax(v1, v2));
+                }
+                
+                m_bBoundsInit = true;
+            }
+        }
+
+        /* build bounds, normals acceleration structures etc. */
+        void buildBvh() {
+            buildBounds();
+            std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
+            m_bvhRoot = BvhTree<Triangle>::build(trianglePtrs);
+        }
+        
+     protected:
+        // returns index of triangle in mesh
+        uint32_t getIndex(const Triangle *_pTriangle) const {
+            return _pTriangle - m_triangles.data();
+        }
+        
+        // get list of triangles (raw pointers)
+        std::vector<const Triangle*> getTrianglePtrs() const {
+            std::vector<const Triangle*> trianglePtrs;
+            trianglePtrs.reserve(m_triangles.size());
+            
+            for (auto &t : m_triangles) {
+                trianglePtrs.push_back(&t);
+            }
+            
+            return trianglePtrs;
+        }
 
      private:
-        std::vector<Vertex>     m_vertices;
-        std::vector<Triangle>   m_triangles;
-        BvhNode<Triangle>       m_bvhRoot;
-        Bounds                  m_bounds;
-        const Material          *m_pMaterial;
+        std::vector<Vertex>               m_vertices;
+        std::vector<Triangle>             m_triangles;
+        BvhTree<Triangle>::node_ptr_type  m_bvhRoot;
+        Bounds                            m_bounds;
+        const Material                    *m_pMaterial;
+        bool                              m_bBoundsInit;
     };
 
 
-    std::unique_ptr<Mesh> buildSphereMesh(int _iSlices, int _iDivs, float _fRadius, const Material *_pMaterial) {
-        std::vector<Mesh::Vertex> vertices;
-        std::vector<Mesh::Triangle> triangles;
-        
-        vertices.reserve((_iSlices+1) * (_iDivs+1));
-        triangles.reserve(_iSlices * _iDivs * 2);
-        
-        for (int d = 0; d <= _iDivs; d++) {
-            float angle = M_PI / _iDivs * d;
-            float y = _fRadius * cos(angle);
-            float r = _fRadius * sin(angle);
+    class SphereMesh    : public Mesh
+    {
+     public:
+        SphereMesh(int _iSlices, int _iDivs, float _fRadius, const Material *_pMaterial)
+            :Mesh(_pMaterial)
+        {
+            std::vector<Mesh::Vertex> vertices;
+            std::vector<Mesh::Triangle> triangles;
             
-            for (int s = 0; s <= _iSlices; s++) {
-                float x = r * cos(M_PI / _iSlices * s * 2);
-                float z = r * sin(M_PI / _iSlices * s * 2);
+            vertices.reserve((_iSlices+1) * (_iDivs+1));
+            triangles.reserve(_iSlices * _iDivs * 2);
+            
+            for (int d = 0; d <= _iDivs; d++) {
+                float angle = M_PI / _iDivs * d;
+                float y = _fRadius * cos(angle);
+                float r = _fRadius * sin(angle);
                 
-                auto v = Mesh::Vertex();
-                v.m_v = Vec(x, y, z);
-                
-                vertices.push_back(v);
-                
-                if ( (d > 0) && (s > 0) ) {
-                    auto i = vertices.size() - 1;
+                for (int s = 0; s <= _iSlices; s++) {
+                    float x = r * cos(M_PI / _iSlices * s * 2);
+                    float z = r * sin(M_PI / _iSlices * s * 2);
                     
-                    if (d > 1) {
-                        auto t1 = Mesh::Triangle();
-                        t1.m_v[0] = (uint32_t)i-_iSlices-2;
-                        t1.m_v[1] = (uint32_t)i-_iSlices-1;
-                        t1.m_v[2] = (uint32_t)i-1;
-                        triangles.push_back(t1);
-                    }
+                    auto v = Mesh::Vertex();
+                    v.m_v = Vec(x, y, z);
                     
-                    if (d < _iDivs) {
-                        auto t2 = Mesh::Triangle();
-                        t2.m_v[0] = (uint32_t)i-_iSlices-1;
-                        t2.m_v[1] = (uint32_t)i;
-                        t2.m_v[2] = (uint32_t)i-1;
-                        triangles.push_back(t2);
+                    vertices.push_back(v);
+                    
+                    if ( (d > 0) && (s > 0) ) {
+                        auto i = vertices.size() - 1;
+                        
+                        if (d > 1) {
+                            auto t1 = Mesh::Triangle();
+                            t1.m_v[0] = (uint32_t)i-_iSlices-2;
+                            t1.m_v[1] = (uint32_t)i-_iSlices-1;
+                            t1.m_v[2] = (uint32_t)i-1;
+                            triangles.push_back(t1);
+                        }
+                        
+                        if (d < _iDivs) {
+                            auto t2 = Mesh::Triangle();
+                            t2.m_v[0] = (uint32_t)i-_iSlices-1;
+                            t2.m_v[1] = (uint32_t)i;
+                            t2.m_v[2] = (uint32_t)i-1;
+                            triangles.push_back(t2);
+                        }
                     }
                 }
             }
+            
+            setTriangles(triangles);
+            setVertices(vertices);
+            
+            buildTriangleNormals();
+            buildBounds();
+            buildBvh();
         }
-        
-        return std::make_unique<Mesh>(vertices, triangles, _pMaterial);
-    }
+    };
+    
 
 };  // namespace LNF
 

@@ -77,7 +77,7 @@ class SimpleScene   : public Scene
         auto rayAxis = _hit.m_axis;
         auto ray = _hit.m_ray;
         
-        std::vector<PrimitiveInstance*> primeObjects;
+        std::vector<const PrimitiveInstance*> primeObjects;
         BvhTree<PrimitiveInstance>::intersect(primeObjects, m_root, ray);
         
         // find best hit from potentials
@@ -125,7 +125,7 @@ class SimpleScene   : public Scene
         Build acceleration structures
      */
      void build() {
-        std::vector<PrimitiveInstance*> rawObjects;
+        std::vector<const PrimitiveInstance*> rawObjects;
         rawObjects.reserve(m_objects.size());
         for (auto &pObj : m_objects) {
             rawObjects.push_back(pObj.get());
@@ -137,7 +137,7 @@ class SimpleScene   : public Scene
  protected:
     std::vector<std::unique_ptr<Resource>>           m_resources;
     std::vector<std::unique_ptr<PrimitiveInstance>>  m_objects;
-    std::unique_ptr<BvhNode<PrimitiveInstance>>      m_root;
+    BvhTree<PrimitiveInstance>::node_ptr_type        m_root;
 };
 
 
@@ -297,7 +297,8 @@ int main(int argc, char *argv[])
         float y = 20 * (cos((float)i / n * LNF::pi * 8) + 1);
         float z = 100 * cos((float)i / n * LNF::pi * 2);
 
-        createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
+        //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
+        createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 16, 8, 4, pDiffuse4);
     }
 
 
