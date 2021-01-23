@@ -42,31 +42,36 @@ namespace LNF
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            static thread_local std::vector<Triangle*> nodes;
+            static thread_local std::vector<const Triangle*> nodes;
             
             nodes.clear();
-            
-            
-            //m_bvhRoot.intersect(nodes, _hit.m_ray);
-            
-            
-            
-            
-            
+            BvhTree<Triangle>::intersect(nodes, m_bvhRoot, _hit.m_ray);
 
-            Intersect newHit;
             bool bHit = false;
+            auto rayAxis = _hit.m_axis;
+            auto ray = _hit.m_ray;
             
             for (auto *pTriangle : nodes) {
+                Intersect nh(rayAxis, ray);
                 const auto &v0 = m_vertices[pTriangle->m_v[0]];
                 const auto &v1 = m_vertices[pTriangle->m_v[1]];
                 const auto &v2 = m_vertices[pTriangle->m_v[2]];
                 
-                if (triangleIntersect(newHit, v0.m_v, v1.m_v, v2.m_v) == true) {
+                if (triangleIntersect(nh, v0.m_v, v1.m_v, v2.m_v) == true) {
                     if ( (bHit == false) ||
-                         (newHit.m_fPositionOnRay < _hit.m_fPositionOnRay) )
+                         (nh.m_fPositionOnRay < _hit.m_fPositionOnRay) )
                     {
-                        _hit = newHit;
+                        _hit = nh;
+                        
+                        
+                        
+                        
+                        TODO: set in parent instance and do not swap _hit with temp objects
+                        _hit.m_pPrimitive = this;
+                        
+                        
+                        
+                        
                         _hit.m_uTriangleIndex = getIndex(pTriangle);
                         bHit = true;
                     }
@@ -186,6 +191,7 @@ namespace LNF
     };
 
 
+    /* Sphere built from triangles */
     class SphereMesh    : public Mesh
     {
      public:

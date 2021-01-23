@@ -87,6 +87,10 @@ class SimpleScene   : public Scene
             if ( (pObj->hit(nh, _randomGen) == true) &&
                  ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
             {
+            
+                TODO: do not swap _hit with temp objects
+            
+            
                 _hit = nh;
                 bHit = true;
             }
@@ -290,7 +294,7 @@ int main(int argc, char *argv[])
 
     //createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
 
-    int n = 500;
+    int n = 50;
     for (int i = 0; i < n; i++) {
         
         float x = 100 * sin((float)i / n * LNF::pi * 2);
