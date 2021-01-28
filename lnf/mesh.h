@@ -48,42 +48,30 @@ namespace LNF
             BvhTree<Triangle>::intersect(nodes, m_bvhRoot, _hit.m_ray);
 
             bool bHit = false;
-            auto rayAxis = _hit.m_axis;
-            auto ray = _hit.m_ray;
+            Intersect bh(_hit);
             
             for (auto *pTriangle : nodes) {
-                Intersect nh(rayAxis, ray);
                 const auto &v0 = m_vertices[pTriangle->m_v[0]];
                 const auto &v1 = m_vertices[pTriangle->m_v[1]];
                 const auto &v2 = m_vertices[pTriangle->m_v[2]];
                 
+                Intersect nh(_hit);
                 if (triangleIntersect(nh, v0.m_v, v1.m_v, v2.m_v) == true) {
                     if ( (bHit == false) ||
-                         (nh.m_fPositionOnRay < _hit.m_fPositionOnRay) )
+                         (nh.m_fPositionOnRay < bh.m_fPositionOnRay) )
                     {
-                        _hit = nh;
-                        
-                        
-                        
-                        
-                        TODO: set in parent instance and do not swap _hit with temp objects
-                        _hit.m_pPrimitive = this;
-                        
-                        
-                        
-                        
-                        _hit.m_uTriangleIndex = getIndex(pTriangle);
+                        bh = nh;
+                        bh.m_uTriangleIndex = getIndex(pTriangle);
                         bHit = true;
                     }
                 }
             }
                 
             if (bHit == true) {
-                return true;
+                _hit = bh;
             }
-            else {
-                return false;
-            }
+            
+            return bHit;
         }
 
         /* Completes the node intersect properties. */

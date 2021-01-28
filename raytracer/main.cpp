@@ -74,29 +74,43 @@ class SimpleScene   : public Scene
      */
     virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
         bool bHit = false;
-        auto rayAxis = _hit.m_axis;
-        auto ray = _hit.m_ray;
+        Intersect bh(_hit);
         
-        std::vector<const PrimitiveInstance*> primeObjects;
-        BvhTree<PrimitiveInstance>::intersect(primeObjects, m_root, ray);
+        // find potential hits
+        thread_local static std::vector<const PrimitiveInstance*> primeObjects;
+        primeObjects.clear();
+        findHittables(primeObjects, _hit.m_ray);
         
         // find best hit from potentials
         for (auto &pObj : primeObjects) {
-            Intersect nh(rayAxis, ray);
-                        
+            Intersect nh(_hit);
+            
             if ( (pObj->hit(nh, _randomGen) == true) &&
-                 ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                 ((bHit == false) || (nh.m_fPositionOnRay < bh.m_fPositionOnRay)) )
             {
-            
-                TODO: do not swap _hit with temp objects
-            
-            
-                _hit = nh;
+                bh = nh;
                 bHit = true;
             }
         }
         
+        if (bHit == true) {
+            _hit = bh;
+        }
+        
         return bHit;
+    }
+    
+    /*
+        Find primitives potentially hit by ray.
+     */
+     void findHittables(std::vector<const PrimitiveInstance*> &_primitives, const Ray _ray) const {
+        BvhTree<PrimitiveInstance>::intersect(_primitives, m_root, _ray);
+        
+        /*
+        for (const auto &primitive : m_objects) {
+            _primitives.push_back(primitive.get());
+        }
+        */
     }
     
     /*
@@ -254,8 +268,43 @@ class MainWindow : public QMainWindow
 
 
 
+
+void profileBvh() {
+    
+    RandomGen generator{};
+    
+    // create scene
+    auto dist = std::uniform_real_distribution<float>(-100, 100);
+    auto pScene = std::make_unique<SimpleScene>();
+    int n = 50;
+    for (int i = 0; i < n; i++) {
+        
+        float x = dist(generator);
+        float y = dist(generator);
+        float z = dist(generator);
+
+        createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 16, 8, 4, nullptr);
+    }
+    
+    pScene->build();
+    
+    // test hits
+    ScopeTimer<std::chrono::high_resolution_clock> timer;
+    
+    for (int i = 0; ; i++) {
+        auto ray = randomUnitSphere(generator);
+        
+        thread_local static std::vector<const PrimitiveInstance*> primitives;
+        primitives.clear();
+        pScene->findHittables(primitives, Ray(Vec(), ray));
+    }
+}
+
+
 int main(int argc, char *argv[])
 {
+    //profileBvh();
+    
     // init
     auto pScene = std::make_unique<SimpleScene>();
     RandomGen generator{std::random_device()()};
@@ -285,27 +334,28 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
     //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 350);
     
-    //createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 20, pLight1);
-    //createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 20, pLight1);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
 
-    //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
-    //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
-    //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
+    
+    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
 
-    //createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
-
-    int n = 50;
+    /*
+    int n = 500;
     for (int i = 0; i < n; i++) {
         
         float x = 100 * sin((float)i / n * LNF::pi * 2);
         float y = 20 * (cos((float)i / n * LNF::pi * 8) + 1);
         float z = 100 * cos((float)i / n * LNF::pi * 2);
 
-        //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
-        createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 16, 8, 4, pDiffuse4);
+        createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
+        //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuse4);
     }
 
-
+    */
     pScene->build();
 
     // start app
