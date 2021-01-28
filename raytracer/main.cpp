@@ -276,7 +276,7 @@ void profileBvh() {
     // create scene
     auto dist = std::uniform_real_distribution<float>(-100, 100);
     auto pScene = std::make_unique<SimpleScene>();
-    int n = 50;
+    int n = 500;
     for (int i = 0; i < n; i++) {
         
         float x = dist(generator);
@@ -330,7 +330,8 @@ int main(int argc, char *argv[])
     auto pNormalsInside = createMaterial<SurfaceNormal>(pScene.get(), false);
     auto pTraingleRgb1 = createMaterial<TriangleRGB>(pScene.get());
 
-
+    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuse4);
+    
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
     //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 350);
     
@@ -343,7 +344,6 @@ int main(int argc, char *argv[])
     
     createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
 
-    /*
     int n = 500;
     for (int i = 0; i < n; i++) {
         
@@ -351,11 +351,10 @@ int main(int argc, char *argv[])
         float y = 20 * (cos((float)i / n * LNF::pi * 8) + 1);
         float z = 100 * cos((float)i / n * LNF::pi * 2);
 
-        createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
-        //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuse4);
+        //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
+        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
     }
 
-    */
     pScene->build();
 
     // start app

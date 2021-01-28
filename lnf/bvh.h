@@ -124,7 +124,7 @@ namespace LNF
             auto node = std::make_unique<BvhNode<primitive_type>>();
             node->m_bounds = _bounds;
 
-            // split in left, right and outside
+            // split in left and right
             auto boxes = splitBox(_bounds);
             std::vector<const primitive_type*> left;
             std::vector<const primitive_type*> right;
