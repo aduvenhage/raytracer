@@ -174,7 +174,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iMaxSamplesPerPixel(256),
+         m_iMaxSamplesPerPixel(16),
          m_iMaxTraceDepth(64),
          m_fColorTollerance(0.00001)
     {
@@ -312,17 +312,15 @@ int main(int argc, char *argv[])
     // create scene
     auto pDiffuse0 = createMaterial<Diffuse>(pScene.get(), Color(0.2, 0.2, 0.2));
     auto pDiffuse1 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
-    auto pDiffuse2 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 2);
+    auto pDiffuse2 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);
     auto pDiffuse3 = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.1, 0.1));
     auto pDiffuse4 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
     auto pDiffuse5 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
     auto pDiffuse6 = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
-    
-
     auto pGlass1 = createMaterial<Glass>(pScene.get(), Color(0.8, 0.8, 0.8), 0.01, 1.8);
     auto pGlass2 = createMaterial<Glass>(pScene.get(), Color(0.5, 0.5, 0.5), 0.01, 1.8);
-    auto pMetal1 = createMaterial<Metal>(pScene.get(), Color(0.8, 0.8, 0.8), 0.04);
-    auto pLight1 = createMaterial<Light>(pScene.get(), Color(20.0, 20.0, 20.0));
+    auto pMetal1 = createMaterial<Metal>(pScene.get(), Color(0.8, 0.8, 0.8), 0.01);
+    auto pLight1 = createMaterial<Light>(pScene.get(), Color(40.0, 40.0, 40.0));
     auto pLight2 = createMaterial<Light>(pScene.get(), Color(1.0, 1.0, 1.0));
     auto pLight3 = createMaterial<Light>(pScene.get(), Color(1.0, 0.1, 0.1));
     auto pLight4 = createMaterial<Light>(pScene.get(), Color(0.1, 30.0, 0.1));
@@ -333,18 +331,21 @@ int main(int argc, char *argv[])
     auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuse4);
     
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
-    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 350);
+    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 400);
     
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 20, pLight1);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLight1);
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
 
     createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
     createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
+    
+    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-35, 20, 120)), 8, 4, 20, pGlass1);
+    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(35, 20, 120)), 8, 4, 20, pTraingleRgb1);
     
     createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
 
-    int n = 500;
+    /*
+    int n = 50;
     for (int i = 0; i < n; i++) {
         
         float x = 100 * sin((float)i / n * LNF::pi * 2);
@@ -352,8 +353,10 @@ int main(int argc, char *argv[])
         float z = 100 * cos((float)i / n * LNF::pi * 2);
 
         //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
-        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
+        createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuse2);
+        //createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
     }
+    */
 
     pScene->build();
 

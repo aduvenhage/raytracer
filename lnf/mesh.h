@@ -203,6 +203,16 @@ namespace LNF
                     
                     auto v = Mesh::Vertex();
                     v.m_v = Vec(x, y, z);
+
+                    
+                    hhfhh
+                    
+                    const float phi = atan2(z, x);
+                    const float theta = acos(y / _fRadius);
+                    v.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
+                    
+                    
+                    
                     
                     vertices.push_back(v);
                     

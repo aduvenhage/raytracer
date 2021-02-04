@@ -95,7 +95,7 @@ namespace LNF
      protected:
         // surface signed distance function
         virtual float sdfSurface(const Vec &_p) const override {
-            return sdfSphereDeformed(_p, m_fSize * 0.9, m_fSize * 0.1);
+            return sdfSphereDeformed(_p, m_fSize * 0.95, m_fSize * 0.05);
         }
         
      private:
