@@ -5,13 +5,50 @@
 #include "constants.h"
 #include "primitive.h"
 #include "material.h"
-#include "triangle.h"
 #include "vec3.h"
 #include "uv.h"
 
 
 namespace LNF
 {
+    /*
+     Triangle intersect check.
+     Populates position on ray (t) and UV (barycentric) hit properties.
+     Returns true on intersect.
+     */
+    bool triangleIntersect(float &_fPositionOnRay, Uv &_uv,
+                           const Ray &_ray, const Vec &_v0, const Vec &_v1, const Vec &_v2) {
+        const float EPSILON = 0.000001;
+        auto edge1 = _v1 - _v0;
+        auto edge2 = _v2 - _v0;
+        auto h = crossProduct(_ray.m_direction, edge2);
+        float a = edge1 * h;
+        
+        if (fabs(a) < EPSILON)
+            return false;   // ray parallel to plane
+            
+        float f = 1.0/a;
+        auto s = _ray.m_origin - _v0;
+        float u = f * (s * h);
+        if ((u < 0.0) || (u > 1.0))
+            return false;
+            
+        auto q = crossProduct(s, edge1);
+        float v = f * (_ray.m_direction * q);
+        if ((v < 0.0) || (u + v > 1.0))
+            return false;
+            
+        float t = f * (edge2 * q);
+        if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
+            _fPositionOnRay = t;
+            _uv = Uv(u, v);   // NOTE: Barycentric UV (u + v + w = 1)
+            return true;
+        }
+        
+        return false;
+    }
+
+
     /* Mesh defined by vertices, triangle indices and a material */
     class Mesh        : public Primitive
     {
@@ -29,6 +66,8 @@ namespace LNF
             Uv          m_uv;
         };
         
+        using TriTree = BvhTree<Triangle, 16, 1>;
+        
      public:
         Mesh(const Material *_pMaterial)
             :m_pMaterial(_pMaterial),
@@ -45,33 +84,40 @@ namespace LNF
             static thread_local std::vector<const Triangle*> nodes;
             
             nodes.clear();
-            BvhTree<Triangle>::intersect(nodes, m_bvhRoot, _hit.m_ray);
+            TriTree::intersect(nodes, m_bvhRoot, _hit.m_ray);
 
             bool bHit = false;
-            Intersect bh(_hit);
-            
+            float fPositionOnRay = 0;
+            int hitIndex = 0;
+            Uv hitUv;
+
             for (auto *pTriangle : nodes) {
                 const auto &v0 = m_vertices[pTriangle->m_v[0]];
                 const auto &v1 = m_vertices[pTriangle->m_v[1]];
                 const auto &v2 = m_vertices[pTriangle->m_v[2]];
+                float p = 0;
+                Uv uv;
                 
-                Intersect nh(_hit);
-                if (triangleIntersect(nh, v0.m_v, v1.m_v, v2.m_v) == true) {
+                if (triangleIntersect(p, uv, _hit.m_ray, v0.m_v, v1.m_v, v2.m_v) == true) {
                     if ( (bHit == false) ||
-                         (nh.m_fPositionOnRay < bh.m_fPositionOnRay) )
+                         (p < fPositionOnRay) )
                     {
-                        bh = nh;
-                        bh.m_uTriangleIndex = getIndex(pTriangle);
+                        fPositionOnRay = p;
+                        hitUv = uv;
+                        hitIndex = getIndex(pTriangle);
                         bHit = true;
                     }
                 }
             }
-                
+
             if (bHit == true) {
-                _hit = bh;
+                _hit.m_fPositionOnRay = fPositionOnRay;
+                _hit.m_uv = hitUv;
+                _hit.m_uTriangleIndex = hitIndex;
+                return true;
             }
-            
-            return bHit;
+
+            return false;
         }
 
         /* Completes the node intersect properties. */
@@ -84,8 +130,12 @@ namespace LNF
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
             _hit.m_normal = m_triangles[_hit.m_uTriangleIndex].m_normal;
             _hit.m_bInside = (_hit.m_normal * _hit.m_ray.m_direction) >= 0;
-            _hit.m_uv = _hit.m_uv.u() * v0.m_uv + _hit.m_uv.v() * v1.m_uv + (1 - _hit.m_uv.u() - _hit.m_uv.v()) * v2.m_uv;
             
+            // transform from traingle Barycentric to texture UV
+            _hit.m_uv = _hit.m_uv.u() * v1.m_uv +
+                        _hit.m_uv.v() * v2.m_uv +
+                        (1 - _hit.m_uv.u() - _hit.m_uv.v()) * v0.m_uv;
+
             return _hit;
         }
 
@@ -93,19 +143,19 @@ namespace LNF
         virtual const Bounds &bounds() const override {
             return m_bounds;
         }
-        
+
         /* set vertices */
         template <typename vertices_type>
         void setVertices(vertices_type &&_vertices) {
             m_vertices = std::forward<vertices_type>(_vertices);
         }
-        
+
         /* set triangles */
         template <typename triangles_type>
         void setTriangles(triangles_type &&_triangles) {
             m_triangles = std::forward<triangles_type>(_triangles);
         }
-        
+
         /* calc triangle normals */
         void buildTriangleNormals() {
             for (size_t i = 0; i < m_triangles.size(); i++) {
@@ -148,9 +198,9 @@ namespace LNF
         void buildBvh() {
             buildBounds();
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            m_bvhRoot = BvhTree<Triangle>::build(trianglePtrs);
+            m_bvhRoot = TriTree::build(trianglePtrs);
         }
-        
+
      protected:
         // returns index of triangle in mesh
         uint32_t getIndex(const Triangle *_pTriangle) const {
@@ -172,7 +222,7 @@ namespace LNF
      private:
         std::vector<Vertex>               m_vertices;
         std::vector<Triangle>             m_triangles;
-        BvhTree<Triangle>::node_ptr_type  m_bvhRoot;
+        TriTree::node_ptr_type            m_bvhRoot;
         Bounds                            m_bounds;
         const Material                    *m_pMaterial;
         bool                              m_bBoundsInit;
@@ -205,12 +255,10 @@ namespace LNF
                     v.m_v = Vec(x, y, z);
 
                     
-                    hhfhh
                     
                     const float phi = atan2(z, x);
                     const float theta = acos(y / _fRadius);
-                    v.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
-                    
+                    v.m_uv = Uv(phi / M_PI / 2, theta / M_PI);
                     
                     
                     

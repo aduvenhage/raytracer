@@ -27,7 +27,6 @@ SET(INCL_SRC
     stats.h
     strutil.h
     trace.h
-    triangle.h
     uv.h
     vec3.h
     viewport.h

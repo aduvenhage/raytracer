@@ -75,15 +75,11 @@ namespace LNF
 
 
     // create bounding volume tree
-    template <typename primitive_type>
+    template <typename primitive_type, int MAX_DEPTH=16, int MIN_LEAF_SIZE=1>
     class BvhTree
     {
      public:
         using node_ptr_type = std::unique_ptr<BvhNode<primitive_type>>;
-        
-     protected:
-        static const int    MAX_DEPTH       = 16;
-        static const int    MIN_LEAF_SIZE   = 1;
         
      public:
         // build BVH tree

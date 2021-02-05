@@ -61,11 +61,8 @@ namespace LNF
         virtual Intersect &intersect(Intersect &_hit) const override {
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
             _hit.m_normal = _hit.m_position / m_fRadius;
+            _hit.m_uv = getSphericalUv(_hit.m_position, m_fRadius);
 
-            const float phi = atan2(_hit.m_position.z(), _hit.m_position.x());
-            const float theta = acos(_hit.m_position.y() / m_fRadius);
-            _hit.m_uv = Uv(phi / M_PI / 2 + 0.5, theta / M_PI + 0.5);
-                
             return _hit;
         }
 

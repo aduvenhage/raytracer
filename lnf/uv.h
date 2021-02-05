@@ -2,6 +2,9 @@
 #define LIBS_HEADER_UV_H
 
 
+#include "vec3.h"
+
+
 namespace LNF
 {
     /* UV/Texture coordinates. [u, v] = [0..1, 0..1]*/
@@ -65,6 +68,13 @@ namespace LNF
         return Uv(_uv.u() * _fScale, _uv.v() * _fScale);
     }
 
+
+    /* Calculates UV coordinates from vector and radius. */
+    Uv getSphericalUv(const Vec &_p, float _fRadius) {
+        const float phi = atan2(_p.z(), _p.x());
+        const float theta = acos(_p.y() / _fRadius);
+        return Uv(phi / M_PI / 2, theta / M_PI);
+    }
 
 
 };  // namespace LNF
