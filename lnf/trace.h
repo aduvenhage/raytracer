@@ -88,7 +88,15 @@ namespace LNF
     };
 
 
-    // ray marching on provided signed distance function
+    /*
+     Ray marching on provided signed distance function.
+     Attributes populated in _hit:
+        - m_position
+        - m_bInside
+        - m_uHitIterationCount
+        - m_fPositionOnRay
+     
+     */
     template <typename sdf_func>
     bool check_marched_hit(Intersect &_hit, int _iMaxSamples, float _fMaxDist, const sdf_func &_sdf)
     {

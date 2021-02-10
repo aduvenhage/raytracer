@@ -73,7 +73,7 @@ namespace LNF
     Uv getSphericalUv(const Vec &_p, float _fRadius) {
         const float phi = atan2(_p.z(), _p.x());
         const float theta = acos(_p.y() / _fRadius);
-        return Uv(phi / M_PI / 2, theta / M_PI);
+        return Uv(phi / M_PI * 0.5 + 0.5, theta / M_PI + 0.5);
     }
 
 

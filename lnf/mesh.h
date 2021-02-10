@@ -64,6 +64,7 @@ namespace LNF
         struct Vertex {
             Vec         m_v;
             Uv          m_uv;
+            Vec         m_normal;
         };
         
         using TriTree = BvhTree<Triangle, 16, 1>;
@@ -71,7 +72,8 @@ namespace LNF
      public:
         Mesh(const Material *_pMaterial)
             :m_pMaterial(_pMaterial),
-             m_bBoundsInit(false)
+             m_bBoundsInit(false),
+             m_bUseVertexNormals(false)
         {}
 
         /* Returns the material used for rendering, etc. */
@@ -128,10 +130,19 @@ namespace LNF
             const auto &v2 = m_vertices[t.m_v[2]];
             
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
-            _hit.m_normal = m_triangles[_hit.m_uTriangleIndex].m_normal;
             _hit.m_bInside = (_hit.m_normal * _hit.m_ray.m_direction) >= 0;
             
-            // transform from traingle Barycentric to texture UV
+            // interpolate vertex normals (from hit barycentric uv)
+            if (m_bUseVertexNormals == true) {
+                _hit.m_normal = _hit.m_uv.u() * v1.m_normal +
+                                _hit.m_uv.v() * v2.m_normal +
+                                (1 - _hit.m_uv.u() - _hit.m_uv.v()) * v0.m_normal;
+            }
+            else {
+                _hit.m_normal = t.m_normal;
+            }
+
+            // calc texture coords (from hit barycentric uv)
             _hit.m_uv = _hit.m_uv.u() * v1.m_uv +
                         _hit.m_uv.v() * v2.m_uv +
                         (1 - _hit.m_uv.u() - _hit.m_uv.v()) * v0.m_uv;
@@ -167,6 +178,35 @@ namespace LNF
                 auto e1 = v1 - v0;
                 auto e2 = v2 - v0;
                 t.m_normal = crossProduct(e1, e2).normalized();
+            }
+        }
+        
+        /* Calc vertex normals.
+           Should be called after triangle normals have been calculated.
+           Will enable the use of vertex normals (with interpolation).
+         */
+        void buildVertexNormals() {
+            m_bUseVertexNormals = true;
+            
+            for (size_t i = 0; i < m_vertices.size(); i++) {
+                auto &v = m_vertices[i];
+                v.m_normal = Vec();
+                int count = 0;
+                
+                for (size_t j = 0; j < m_triangles.size(); j++) {
+                    auto &t = m_triangles[j];
+                    
+                    for (size_t k = 0; k < 3; k++) {
+                        if (i == t.m_v[k]) {
+                            v.m_normal += t.m_normal;
+                            count++;
+                        }
+                    }
+                }
+                
+                if (count > 0) {
+                    v.m_normal /= count;
+                }
             }
         }
 
@@ -226,6 +266,7 @@ namespace LNF
         Bounds                            m_bounds;
         const Material                    *m_pMaterial;
         bool                              m_bBoundsInit;
+        bool                              m_bUseVertexNormals;
     };
 
 
@@ -253,15 +294,7 @@ namespace LNF
                     
                     auto v = Mesh::Vertex();
                     v.m_v = Vec(x, y, z);
-
-                    
-                    
-                    const float phi = atan2(z, x);
-                    const float theta = acos(y / _fRadius);
-                    v.m_uv = Uv(phi / M_PI / 2, theta / M_PI);
-                    
-                    
-                    
+                    v.m_uv = getSphericalUv(v.m_v, _fRadius);
                     vertices.push_back(v);
                     
                     if ( (d > 0) && (s > 0) ) {
@@ -290,6 +323,7 @@ namespace LNF
             setVertices(vertices);
             
             buildTriangleNormals();
+            buildVertexNormals();
             buildBounds();
             buildBvh();
         }

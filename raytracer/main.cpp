@@ -173,10 +173,10 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_fFov(60),
-         m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 4u)),
-         m_iMaxSamplesPerPixel(2048),
-         m_iMaxTraceDepth(64),
-         m_fColorTollerance(0.0000001)
+         m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
+         m_iMaxSamplesPerPixel(8000),
+         m_iMaxTraceDepth(8),
+         m_fColorTollerance(0.0000000)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
     auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuse3);
     
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
-    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 400);
+    createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 400);
     
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLight1);
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
@@ -339,11 +339,12 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
     createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
     
-    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-35, 20, 120)), 32, 16, 20, pDiffuse2);
-    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(35, 20, 120)), 64, 32, 20, pMetal1);
+    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-35, 20, 120)), 8, 4, 20, pDiffuse2);
+    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(35, 20, 120)), 8, 4, 20, pMetal1);
     
-    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pGlass1, 1000);
+    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pDiffuse2, 0.1, 1000);
 
+    /*
     int n = 50;
     for (int i = 0; i < n; i++) {
         
@@ -355,7 +356,8 @@ int main(int argc, char *argv[])
         //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuse2);
         createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
     }
-
+    */
+    
     pScene->build();
 
     // start app
