@@ -205,17 +205,21 @@ namespace LNF
      */
     struct Axis
     {
-        Axis() = default;
+        Axis()
+            :m_fScale(1.0f)
+        {}
+
         Axis(const Axis &) = default;
         Axis(Axis &&) = default;
         Axis(Axis &) = default;
         
         template <typename VX, typename VY, typename VZ, typename P>
-        Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin)
+        Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin, float _fScale)
             :m_x(std::forward<VX>(_vx)),
              m_y(std::forward<VY>(_vy)),
              m_z(std::forward<VZ>(_vz)),
-             m_origin(_origin)
+             m_origin(_origin),
+             m_fScale(_fScale)
         {}
 
         Axis &operator=(const Axis &) = default;
@@ -227,7 +231,7 @@ namespace LNF
                 
         Vec transformTo(const Vec &_vec) const {
             auto v = _vec - m_origin;
-            return Vec(v * m_x, v * m_y, v * m_z);
+            return Vec(v * m_x, v * m_y, v * m_z) / m_fScale;
         }
                 
         Vec rotateFrom(const Vec &_vec) const {
@@ -235,13 +239,14 @@ namespace LNF
         }
         
         Vec transformFrom(const Vec &_vec) const {
-            return _vec.x() * m_x + _vec.y() * m_y + _vec.z() * m_z + m_origin;
+            return (_vec.x() * m_x + _vec.y() * m_y + _vec.z() * m_z) * m_fScale + m_origin;
         }
         
         Vec     m_x;
         Vec     m_y;
         Vec     m_z;
         Vec     m_origin;
+        float   m_fScale;
     };
     
     
@@ -420,18 +425,20 @@ namespace LNF
             Vec{1.0f, 0.0f, 0.0f},
             Vec{0.0f, 1.0f, 0.0f},
             Vec{0.0f, 0.0f, 1.0f},
-            Vec{0.0f, 0.0f, 0.0f}
+            Vec{0.0f, 0.0f, 0.0f},
+            1.0f
         };
     }
 
     /* Creates the default axis */
     template <typename P>
-    inline Axis axisTranslation(P &&_origin) {
+    inline Axis axisTranslation(P &&_origin, float _fScale = 1.0f) {
         return {
             Vec{1.0f, 0.0f, 0.0f},
             Vec{0.0f, 1.0f, 0.0f},
             Vec{0.0f, 0.0f, 1.0f},
-            _origin
+            _origin,
+            _fScale
         };
     }
 
@@ -442,7 +449,7 @@ namespace LNF
      gamma - angle around X axis
      */
     template <typename P>
-    Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma, P &&_origin) {
+    Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma, P &&_origin, float _fScale = 1.0f) {
         const float ca = cos(_fAlpha);
         const float sa = sin(_fAlpha);
         const float cb = cos(_fBeta);
@@ -451,10 +458,11 @@ namespace LNF
         const float sg = sin(_fGamma);
 
         return {
-            Vec{ca*cb,            sa*cb,            -sb},
+            Vec{ca*cb, sa*cb, -sb},
             Vec{ca*sb*sg - sa*cg, sa*sb*sg + ca*cg, cb*sg},
             Vec{ca*sb*cg + sa*sg, sa*sb*cg - ca*sg, cb*cg},
-            _origin
+            _origin,
+            _fScale
         };
     }
     
@@ -487,7 +495,8 @@ namespace LNF
             left,
             up,
             lookat,
-            _origin
+            _origin,
+            1.0f
         };
     }
 

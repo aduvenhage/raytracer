@@ -22,6 +22,7 @@ SET(INCL_SRC
     queue.h
     ray.h
     scene.h
+    signed_distance_functions.h
     smoke_box.h
     sphere.h
     stats.h

@@ -15,16 +15,14 @@ namespace LNF
     class MarchedBox        : public Primitive
     {
      public:
-        MarchedBox(const Vec &_size, const Material *_pMaterial, int _iMaxSamples)
+        MarchedBox(const Vec &_size, const Material *_pMaterial)
             :m_bounds(-_size * 0.5f, _size * 0.5f),
-             m_pMaterial(_pMaterial),
-             m_iMaxSamples(_iMaxSamples)
+             m_pMaterial(_pMaterial)
         {}
         
-        MarchedBox(float _fSize, const Material *_pMaterial, int _iMaxSamples)
+        MarchedBox(float _fSize, const Material *_pMaterial)
             :m_bounds(boxVec(-_fSize*0.5), boxVec(_fSize*0.5)),
-             m_pMaterial(_pMaterial),
-             m_iMaxSamples(_iMaxSamples)
+             m_pMaterial(_pMaterial)
         {}
         
         /* Returns the material used for rendering, etc. */
@@ -38,7 +36,6 @@ namespace LNF
             if (bi.m_intersect == true) {
                 // try to hit surface inside (using raymarching)
                 bool is_hit = check_marched_hit(_hit,
-                                                m_iMaxSamples,
                                                 bi.m_tmax,
                                                 [this](const Vec &_p){return this->sdfSurface(_p);});
 
@@ -82,7 +79,6 @@ namespace LNF
         Axis                   m_axis;
         Bounds                 m_bounds;
         const Material         *m_pMaterial;
-        int                    m_iMaxSamples;
     };
 
 
@@ -90,14 +86,14 @@ namespace LNF
     class MarchedSphere        : public MarchedBox
     {
      public:
-        MarchedSphere(const Vec &_size, const Material *_pMaterial, float _fWaveRatio, int _iMaxSamples)
-            :MarchedBox(_size, _pMaterial, _iMaxSamples),
+        MarchedSphere(const Vec &_size, const Material *_pMaterial, float _fWaveRatio)
+            :MarchedBox(_size, _pMaterial),
              m_fSize(_size.size() * 0.5),
              m_fWaveRatio(_fWaveRatio)
         {}
 
-        MarchedSphere(float _fSize, const Material *_pMaterial, float _fWaveRatio, int _iMaxSamples)
-            :MarchedBox(_fSize, _pMaterial, _iMaxSamples),
+        MarchedSphere(float _fSize, const Material *_pMaterial, float _fWaveRatio)
+            :MarchedBox(_fSize, _pMaterial),
              m_fSize(_fSize * 0.5),
              m_fWaveRatio(_fWaveRatio)
         {}
@@ -111,6 +107,22 @@ namespace LNF
      private:
         float   m_fSize;
         float   m_fWaveRatio;
+    };
+
+
+    // marched mandlebulb
+    class MarchedMandle        : public MarchedBox
+    {
+     public:
+        MarchedMandle(const Material *_pMaterial)
+            :MarchedBox(2.5, _pMaterial)
+        {}
+
+     protected:
+        // surface signed distance function
+        virtual float sdfSurface(const Vec &_p) const override {
+            return sdfMandle(_p);
+        }
     };
 
 };  // namespace LNF

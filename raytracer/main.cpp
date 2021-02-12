@@ -174,16 +174,16 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(8000),
-         m_iMaxTraceDepth(8),
-         m_fColorTollerance(0.0000000)
+         m_iMaxSamplesPerPixel(2048),
+         m_iMaxTraceDepth(32),
+         m_fColorTollerance(0.0000000000)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.0, 220);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 180), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 180);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -310,6 +310,7 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
+    auto pDiffuseM = createMaterial<DiffuseMandlebrot>(pScene.get());
     auto pDiffuse0 = createMaterial<Diffuse>(pScene.get(), Color(0.2, 0.2, 0.2));
     auto pDiffuse1 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     auto pDiffuse2 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);
@@ -317,8 +318,9 @@ int main(int argc, char *argv[])
     auto pDiffuse4 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
     auto pDiffuse5 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
     auto pDiffuse6 = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
-    auto pGlass1 = createMaterial<Glass>(pScene.get(), Color(0.8, 0.8, 0.8), 0.01, 1.8);
+    auto pGlass1 = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
     auto pGlass2 = createMaterial<Glass>(pScene.get(), Color(0.5, 0.5, 0.5), 0.01, 1.8);
+    auto pGlass3 = createMaterial<GlassGlow>(pScene.get(), Color(0.2, 0.2, 0.9), 0.01, 1.8);
     auto pMetal1 = createMaterial<Metal>(pScene.get(), Color(0.8, 0.8, 0.8), 0.01);
     auto pLight1 = createMaterial<Light>(pScene.get(), Color(40.0, 40.0, 40.0));
     auto pLight2 = createMaterial<Light>(pScene.get(), Color(1.0, 1.0, 1.0));
@@ -331,18 +333,22 @@ int main(int argc, char *argv[])
     auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuse3);
     
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
-    createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 400);
+    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 400);
     
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLight1);
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
 
+    /*
     createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
     createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-60, 60, -100)), 60, pDiffuseM);
+
+    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-35, 20, 120)), 32, 16, 20, pDiffuse2);
+    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(35, 20, 120)), 32, 16, 20, pMetal1);
+    */
     
-    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-35, 20, 120)), 8, 4, 20, pDiffuse2);
-    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(35, 20, 120)), 8, 4, 20, pMetal1);
-    
-    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(0, 20, 60)), 40, pDiffuse2, 0.1, 1000);
+    createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 40, 0), 40.0), pGlass3);
+    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 40, 0), 40.0), 2.0f, pGlass1, 0.02f);
 
     /*
     int n = 50;

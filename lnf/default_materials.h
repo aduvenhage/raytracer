@@ -168,8 +168,36 @@ namespace LNF
             return ScatteredRay(scatteredRay, Color(), color);
         }
     };
-    
-    
+
+
+    // glass material
+    class GlassGlow : public Material
+    {
+     public:
+        GlassGlow(const Color &_color, float _fScatter, float _fIndexOfRefraction)
+            :m_color(_color),
+             m_fScatter(_fScatter),
+             m_fIndexOfRefraction(_fIndexOfRefraction)
+        {}
+        
+        /* Returns the scattered ray at the intersection point. */
+        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+            auto glow = (
+                            Color(1.0f, 1.0f, 1.0f) / (_hit.m_uHitIterationCount+1.0f) * 10 +
+                            Color(1.0f, 0.0f, 0.0f) / (_hit.m_position.sizeSqr()+1.0f) * 0.02
+                        ).clamp() * 10;
+            
+            return ScatteredRay(Ray(_hit.m_position,
+                                    refract(_hit.m_ray.m_direction, _hit.m_normal, m_fIndexOfRefraction, _hit.m_bInside, m_fScatter, _randomGen)),
+                                m_color,
+                                glow);
+        }
+
+     private:
+        Color          m_color;
+        float          m_fScatter;
+        float          m_fIndexOfRefraction;
+    };
 };  // namespace LNF
 
 

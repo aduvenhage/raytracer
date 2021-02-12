@@ -98,10 +98,13 @@ namespace LNF
      
      */
     template <typename sdf_func>
-    bool check_marched_hit(Intersect &_hit, int _iMaxSamples, float _fMaxDist, const sdf_func &_sdf)
+    bool check_marched_hit(Intersect &_hit, float _fMaxDist, const sdf_func &_sdf)
     {
-        const float e = 0.0001;
-        float stepScale = 0.1;
+        // TODO: play with these values and maybe adjust dynamically for best performance
+        // TODO: exit criteria could include min stepScale
+        const int maxSamples = 100000;
+        const float e = 0.00001;
+        float stepScale = 1.0;
         float distance = 0;
         
         // first step (check inside/outside)
@@ -117,7 +120,7 @@ namespace LNF
         }
         
         // iterate until we hit or miss
-        for (int i = 0; i < _iMaxSamples; i++) {
+        for (int i = 0; i < maxSamples; i++) {
             // check hit or miss
             float absd = fabs(dT);
             if (absd > _fMaxDist) {
@@ -137,7 +140,7 @@ namespace LNF
             _hit.m_position = _hit.m_ray.position(distance);
             auto dM = _sdf(_hit.m_position);
             if (dT * dM < -e) {
-                stepScale *= 0.8;
+                stepScale *= 0.5;
             }
             
             dT = dM;
