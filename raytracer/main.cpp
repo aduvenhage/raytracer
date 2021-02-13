@@ -183,7 +183,7 @@ class MainWindow : public QMainWindow
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 180), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 180);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 200);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -310,47 +310,30 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
-    auto pDiffuseM = createMaterial<DiffuseMandlebrot>(pScene.get());
-    auto pDiffuse0 = createMaterial<Diffuse>(pScene.get(), Color(0.2, 0.2, 0.2));
-    auto pDiffuse1 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
-    auto pDiffuse2 = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);
-    auto pDiffuse3 = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.1, 0.1));
-    auto pDiffuse4 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
-    auto pDiffuse5 = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
-    auto pDiffuse6 = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
-    auto pGlass1 = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
-    auto pGlass2 = createMaterial<Glass>(pScene.get(), Color(0.5, 0.5, 0.5), 0.01, 1.8);
-    auto pGlass3 = createMaterial<GlassGlow>(pScene.get(), Color(0.2, 0.2, 0.9), 0.01, 1.8);
-    auto pMetal1 = createMaterial<Metal>(pScene.get(), Color(0.8, 0.8, 0.8), 0.01);
-    auto pLight1 = createMaterial<Light>(pScene.get(), Color(40.0, 40.0, 40.0));
-    auto pLight2 = createMaterial<Light>(pScene.get(), Color(1.0, 1.0, 1.0));
-    auto pLight3 = createMaterial<Light>(pScene.get(), Color(1.0, 0.1, 0.1));
-    auto pLight4 = createMaterial<Light>(pScene.get(), Color(0.1, 30.0, 0.1));
-    auto pLight5 = createMaterial<Light>(pScene.get(), Color(0.1, 0.1, 1.0));
-    auto pNormalsInside = createMaterial<SurfaceNormal>(pScene.get(), false);
-    auto pTraingleRgb1 = createMaterial<TriangleRGB>(pScene.get());
+    auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
+    auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
+    auto pMirror = createMaterial<Metal>(pScene.get(), Color(0.95, 0.95, 0.95), 0.02);
+    auto pGlow = createMaterial<DiffuseGlow>(pScene.get(), Color(0.2, 0.2, 0.9), 2);
+    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(40.0, 40.0, 40.0));
+    auto pLightGreen = createMaterial<Light>(pScene.get(), Color(5, 30.0, 5));
+    
+    createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuseFloor);
+    createPrimitiveInstance<Rectangle>(pScene.get(), axisTranslation(Vec(0, 1, 0)), 100, 80, pMirror);
+    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass, 400);
+    
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLightWhite);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLightGreen);
 
-    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuse3);
-    
-    createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuse1);
-    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass1, 400);
-    
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLight1);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLight4);
+    createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 0), 40.0), pGlow);
+    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 0), 40.0), 2.0f, pGlass, 0.04f);
 
     /*
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-40, 20, 10)), 20, pDiffuse4);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(40, 20, 10)), 20, pDiffuse5);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-60, 60, -100)), 60, pDiffuseM);
+    auto pDiffuseRed = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);
+    auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
+    auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
+    auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
+    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuseBlue);
 
-    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(-35, 20, 120)), 32, 16, 20, pDiffuse2);
-    createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(35, 20, 120)), 32, 16, 20, pMetal1);
-    */
-    
-    createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 40, 0), 40.0), pGlass3);
-    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 40, 0), 40.0), 2.0f, pGlass1, 0.02f);
-
-    /*
     int n = 50;
     for (int i = 0; i < n; i++) {
         
@@ -358,8 +341,8 @@ int main(int argc, char *argv[])
         float y = 20 * (cos((float)i / n * LNF::pi * 8) + 1);
         float z = 100 * cos((float)i / n * LNF::pi * 2);
 
-        //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuse4);
-        //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuse2);
+        //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuseRed);
+        //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
         createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
     }
     */

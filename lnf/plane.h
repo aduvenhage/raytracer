@@ -46,9 +46,13 @@ namespace LNF
         virtual Intersect &intersect(Intersect &_hit) const override {
             _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
             _hit.m_normal = Vec(0, 1, 0);
-            _hit.m_uv = Uv(_hit.m_position.x() * m_fUvScale, _hit.m_position.z() * m_fUvScale).wrap();
+            _hit.m_uv = uv(_hit.m_position);
             
             return _hit;
+        }
+        
+        virtual Uv uv(const Vec &_p) const {
+            return Uv(_p.x() * m_fUvScale, _p.z() * m_fUvScale).wrap();
         }
         
      private:
@@ -74,10 +78,19 @@ namespace LNF
         virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
             if (Plane::hit(_hit, _randomGen) == true) {
                 // check disc bounds
+                _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
                 return _hit.m_position.sizeSqr() < m_fRadiusSqr;
             }
             
             return false;
+        }
+        
+        /* Completes the node intersect properties. */
+        virtual Intersect &intersect(Intersect &_hit) const override {
+            _hit.m_normal = Vec(0, 1, 0);
+            _hit.m_uv = uv(_hit.m_position);
+
+            return _hit;
         }
         
         /* returns bounds for shape */
@@ -109,11 +122,20 @@ namespace LNF
         virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
             if (Plane::hit(_hit, _randomGen) == true) {
                 // check rectangle bounds
+                _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
                 return (fabs(_hit.m_position.x()) <= m_fWidth) &&
                        (fabs(_hit.m_position.z()) <= m_fLength);
             }
             
             return false;
+        }
+        
+        /* Completes the node intersect properties. */
+        virtual Intersect &intersect(Intersect &_hit) const override {
+            _hit.m_normal = Vec(0, 1, 0);
+            _hit.m_uv = uv(_hit.m_position);
+
+            return _hit;
         }
         
         /* returns bounds for shape */
