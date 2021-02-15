@@ -27,16 +27,17 @@ namespace LNF
         return (_p.size() - _fRadius - _fWaveHeight * sin(pr.x()/_fRadius*8) * sin(pr.z()/_fRadius*8)) * scale;
     }
 
-    float sdfMandle(const Vec &_p) {
+    float sdfMandle(const Vec &_p, int &_iterations) {
         float BAIL_OUT = 2.1f;
         float POWER = 8.0f;
         float PHASE = 5;
-        int ITERATIONS = 25;
+        int MAX_ITERATIONS = 100;
         
         Vec z = _p;
         float dr = 1.0;
         float r = 0.0;
-        for (int i = 0; i < ITERATIONS; i++) {
+        int i = 0;
+        for (; i < MAX_ITERATIONS; i++) {
             r = z.size();
             if (r > BAIL_OUT)
                 break;
@@ -56,6 +57,7 @@ namespace LNF
             z += _p;
         }
         
+        _iterations = i;        
         return 0.1 * log(r) * r/dr;
     }
     /*

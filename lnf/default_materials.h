@@ -170,27 +170,25 @@ namespace LNF
     };
 
 
-    // glass material
-    class DiffuseGlow : public Material
+    // diffuse and coloured according to hit iteration count
+    class DiffuseIterations : public Material
     {
      public:
-        DiffuseGlow(const Color &_color, float _fShapeRadius)
-            :m_color(_color),
-             m_fShapeRadiusSqr(_fShapeRadius*_fShapeRadius)
+        DiffuseIterations()
         {}
         
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            auto color = (m_color + Color(1.0f, 1.0f, 1.0f) / (_hit.m_uHitIterationCount*0.01+1.0f)).clamp();
-            auto glow = Color(0.3f, 0.1f, 0.0f) * (1.0f - _hit.m_position.sizeSqr()/m_fShapeRadiusSqr);
+            auto color = Color(_hit.m_uIterationCount*0.3f,
+                               _hit.m_uIterationCount*0.15f,
+                               _hit.m_uIterationCount*0.05f).wrap();
+            auto glow = Color();
             
             auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
             return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color, glow);
         }
 
      private:
-        Color          m_color;
-        float          m_fShapeRadiusSqr;
     };
 };  // namespace LNF
 

@@ -7,7 +7,8 @@
 #include "lnf/jobs.h"
 #include "lnf/jpeg.h"
 #include "lnf/mandlebrot.h"
-#include "lnf/marched_node.h"
+#include "lnf/marched_mandle.h"
+#include "lnf/marched_sphere.h"
 #include "lnf/mesh.h"
 #include "lnf/outputimage.h"
 #include "lnf/plane.h"
@@ -174,9 +175,9 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(2048),
+         m_iMaxSamplesPerPixel(1024),
          m_iMaxTraceDepth(32),
-         m_fColorTollerance(0.0000000000)
+         m_fColorTollerance(0.00000000001)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
@@ -313,7 +314,7 @@ int main(int argc, char *argv[])
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
     auto pMirror = createMaterial<Metal>(pScene.get(), Color(0.95, 0.95, 0.95), 0.02);
-    auto pGlow = createMaterial<DiffuseGlow>(pScene.get(), Color(0.2, 0.2, 0.9), 2);
+    auto pGlow = createMaterial<DiffuseIterations>(pScene.get());
     auto pLightWhite = createMaterial<Light>(pScene.get(), Color(40.0, 40.0, 40.0));
     auto pLightGreen = createMaterial<Light>(pScene.get(), Color(5, 30.0, 5));
     

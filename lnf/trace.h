@@ -124,12 +124,12 @@ namespace LNF
             // check hit or miss
             float absd = fabs(dT);
             if (absd > _fMaxDist) {
-                _hit.m_uHitIterationCount = (uint16_t)i;
+                _hit.m_uIterationCount = (uint16_t)i;
                 return false;  // missed
             }
             else if (absd <= e) {
                 _hit.m_fPositionOnRay = distance + dT * stepScale;
-                _hit.m_uHitIterationCount = (uint16_t)i;
+                _hit.m_uIterationCount = (uint16_t)i;
                 return true;    // hit
             }
             
