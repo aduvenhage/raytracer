@@ -113,7 +113,7 @@ namespace LNF
         
         Rectangle(float _fWidth, float _fLength, const Material *_pMaterial, float _fUvScale=0.02f)
             :Plane(_pMaterial, _fUvScale),
-             m_bounds(Vec(-_fWidth, -1, -_fLength), Vec(_fWidth, 1, _fLength)),
+             m_bounds(Vec(-_fWidth/2, -1, -_fLength/2), Vec(_fWidth/2, 1, _fLength/2)),
              m_fWidth(_fWidth),
              m_fLength(_fLength)
         {}

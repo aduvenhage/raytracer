@@ -176,7 +176,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(16),
+         m_iMaxSamplesPerPixel(2048),
          m_iMaxTraceDepth(32),
          m_fColorTollerance(0.00000000001)
     {
@@ -313,22 +313,19 @@ int main(int argc, char *argv[])
     
     // create scene
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
+    auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
     auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
     auto pMirror = createMaterial<Metal>(pScene.get(), Color(0.95, 0.95, 0.95), 0.02);
     auto pGlow = createMaterial<DiffuseIterations>(pScene.get());
     auto pLightWhite = createMaterial<Light>(pScene.get(), Color(40.0, 40.0, 40.0));
-    auto pLightGreen = createMaterial<Light>(pScene.get(), Color(5, 30.0, 5));
     
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuseFloor);
-    createPrimitiveInstance<Rectangle>(pScene.get(), axisTranslation(Vec(0, 1, 0)), 100, 80, pMirror);
-    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pGlass, 400);
-    
+    createPrimitiveInstance<Rectangle>(pScene.get(), axisTranslation(Vec(0, 1, 0)), 200, 200, pMirror);
+    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pDiffuseFog, 400);
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLightWhite);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLightGreen);
-
-    //createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 0), 40.0), pGlow);
-    //createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 0), 40.0), 2.0f, pGlass, 0.04f);
-    createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 0), 40.0), 2.0f, pGlass);
+    createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 50), 40.0), pGlow);
+    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
+    createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
 
     /*
     auto pDiffuseRed = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);

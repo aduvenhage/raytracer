@@ -67,15 +67,18 @@ namespace LNF
 
     float sdfBubbles(const Vec &_p, float _fAngleY, float _fHeight) {
         float sdf = 0;
-        float k = 3;        
+        float k = 4;
         int n = 16;
         for (int i = 0; i < n; i ++) {
             float t = (float)i/n;
-            Vec origin(2*sin(t * M_PI * 4 + _fAngleY), (t - 0.5) * _fHeight, 1.5*cos(t * M_PI * 4 + _fAngleY));
-            sdf += exp(-k * sdfSphere(_p, origin,  frac(t/0.3) * 1 + 0.1));
+            Vec origin(0.45f*_fHeight*sin(t * M_PI * 4 + _fAngleY),
+                       (t - 0.5f)*_fHeight,
+                       0.45f*_fHeight*cos(t * M_PI * 4 + _fAngleY));
+            
+            sdf += exp(-k * sdfSphere(_p, origin, (frac(t/0.3f) + 0.1)*_fHeight*0.1f));
         }
         
-        return -log(sdf) * 0.5;
+        return -log(sdf) * 0.1;
     }
 
 
