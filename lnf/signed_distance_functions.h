@@ -8,30 +8,33 @@
 namespace LNF
 {
     float sdfSphere(const Vec &_p, float _fRadius) {
-        const float scale = 1.0;
-        return (_p.size() - _fRadius) * scale;
+        return (_p.size() - _fRadius);
+    }
+
+
+    float sdfSphere(const Vec &_p, const Vec &_origin, float _fRadius) {
+        return ((_p - _origin).size() - _fRadius);
     }
 
 
     float sdfSphereDeformed(const Vec &_p, float _fRadius, float _fWaveHeight) {
-        const float scale = 1.0;
-        return (_p.size() - _fRadius + _fWaveHeight * sin(_p.x()/_fRadius*8) * sin(_p.y()/_fRadius*8) * sin(_p.z()/_fRadius*8)) * scale;
+        return (_p.size() - _fRadius + _fWaveHeight * sin(_p.x()/_fRadius*8) * sin(_p.y()/_fRadius*8) * sin(_p.z()/_fRadius*8));
     }
 
 
     float sdfSwirl(const Vec &_p, float _fRadius, float _fWaveHeight) {
-        const float scale = 1.0;
         auto axis = axisEulerZYX(0, _p.y()/6, 0);
         auto pr = axis.rotateFrom(_p);
         
-        return (_p.size() - _fRadius - _fWaveHeight * sin(pr.x()/_fRadius*8) * sin(pr.z()/_fRadius*8)) * scale;
+        return (_p.size() - _fRadius - _fWaveHeight * sin(pr.x()/_fRadius*8) * sin(pr.z()/_fRadius*8));
     }
+
 
     float sdfMandle(const Vec &_p, int &_iterations) {
         float BAIL_OUT = 2.1f;
         float POWER = 8.0f;
-        float PHASE = 5;
-        int MAX_ITERATIONS = 100;
+        float PHASE = 0.0f;
+        int MAX_ITERATIONS = 25;
         
         Vec z = _p;
         float dr = 1.0;
@@ -60,23 +63,21 @@ namespace LNF
         _iterations = i;        
         return 0.1 * log(r) * r/dr;
     }
-    /*
 
-    float sdfBubbles(const Vec &_p, double _dAngleY) {
+
+    float sdfBubbles(const Vec &_p, float _fAngleY, float _fHeight) {
         float sdf = 0;
-        float k = 3;
-        std::normal_distribution<float> p(0, 1);
-        
+        float k = 3;        
         int n = 16;
         for (int i = 0; i < n; i ++) {
             float t = (float)i/n;
-            Vec origin(2*sin(t * M_PI * 4 + _dAngleY), (t - 0.5) * 30, 1.5*cos(t * M_PI * 4 + _dAngleY));
-            sdf += exp(-k * dfSphere(_p, origin,  frac(t/0.3) * 1 + 0.1));
+            Vec origin(2*sin(t * M_PI * 4 + _fAngleY), (t - 0.5) * _fHeight, 1.5*cos(t * M_PI * 4 + _fAngleY));
+            sdf += exp(-k * sdfSphere(_p, origin,  frac(t/0.3) * 1 + 0.1));
         }
         
-        return -log(sdf);
+        return -log(sdf) * 0.5;
     }
-    */
+
 
 };  // namespace LNF
 

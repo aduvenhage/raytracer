@@ -7,6 +7,7 @@
 #include "lnf/jobs.h"
 #include "lnf/jpeg.h"
 #include "lnf/mandlebrot.h"
+#include "lnf/marched_bubbles.h"
 #include "lnf/marched_mandle.h"
 #include "lnf/marched_sphere.h"
 #include "lnf/mesh.h"
@@ -175,7 +176,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(1024),
+         m_iMaxSamplesPerPixel(16),
          m_iMaxTraceDepth(32),
          m_fColorTollerance(0.00000000001)
     {
@@ -325,8 +326,9 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLightWhite);
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(200, 8, -150)), 8, pLightGreen);
 
-    createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 0), 40.0), pGlow);
-    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 0), 40.0), 2.0f, pGlass, 0.04f);
+    //createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 0), 40.0), pGlow);
+    //createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 0), 40.0), 2.0f, pGlass, 0.04f);
+    createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 0), 40.0), 2.0f, pGlass);
 
     /*
     auto pDiffuseRed = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);

@@ -13,6 +13,7 @@ SET(INCL_SRC
     jpeg.h
     mandlebrot.h
     material.h
+    marched_bubbles.h
     marched_mandle.h
     marched_sphere.h
     mesh.h
