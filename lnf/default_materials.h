@@ -169,27 +169,6 @@ namespace LNF
         }
     };
 
-
-    // diffuse and coloured according to hit iteration count
-    class DiffuseIterations : public Material
-    {
-     public:
-        DiffuseIterations()
-        {}
-        
-        /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            auto color = Color(_hit.m_uIterationCount*0.3f,
-                               _hit.m_uIterationCount*0.15f,
-                               _hit.m_uIterationCount*0.05f).wrap();
-            auto glow = Color();
-            
-            auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
-            return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color, glow);
-        }
-
-     private:
-    };
 };  // namespace LNF
 
 

@@ -37,7 +37,8 @@ namespace LNF
                                                     return sdfMandle(_p, bulbIterations);
                                                 });
                 
-                _hit.m_uIterationCount = (uint16_t)bulbIterations;
+                // override iteration count
+                //_hit.m_uIterationCount = (uint16_t)bulbIterations;
 
                 if ( (is_hit == true) &&
                      ((_hit.m_fPositionOnRay >= _hit.m_ray.m_fMinDist) && (_hit.m_fPositionOnRay <= _hit.m_ray.m_fMaxDist)) )

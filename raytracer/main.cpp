@@ -3,6 +3,7 @@
 #include "lnf/color.h"
 #include "lnf/constants.h"
 #include "lnf/default_materials.h"
+#include "lnf/marched_materials.h"
 #include "lnf/frame.h"
 #include "lnf/jobs.h"
 #include "lnf/jpeg.h"
@@ -120,7 +121,7 @@ class SimpleScene   : public Scene
      Could be accessed by multiple worker threads concurrently.
      */
     virtual Color backgroundColor() const override {
-        return Color(0.5f, 0.5f, 0.5f);
+        return Color(0.2f, 0.2f, 0.2f);
     }
 
     /*
@@ -176,16 +177,16 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(2048),
+         m_iMaxSamplesPerPixel(1024),
          m_iMaxTraceDepth(32),
-         m_fColorTollerance(0.00000000001)
+         m_fColorTollerance(0.0001)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(std::chrono::milliseconds(100));
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 200);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 120);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -316,13 +317,15 @@ int main(int argc, char *argv[])
     auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
     auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
     auto pMirror = createMaterial<Metal>(pScene.get(), Color(0.95, 0.95, 0.95), 0.02);
-    auto pGlow = createMaterial<DiffuseIterations>(pScene.get());
-    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(40.0, 40.0, 40.0));
-    
+    auto pAO = createMaterial<FakeAmbientOcclusion>(pScene.get());
+    auto pMetalIt = createMaterial<MetalIterations>(pScene.get());
+    auto pGlow = createMaterial<Glow>(pScene.get());
+    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(30.0, 30.0, 30.0));
+
     createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuseFloor);
     createPrimitiveInstance<Rectangle>(pScene.get(), axisTranslation(Vec(0, 1, 0)), 200, 200, pMirror);
     //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pDiffuseFog, 400);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 0)), 30, pLightWhite);
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
     createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 50), 40.0), pGlow);
     createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
     createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
