@@ -31,10 +31,10 @@ namespace LNF
 
 
     float sdfMandle(const Vec &_p, int &_iterations) {
-        float BAIL_OUT = 2.1f;
+        float BAIL_OUT = 2.0f;
         float POWER = 8.0f;
         float PHASE = 0.0f;
-        int MAX_ITERATIONS = 25;
+        int MAX_ITERATIONS = 100;
         
         Vec z = _p;
         float dr = 1.0;

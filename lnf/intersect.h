@@ -24,7 +24,8 @@ namespace LNF
              m_fPositionOnRay(-1),
              m_uTriangleIndex(0),
              m_uTraceDepth(0),
-             m_uIterationCount(0),
+             m_uMarchDepth(0),
+             m_uIterations(0),
              m_bInside(false)
         {}
 
@@ -58,7 +59,9 @@ namespace LNF
         Uv                      m_uv;                   // texture coordinate on surface of shape
         uint32_t                m_uTriangleIndex;       // specific triangle hit
         uint16_t                m_uTraceDepth;          // number of different hits (reflections, etc.)
-        uint16_t                m_uIterationCount;      // number of iterations to get to hit (for raymarching, etc.)
+        uint16_t                m_uMarchDepth;          // number of ray marching steps on last hit
+        uint16_t                m_uIterations;          // number of iterations required by last hit/step (fractal loop index, etc.)
+        
         bool                    m_bInside;              // true if ray is inside shape
     };
 

@@ -20,9 +20,9 @@ namespace LNF
         
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            auto color = Color(_hit.m_uIterationCount*0.005f,
-                               _hit.m_uIterationCount*0.005f,
-                               _hit.m_uIterationCount*0.005f).clamp();
+            auto color = Color(_hit.m_uMarchDepth*0.005f,
+                               _hit.m_uMarchDepth*0.005f,
+                               _hit.m_uMarchDepth*0.005f).clamp();
             
             auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
             return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color, Color());
@@ -42,9 +42,9 @@ namespace LNF
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
             float scale = 3.0f;
-            auto color = Color(_hit.m_uIterationCount*0.25f*scale,
-                               _hit.m_uIterationCount*0.13f*scale,
-                               _hit.m_uIterationCount*0.07f*scale).wrap();
+            auto color = Color(_hit.m_uMarchDepth*0.25f*scale,
+                               _hit.m_uMarchDepth*0.13f*scale,
+                               _hit.m_uMarchDepth*0.07f*scale).wrap();
             
             auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * 0.05).normalized();
             auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_ray.m_direction, normal));
@@ -65,11 +65,8 @@ namespace LNF
         
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            auto color = Color(_hit.m_uIterationCount*0.0f,
-                               _hit.m_uIterationCount*0.02f,
-                               _hit.m_uIterationCount*0.015f).wrap();
-            
-            auto glow = Color((1.0f - _hit.m_uIterationCount*0.01f), 0.0f, 0.0f).clamp() * 10;
+            auto color = (Color(0.0f, 0.21f, 0.11f) * _hit.m_uIterations).wrap();
+            auto glow = (Color(1.0f, 0.0f, 0.0f) - Color(0.01f, 0.0f, 0.0f) * _hit.m_uMarchDepth).clamp() * 10;
             
             auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
             return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color, glow);
