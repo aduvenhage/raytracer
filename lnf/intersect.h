@@ -18,7 +18,7 @@ namespace LNF
      */
     struct Intersect
     {
-        Intersect() 
+        Intersect() noexcept
             :m_axis(axisIdentity()),
              m_pPrimitive(nullptr),
              m_fPositionOnRay(-1),
@@ -29,12 +29,12 @@ namespace LNF
              m_bInside(false)
         {}
 
-        Intersect(const Intersect &) = default;
-        Intersect(Intersect &&) = default;
-        Intersect(Intersect &) = default;
+        Intersect(const Intersect &) noexcept = default;
+        Intersect(Intersect &&) noexcept = default;
+        Intersect(Intersect &) noexcept = default;
         
-        Intersect &operator=(const Intersect &) = default;
-        Intersect &operator=(Intersect &&) = default;
+        Intersect &operator=(const Intersect &) noexcept = default;
+        Intersect &operator=(Intersect &&) noexcept = default;
 
         Intersect(const Axis &_axis, const Ray &_ray)
             :m_axis(_axis),

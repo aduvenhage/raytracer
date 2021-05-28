@@ -64,7 +64,7 @@ namespace LNF
     template <typename primitive_type>
     struct BvhNode
     {
-        BvhNode()
+        BvhNode() noexcept
         {}
         
         Bounds                              m_bounds;

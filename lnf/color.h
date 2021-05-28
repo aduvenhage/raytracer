@@ -13,17 +13,17 @@ namespace LNF
      */
     struct Color
     {
-        Color()
+        Color() noexcept
             :m_c{}
         {}
         
-        Color(float _fRed, float _fGreen, float _fBlue)
+        Color(float _fRed, float _fGreen, float _fBlue) noexcept
             :m_c{_fRed, _fGreen, _fBlue}
         {}
         
-        Color(const Color &) = default;
-        Color(Color &&) = default;
-        Color(Color &) = default;
+        Color(const Color &) noexcept = default;
+        Color(Color &&) noexcept = default;
+        Color(Color &) noexcept = default;
         
         float red() const {return m_c[0];}
         float &red() {return m_c[0];}
@@ -32,7 +32,7 @@ namespace LNF
         float blue() const {return m_c[2];}
         float &blue() {return m_c[2];}
 
-        Color &operator=(const Color &) = default;
+        Color &operator=(const Color &) noexcept = default;
         Color &operator=(Color &&) = default;
         
         Color operator+(const Color &_color) const {

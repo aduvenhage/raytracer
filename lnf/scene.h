@@ -71,7 +71,7 @@ namespace LNF
     }
 
 
-    // create new primitive instance that own a primitive (no other instancing possible)
+    // create new primitive instance that owns a primitive (no other instancing possible)
     template <typename primitive_type, class... T>
     PrimitiveInstance *createPrimitiveInstance(Scene *_pScene, const Axis &_axis, T ... t) {
         return _pScene->addPrimitiveInstance(

@@ -10,25 +10,25 @@ namespace LNF
     /* UV/Texture coordinates. [u, v] = [0..1, 0..1]*/
     struct Uv
     {
-        Uv()
+        Uv() noexcept
             :m_uv{}
         {}
         
-        Uv(float _fU, float _fV)
+        Uv(float _fU, float _fV) noexcept
             :m_uv{_fU, _fV}
         {}
         
-        Uv(const Uv &) = default;
-        Uv(Uv &&) = default;
-        Uv(Uv &) = default;
+        Uv(const Uv &) noexcept = default;
+        Uv(Uv &&) noexcept = default;
+        Uv(Uv &) noexcept = default;
         
         float u() const {return m_uv[0];}
         float &u() {return m_uv[0];}
         float v() const {return m_uv[1];}
         float &v() {return m_uv[1];}
         
-        Uv &operator=(const Uv &) = default;
-        Uv &operator=(Uv &&) = default;
+        Uv &operator=(const Uv &) noexcept = default;
+        Uv &operator=(Uv &&) noexcept = default;
         
         Uv operator+(const Uv &_uv) const {
             return Uv(m_uv[0] + _uv.m_uv[0], m_uv[1] + _uv.m_uv[1]);

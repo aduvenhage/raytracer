@@ -177,9 +177,9 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(16),
+         m_iMaxSamplesPerPixel(128),
          m_iMaxTraceDepth(8),
-         m_fColorTollerance(0.0001)
+         m_fColorTollerance(0.000001)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
@@ -279,14 +279,16 @@ void profileBvh() {
     // create scene
     auto dist = std::uniform_real_distribution<float>(-100, 100);
     auto pScene = std::make_unique<SimpleScene>();
-    int n = 500;
+    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 16, 8, 4, nullptr);
+    
+    int n = 5000;
     for (int i = 0; i < n; i++) {
         
         float x = dist(generator);
         float y = dist(generator);
         float z = dist(generator);
 
-        createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 16, 8, 4, nullptr);
+        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
     }
     
     pScene->build();
@@ -294,7 +296,7 @@ void profileBvh() {
     // test hits
     ScopeTimer<std::chrono::high_resolution_clock> timer;
     
-    for (int i = 0; ; i++) {
+    for (int i = 0; i < 10000; i++) {
         auto ray = randomUnitSphere(generator);
         
         thread_local static std::vector<const PrimitiveInstance*> primitives;
@@ -313,8 +315,10 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
+    
+    /*
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
-    auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
+    //auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
     auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
     auto pMirror = createMaterial<Metal>(pScene.get(), Color(0.95, 0.95, 0.95), 0.02);
     auto pAO = createMaterial<FakeAmbientOcclusion>(pScene.get());
@@ -329,15 +333,18 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 50), 40.0), pGlow);
     createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
     createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
-
-    /*
+    */
+    
     auto pDiffuseRed = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);
     auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
     auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuseBlue);
+    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0, 10.0, 10.0));
 
-    int n = 50;
+    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
+    
+    int n = 200;
     for (int i = 0; i < n; i++) {
         
         float x = 100 * sin((float)i / n * LNF::pi * 2);
@@ -348,7 +355,6 @@ int main(int argc, char *argv[])
         //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
         createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
     }
-    */
     
     pScene->build();
 

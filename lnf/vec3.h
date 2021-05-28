@@ -13,19 +13,19 @@ namespace LNF
     struct Vec
     {
      public:
-        Vec()
+        Vec() noexcept
             :m_v{}
         {}
         
-        Vec(const Vec &) = default;
-        Vec(Vec &&) = default;
-        Vec(Vec &) = default;
+        Vec(const Vec &) noexcept = default;
+        Vec(Vec &&) noexcept = default;
+        Vec(Vec &) noexcept = default;
 
-        constexpr Vec(float _fX, float _fY, float _fZ)
+        constexpr Vec(float _fX, float _fY, float _fZ) noexcept
             :m_v{_fX, _fY, _fZ}
         {}
         
-        ~Vec() = default;
+        ~Vec() noexcept = default;
         
         float x() const {return m_v[0];}
         float &x() {return m_v[0];}
@@ -34,8 +34,8 @@ namespace LNF
         float z() const {return m_v[2];}
         float &z() {return m_v[2];}
         
-        Vec &operator=(const Vec &_vec) = default;
-        Vec &operator=(Vec &&_vec) = default;
+        Vec &operator=(const Vec &_vec) noexcept = default;
+        Vec &operator=(Vec &&_vec) noexcept = default;
 
         float sizeSqr() const {
             return m_v[0] * m_v[0] + m_v[1] * m_v[1] + m_v[2] * m_v[2];
@@ -205,16 +205,16 @@ namespace LNF
      */
     struct Axis
     {
-        Axis()
+        Axis() noexcept
             :m_fScale(1.0f)
         {}
 
-        Axis(const Axis &) = default;
-        Axis(Axis &&) = default;
-        Axis(Axis &) = default;
+        Axis(const Axis &) noexcept = default;
+        Axis(Axis &&) noexcept = default;
+        Axis(Axis &) noexcept = default;
         
         template <typename VX, typename VY, typename VZ, typename P>
-        Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin, float _fScale)
+        Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin, float _fScale) noexcept
             :m_x(std::forward<VX>(_vx)),
              m_y(std::forward<VY>(_vy)),
              m_z(std::forward<VZ>(_vz)),
@@ -222,8 +222,8 @@ namespace LNF
              m_fScale(_fScale)
         {}
 
-        Axis &operator=(const Axis &) = default;
-        Axis &operator=(Axis &&) = default;
+        Axis &operator=(const Axis &) noexcept = default;
+        Axis &operator=(Axis &&) noexcept = default;
         
         Vec rotateTo(const Vec &_vec) const {
             return Vec(_vec * m_x, _vec * m_y, _vec * m_z);
@@ -255,19 +255,19 @@ namespace LNF
      */
     struct Bounds
     {
-        Bounds() = default;
-        Bounds(const Bounds &) = default;
-        Bounds(Bounds &&) = default;
-        Bounds(Bounds &) = default;
+        Bounds() noexcept = default;
+        Bounds(const Bounds &) noexcept = default;
+        Bounds(Bounds &&) noexcept = default;
+        Bounds(Bounds &) noexcept = default;
         
         template <typename VX, typename VY>
-        Bounds(VX &&_min, VY &&_max)
+        Bounds(VX &&_min, VY &&_max) noexcept
             :m_min(std::forward<VX>(_min)),
              m_max(std::forward<VY>(_max))
         {}
         
-        Bounds &operator=(const Bounds &) = default;
-        Bounds &operator=(Bounds &&) = default;
+        Bounds &operator=(const Bounds &) noexcept = default;
+        Bounds &operator=(Bounds &&) noexcept = default;
         
         double area() const {
             Vec dist = m_max - m_min;            
@@ -327,7 +327,7 @@ namespace LNF
     // aaboxIntersect return
     struct AABoxItersect
     {
-        AABoxItersect()
+        AABoxItersect() noexcept
             :m_tmin(0),
              m_tmax(0),
              m_intersect(false),

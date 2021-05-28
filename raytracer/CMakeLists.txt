@@ -16,6 +16,6 @@ ADD_EXECUTABLE(${targetname} ${APP_SRC})
 
 IF(MAC)
     TARGET_LINK_LIBRARIES(${targetname} "-framework CoreFoundation -framework Foundation -framework AVFoundation")
-    TARGET_LINK_LIBRARIES(${targetname} Qt5::Widgets -ljpeg)
+    TARGET_LINK_LIBRARIES(${targetname} Qt6::Widgets -ljpeg)
     TARGET_LINK_LIBRARIES(${targetname} "-stdlib=libc++")
 ENDIF(MAC)

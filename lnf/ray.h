@@ -19,13 +19,13 @@ namespace LNF
         static constexpr float MIN_DIST = 1e-4f;
         static constexpr float MAX_DIST = std::numeric_limits<float>::max();
         
-        Ray() = default;
-        Ray(const Ray &) = default;
-        Ray(Ray &&) = default;
-        Ray(Ray &) = default;
+        Ray() noexcept = default;
+        Ray(const Ray &) noexcept = default;
+        Ray(Ray &&) noexcept = default;
+        Ray(Ray &) noexcept = default;
 
         template <typename U, typename V>
-        Ray(U &&_origin, V &&_direction)
+        Ray(U &&_origin, V &&_direction) noexcept
             :m_origin(std::forward<U>(_origin)),
              m_direction(std::forward<V>(_direction)),
              m_invDirection(1/_direction),
@@ -33,8 +33,8 @@ namespace LNF
              m_fMaxDist(MAX_DIST)
         {}
 
-        Ray &operator=(const Ray &) = default;
-        Ray &operator=(Ray &&) = default;
+        Ray &operator=(const Ray &) noexcept = default;
+        Ray &operator=(Ray &&) noexcept = default;
         
         Vec position(float _ft) const {
             return m_origin + m_direction * _ft;
