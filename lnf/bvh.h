@@ -7,6 +7,8 @@
 #include "ray.h"
 
 #include <algorithm>
+#include <vector>
+#include <unordered_set>
 
 
 namespace LNF
@@ -26,18 +28,6 @@ namespace LNF
     }
 
 
-    // sorted insert (and unique) into list
-    template <typename node_type>
-    void sortedInsert(std::vector<const node_type*> &_nodes, const node_type *_pNode) {
-        auto it = std::lower_bound(_nodes.begin(), _nodes.end(), _pNode);
-        if ( (it == _nodes.end()) ||
-             (*it != _pNode) )
-        {
-            _nodes.insert(it, _pNode);
-        }
-    }
-    
-
     // split nodes into 'inside' and 'outside' bounds
     template <typename node_type>
     void splitNodes(std::vector<const node_type*> &_nodesLeft, std::vector<const node_type*> &_nodesRight,
@@ -56,6 +46,56 @@ namespace LNF
             }
         }
     }
+
+
+    /*
+     Container to hold and manage unique instances of primitives.
+     */
+    template <typename primitive_type>
+    class PrimitiveSet
+    {
+     public:
+        PrimitiveSet()
+            :m_count(0)
+        {}
+        
+        void clear() {
+            m_count = 0;
+        }
+        
+        bool has(const primitive_type *_pObj) {
+            for (size_t i = 0; i < m_count; i++) {
+                if (m_primeObjects[i] == _pObj) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        void insert(const primitive_type *_pObj) {
+            if (has(_pObj) == false) {
+                if (m_count >= m_primeObjects.size()) {
+                    m_primeObjects.resize(m_primeObjects.size() + 4);
+                }
+                
+                m_primeObjects[m_count] = _pObj;
+                m_count++;
+            }
+        }
+        
+        const primitive_type **begin() {
+            return m_primeObjects.data();
+        }
+        
+        const primitive_type **end() {
+            return m_primeObjects.data() + m_count;
+        }
+
+     private:
+        std::vector<const primitive_type*>           m_primeObjects;
+        size_t                                       m_count;
+    };
 
 
     /*
@@ -89,11 +129,11 @@ namespace LNF
         }
 
         // find list of hittable nodes
-        static bool intersect(std::vector<const primitive_type*> &_hitPrimitives, const node_ptr_type &_root, const Ray &_ray) {
+        static bool intersect(PrimitiveSet<primitive_type> &_hitPrimitives, const node_ptr_type &_root, const Ray &_ray) {
             bool bHit = false;
             if (_root->m_primitives.empty() == false) {
                 for (const auto &pObj : _root->m_primitives) {
-                    sortedInsert(_hitPrimitives, pObj);
+                    _hitPrimitives.insert(pObj);
                 }
 
                 bHit = true;

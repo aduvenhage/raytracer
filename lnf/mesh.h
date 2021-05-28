@@ -80,13 +80,11 @@ namespace LNF
         const Material *material() const override {
             return m_pMaterial;
         }
-
+        
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            static thread_local std::vector<const Triangle*> nodes;
-            
-            nodes.clear();
-            TriTree::intersect(nodes, m_bvhRoot, _hit.m_ray);
+            static thread_local PrimitiveSet<Triangle> nodes;
+            intersect(nodes, _hit.m_ray);
 
             bool bHit = false;
             float fPositionOnRay = 0;
@@ -257,6 +255,12 @@ namespace LNF
             }
             
             return trianglePtrs;
+        }
+
+        // ray node intersection
+        void intersect(PrimitiveSet<Triangle> &_nodes, const Ray &_ray) const {
+            _nodes.clear();
+            TriTree::intersect(_nodes, m_bvhRoot, _ray);
         }
 
      private:

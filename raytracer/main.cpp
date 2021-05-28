@@ -80,8 +80,7 @@ class SimpleScene   : public Scene
         Intersect bh(_hit);
         
         // find potential hits
-        thread_local static std::vector<const PrimitiveInstance*> primeObjects;
-        primeObjects.clear();
+        thread_local static PrimitiveSet<PrimitiveInstance> primeObjects;
         findHittables(primeObjects, _hit.m_ray);
         
         // find best hit from potentials
@@ -106,12 +105,16 @@ class SimpleScene   : public Scene
     /*
         Find primitives potentially hit by ray.
      */
-     void findHittables(std::vector<const PrimitiveInstance*> &_primitives, const Ray _ray) const {
+     void findHittables(PrimitiveSet<PrimitiveInstance> &_primitives, const Ray _ray) const {
+        _primitives.clear();
+         
+        // search using BVH
         BvhTree<PrimitiveInstance>::intersect(_primitives, m_root, _ray);
         
         /*
+        // DEBUG (alternative to above): use all objects
         for (const auto &primitive : m_objects) {
-            _primitives.push_back(primitive.get());
+            _primitives.insert(primitive.get());
         }
         */
     }
@@ -295,11 +298,11 @@ void profileBvh() {
     
     // test hits
     ScopeTimer<std::chrono::high_resolution_clock> timer;
-    
+    PrimitiveSet<PrimitiveInstance> primitives;
+
     for (int i = 0; i < 10000; i++) {
         auto ray = randomUnitSphere(generator);
         
-        thread_local static std::vector<const PrimitiveInstance*> primitives;
         primitives.clear();
         pScene->findHittables(primitives, Ray(Vec(), ray));
     }
@@ -337,9 +340,10 @@ int main(int argc, char *argv[])
     
     auto pDiffuseRed = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);
     auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
-    auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
+    auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuseBlue);
+    auto pSphere1 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseBlue);
     auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0, 10.0, 10.0));
 
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
