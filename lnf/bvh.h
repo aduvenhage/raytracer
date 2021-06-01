@@ -73,6 +73,56 @@ namespace LNF
 
 
     /*
+     Container to hold and manage unique instances of primitives.
+     */
+    template <typename primitive_type>
+    class PrimitiveSet
+    {
+     public:
+        PrimitiveSet()
+            :m_count(0)
+        {}
+        
+        void clear() {
+            m_count = 0;
+        }
+        
+        bool has(const primitive_type *_pObj) {
+            for (size_t i = 0; i < m_count; i++) {
+                if (m_primeObjects[i] == _pObj) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        void insert(const primitive_type *_pObj) {
+            if (has(_pObj) == false) {
+                if (m_count >= m_primeObjects.size()) {
+                    m_primeObjects.resize(m_primeObjects.size() + 4);
+                }
+                
+                m_primeObjects[m_count] = _pObj;
+                m_count++;
+            }
+        }
+        
+        const primitive_type **begin() {
+            return m_primeObjects.data();
+        }
+        
+        const primitive_type **end() {
+            return m_primeObjects.data() + m_count;
+        }
+
+     private:
+        std::vector<const primitive_type*>           m_primeObjects;
+        size_t                                       m_count;
+    };
+
+
+    /*
      Build BVH tree recursively
      */
     template <typename primitive_type>

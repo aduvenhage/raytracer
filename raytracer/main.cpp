@@ -75,7 +75,7 @@ class SimpleScene   : public Scene
        Could be accessed by multiple worker threads concurrently.
      */
     virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
-        static thread_local std::unordered_set<const PrimitiveInstance*> primitives;
+        static thread_local PrimitiveSet<PrimitiveInstance> primitives;
         primitives.clear();
 
         return checkBvhHit(_hit, m_root, _randomGen, primitives);
@@ -125,13 +125,13 @@ class SimpleScene   : public Scene
     bool checkBvhHit(Intersect &_hit,
                      const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode,
                      RandomGen &_randomGen,
-                     std::unordered_set<const PrimitiveInstance*> &_hitPrimitives) const {
+                     PrimitiveSet<PrimitiveInstance> &_hitPrimitives) const {
         bool bHit = false;
         Intersect bh(_hit);
         
         if (_pNode->empty() == false) {
             for (const auto &pObj : _pNode->m_primitives) {
-                if (_hitPrimitives.count(pObj) == 0) {
+                if (_hitPrimitives.has(pObj) == 0) {
                     Intersect nh(_hit);
                     if ( (pObj->hit(nh, _randomGen) == true) &&
                          ((bHit == false) || (nh.m_fPositionOnRay < bh.m_fPositionOnRay)) )
