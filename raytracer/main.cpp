@@ -65,58 +65,20 @@ class SimpleScene   : public Scene
 {
  protected:
     using clock_type = std::chrono::high_resolution_clock;
-    using PrimitiveTree = BvhTree<PrimitiveInstance, 24, 1>;
     
  public:
     SimpleScene()
     {}
-    
+        
     /*
        Checks for an intersect with a scene object.
        Could be accessed by multiple worker threads concurrently.
      */
     virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
-        bool bHit = false;
-        Intersect bh(_hit);
-        
-        // find potential hits
-        thread_local static PrimitiveSet<PrimitiveInstance> primeObjects;
-        findHittables(primeObjects, _hit.m_ray);
-        
-        // find best hit from potentials
-        for (auto &pObj : primeObjects) {
-            Intersect nh(_hit);
-            
-            if ( (pObj->hit(nh, _randomGen) == true) &&
-                 ((bHit == false) || (nh.m_fPositionOnRay < bh.m_fPositionOnRay)) )
-            {
-                bh = nh;
-                bHit = true;
-            }
-        }
-        
-        if (bHit == true) {
-            _hit = bh;
-        }
-        
-        return bHit;
-    }
-    
-    /*
-        Find primitives potentially hit by ray.
-     */
-     void findHittables(PrimitiveSet<PrimitiveInstance> &_primitives, const Ray _ray) const {
-        _primitives.clear();
-         
-        // search using BVH
-        BvhTree<PrimitiveInstance>::intersect(_primitives, m_root, _ray);
-        
-        /*
-        // DEBUG (alternative to above): use all objects
-        for (const auto &primitive : m_objects) {
-            _primitives.insert(primitive.get());
-        }
-        */
+        static thread_local std::unordered_set<const PrimitiveInstance*> primitives;
+        primitives.clear();
+
+        return checkBvhHit(_hit, m_root, _randomGen, primitives);
     }
     
     /*
@@ -148,20 +110,74 @@ class SimpleScene   : public Scene
     /*
         Build acceleration structures
      */
-     void build() {
-        std::vector<const PrimitiveInstance*> rawObjects;
-        rawObjects.reserve(m_objects.size());
-        for (auto &pObj : m_objects) {
-            rawObjects.push_back(pObj.get());
+    void build() {
+        std::vector<const PrimitiveInstance*> rawObjects(m_objects.size(), nullptr);
+        for (size_t i = 0; i < m_objects.size(); i++) {
+            rawObjects[i] = m_objects[i].get();
+        }
+
+        m_root = buildBvhRoot(rawObjects);
+    }
+    
+    /*
+        Search for best hit through BVH
+     */
+    bool checkBvhHit(Intersect &_hit,
+                     const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode,
+                     RandomGen &_randomGen,
+                     std::unordered_set<const PrimitiveInstance*> &_hitPrimitives) const {
+        bool bHit = false;
+        Intersect bh(_hit);
+        
+        if (_pNode->empty() == false) {
+            for (const auto &pObj : _pNode->m_primitives) {
+                if (_hitPrimitives.count(pObj) == 0) {
+                    Intersect nh(_hit);
+                    if ( (pObj->hit(nh, _randomGen) == true) &&
+                         ((bHit == false) || (nh.m_fPositionOnRay < bh.m_fPositionOnRay)) )
+                    {
+                        bh = nh;
+                        bHit = true;
+                    }
+                    
+                    _hitPrimitives.insert(pObj);
+                }
+            }
+        }
+
+        if ( (_pNode->m_left != nullptr) &&
+             (_pNode->m_left->intersect(_hit.m_ray) == true) ) {
+            Intersect lh(_hit);
+            if (checkBvhHit(lh, _pNode->m_left, _randomGen, _hitPrimitives) == true) {
+                if ((bHit == false) || (lh.m_fPositionOnRay < bh.m_fPositionOnRay)) {
+                    bh = lh;
+                    bHit = true;
+                }
+            }
         }
         
-        m_root = PrimitiveTree::build(rawObjects);
-     }
-
+        if ( (_pNode->m_right != nullptr) &&
+             (_pNode->m_right->intersect(_hit.m_ray) == true) ) {
+            Intersect rh(_hit);
+            if (checkBvhHit(rh, _pNode->m_right, _randomGen, _hitPrimitives) == true) {
+                if ((bHit == false) || (rh.m_fPositionOnRay < bh.m_fPositionOnRay)) {
+                    bh = rh;
+                    bHit = true;
+                }
+            }
+        }
+            
+        if (bHit == true) {
+            _hit = bh;
+        }
+        
+        return bHit;
+    }
+    
  protected:
     std::vector<std::unique_ptr<Resource>>           m_resources;
     std::vector<std::unique_ptr<PrimitiveInstance>>  m_objects;
-    PrimitiveTree::node_ptr_type                     m_root;
+    std::unique_ptr<BvhNode<PrimitiveInstance>>      m_root;
 };
 
 
@@ -274,41 +290,6 @@ class MainWindow : public QMainWindow
 
 
 
-
-void profileBvh() {
-    
-    RandomGen generator{};
-    
-    // create scene
-    auto dist = std::uniform_real_distribution<float>(-100, 100);
-    auto pScene = std::make_unique<SimpleScene>();
-    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 16, 8, 4, nullptr);
-    
-    int n = 5000;
-    for (int i = 0; i < n; i++) {
-        
-        float x = dist(generator);
-        float y = dist(generator);
-        float z = dist(generator);
-
-        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
-    }
-    
-    pScene->build();
-    
-    // test hits
-    ScopeTimer<std::chrono::high_resolution_clock> timer;
-    PrimitiveSet<PrimitiveInstance> primitives;
-
-    for (int i = 0; i < 10000; i++) {
-        auto ray = randomUnitSphere(generator);
-        
-        primitives.clear();
-        pScene->findHittables(primitives, Ray(Vec(), ray));
-    }
-}
-
-
 int main(int argc, char *argv[])
 {
     //profileBvh();
@@ -357,7 +338,7 @@ int main(int argc, char *argv[])
 
         //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuseRed);
         //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
-        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pMesh1);
+        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pSphere1);
     }
     
     pScene->build();

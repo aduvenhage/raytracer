@@ -67,8 +67,6 @@ namespace LNF
             Vec         m_normal;
         };
         
-        using TriTree = BvhTree<Triangle, 16, 1>;
-        
      public:
         Mesh(const Material *_pMaterial)
             :m_pMaterial(_pMaterial),
@@ -83,8 +81,8 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            static thread_local PrimitiveSet<Triangle> nodes;
-            intersect(nodes, _hit.m_ray);
+            std::vector<const Triangle*> nodes;
+            //intersect(nodes, _hit.m_ray);
 
             bool bHit = false;
             float fPositionOnRay = 0;
@@ -236,7 +234,7 @@ namespace LNF
         void buildBvh() {
             buildBounds();
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            m_bvhRoot = TriTree::build(trianglePtrs);
+            //m_bvhRoot = TriTree::build(trianglePtrs);
         }
 
      protected:
@@ -257,16 +255,9 @@ namespace LNF
             return trianglePtrs;
         }
 
-        // ray node intersection
-        void intersect(PrimitiveSet<Triangle> &_nodes, const Ray &_ray) const {
-            _nodes.clear();
-            TriTree::intersect(_nodes, m_bvhRoot, _ray);
-        }
-
      private:
         std::vector<Vertex>               m_vertices;
         std::vector<Triangle>             m_triangles;
-        TriTree::node_ptr_type            m_bvhRoot;
         Bounds                            m_bounds;
         const Material                    *m_pMaterial;
         bool                              m_bBoundsInit;
