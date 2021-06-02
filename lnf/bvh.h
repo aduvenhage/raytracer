@@ -74,6 +74,7 @@ namespace LNF
 
     /*
      Container to hold and manage unique instances of primitives.
+     NOTE: using vector and linear search internally for best performance.
      */
     template <typename primitive_type>
     class PrimitiveSet
@@ -127,6 +128,8 @@ namespace LNF
      */
     template <typename primitive_type>
     std::unique_ptr<BvhNode<primitive_type>> buildBvhNode(const std::vector<const primitive_type*> &_primitives, const Bounds &_bounds, int _iDepth) {
+        const size_t MIN_NODE_SIZE = 2;
+        
         // create node
         auto node = std::make_unique<BvhNode<primitive_type>>();
         node->m_bounds = _bounds;
@@ -145,7 +148,7 @@ namespace LNF
         else {
             // left node: go down the tree
             if (left.size() <= _primitives.size()) {
-                if ( (left.size() > 2) && (_iDepth > 0) ) {
+                if ( (left.size() > MIN_NODE_SIZE) && (_iDepth > 0) ) {
                     node->m_left = buildBvhNode(left, boxes.first, _iDepth - 1);
                 }
                 else if (left.size() > 0) {
@@ -155,7 +158,7 @@ namespace LNF
             
             // right node: go down the tree
             if (right.size() <= _primitives.size()) {
-                if ( (right.size() > 2) && (_iDepth > 0)  ) {
+                if ( (right.size() > MIN_NODE_SIZE) && (_iDepth > 0)  ) {
                     node->m_right = buildBvhNode(right, boxes.second, _iDepth - 1);
                 }
                 else if (right.size() > 0) {
@@ -173,8 +176,10 @@ namespace LNF
      */
     template <typename primitive_type>
     std::unique_ptr<BvhNode<primitive_type>> buildBvhRoot(const std::vector<const primitive_type*> &_srcNodes) {
+        const int BVH_MAX_DEPTH = 16;
+        
         Bounds bounds = findBounds(_srcNodes);
-        return buildBvhNode(_srcNodes, bounds, 32);
+        return buildBvhNode(_srcNodes, bounds, BVH_MAX_DEPTH);
     }
 
 };  // namespace LNF

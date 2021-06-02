@@ -81,41 +81,74 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            std::vector<const Triangle*> nodes;
-            //intersect(nodes, _hit.m_ray);
+            static thread_local PrimitiveSet<Triangle> primitives;
+            primitives.clear();
 
-            bool bHit = false;
-            float fPositionOnRay = 0;
+            float fPositionOnRay = -1;
             int hitIndex = 0;
             Uv hitUv;
 
-            for (auto *pTriangle : nodes) {
-                const auto &v0 = m_vertices[pTriangle->m_v[0]];
-                const auto &v1 = m_vertices[pTriangle->m_v[1]];
-                const auto &v2 = m_vertices[pTriangle->m_v[2]];
-                float p = 0;
-                Uv uv;
-                
-                if (triangleIntersect(p, uv, _hit.m_ray, v0.m_v, v1.m_v, v2.m_v) == true) {
-                    if ( (bHit == false) ||
-                         (p < fPositionOnRay) )
-                    {
-                        fPositionOnRay = p;
-                        hitUv = uv;
-                        hitIndex = getIndex(pTriangle);
-                        bHit = true;
-                    }
-                }
-            }
-
+            bool bHit = checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_ray, primitives);
             if (bHit == true) {
                 _hit.m_fPositionOnRay = fPositionOnRay;
-                _hit.m_uv = hitUv;
                 _hit.m_uTriangleIndex = hitIndex;
+                _hit.m_uv = hitUv;
                 return true;
             }
 
             return false;
+        }
+
+        /* Triangle intersect check */
+        bool checkTriangleHit(float &_fPositionOnRay, int &_hitIndex, Uv &_hitUv, const Triangle *_pTriangle, const Ray &_ray) const {
+            const auto &v0 = m_vertices[_pTriangle->m_v[0]];
+            const auto &v1 = m_vertices[_pTriangle->m_v[1]];
+            const auto &v2 = m_vertices[_pTriangle->m_v[2]];
+            
+            float p = 0;
+            Uv uv;
+            
+            if (triangleIntersect(p, uv, _ray, v0.m_v, v1.m_v, v2.m_v) == true) {
+                if ( (_fPositionOnRay < 0) ||
+                     (p < _fPositionOnRay) )
+                {
+                    _fPositionOnRay = p;
+                    _hitUv = uv;
+                    _hitIndex = getIndex(_pTriangle);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        /* Search for best hit through BVH */
+        bool checkBvhHit(float &_fPositionOnRay, int &_hitIndex, Uv &_hitUv,
+                         const std::unique_ptr<BvhNode<Triangle>> &_pNode,
+                         const Ray &_ray,
+                         PrimitiveSet<Triangle> &_hitPrimitives) const {
+            bool bHit = false;
+            
+            if (_pNode->empty() == false) {
+                for (const auto &pTriangle : _pNode->m_primitives) {
+                    if (_hitPrimitives.has(pTriangle) == 0) {
+                        bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, pTriangle, _ray);
+                        _hitPrimitives.insert(pTriangle);
+                    }
+                }
+            }
+
+            if ( (_pNode->m_left != nullptr) &&
+                 (_pNode->m_left->intersect(_ray) == true) ) {
+                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_left, _ray, _hitPrimitives);
+            }
+            
+            if ( (_pNode->m_right != nullptr) &&
+                 (_pNode->m_right->intersect(_ray) == true) ) {
+                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_right, _ray, _hitPrimitives);
+            }
+            
+            return bHit;
         }
 
         /* Completes the node intersect properties. */
@@ -230,11 +263,10 @@ namespace LNF
             }
         }
 
-        /* build bounds, normals acceleration structures etc. */
+        /* build acceleration structures etc. */
         void buildBvh() {
-            buildBounds();
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            //m_bvhRoot = TriTree::build(trianglePtrs);
+            m_bvhRoot = buildBvhRoot(trianglePtrs);
         }
 
      protected:
@@ -256,12 +288,13 @@ namespace LNF
         }
 
      private:
-        std::vector<Vertex>               m_vertices;
-        std::vector<Triangle>             m_triangles;
-        Bounds                            m_bounds;
-        const Material                    *m_pMaterial;
-        bool                              m_bBoundsInit;
-        bool                              m_bUseVertexNormals;
+        std::vector<Vertex>                 m_vertices;
+        std::vector<Triangle>               m_triangles;
+        Bounds                              m_bounds;
+        const Material                      *m_pMaterial;
+        bool                                m_bBoundsInit;
+        bool                                m_bUseVertexNormals;
+        std::unique_ptr<BvhNode<Triangle>>  m_bvhRoot;
     };
 
 

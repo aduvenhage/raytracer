@@ -161,12 +161,18 @@ namespace LNF
     }
 
     
-    inline Vec perElementScale(const Vec &_vec1, const Vec &_vec2) {
-        return Vec(_vec1.x() * _vec2.x(),
-                   _vec1.y() * _vec2.y(),
-                   _vec1.z() * _vec2.z());
+    inline Vec perElementScale(const Vec &_v, const Vec &_scale) {
+        return Vec(_v.x() * _scale.x(),
+                   _v.y() * _scale.y(),
+                   _v.z() * _scale.z());
     }
 
+
+    inline Vec perElementScale(const Vec &_v, const Vec &_origin, const Vec &_scale) {
+        return Vec((_v.x() - _origin.x()) * _scale.x(),
+                   (_v.y() - _origin.y()) * _scale.y(),
+                   (_v.z() - _origin.z()) * _scale.z());
+    }
 
     inline Vec perElementMax(const Vec &_vec1, const Vec &_vec2) {
         return Vec(fmax(_vec1.x(), _vec2.x()),
@@ -311,8 +317,8 @@ namespace LNF
 
     // ray-box intersection (_invDir = 1 / ray_direction)
     inline bool aaboxIntersectCheck(const Bounds &_box, const Vec &_origin, const Vec &_invDir) {
-        auto t1 = perElementScale(_box.m_min - _origin, _invDir);
-        auto t2 = perElementScale(_box.m_max - _origin, _invDir);
+        auto t1 = perElementScale(_box.m_min, _origin, _invDir);
+        auto t2 = perElementScale(_box.m_max, _origin, _invDir);
         
         auto tmn = perElementMin(t1, t2);
         auto tmx = perElementMax(t1, t2);
@@ -344,8 +350,8 @@ namespace LNF
     // ray-box intersection (_invDir = 1 / ray_direction)
     inline AABoxItersect aaboxIntersect(const Bounds &_box, const Vec &_origin, const Vec &_invDir) {
         AABoxItersect ret;
-        auto t1 = perElementScale(_box.m_min - _origin, _invDir);
-        auto t2 = perElementScale(_box.m_max - _origin, _invDir);
+        auto t1 = perElementScale(_box.m_min, _origin, _invDir);
+        auto t2 = perElementScale(_box.m_max, _origin, _invDir);
         
         auto tmn = perElementMin(t1, t2);
         auto tmx = perElementMax(t1, t2);

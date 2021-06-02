@@ -319,15 +319,23 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
     */
     
-    auto pDiffuseRed = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(0.2, 0.2, 0.2), 20);
+    auto pDiffuseRed = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.1, 0.1));
     auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
     auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
-    auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
-    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 32, 16, 4, pDiffuseBlue);
-    auto pSphere1 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseBlue);
-    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0, 10.0, 10.0));
+    
+    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseRed);
+    auto pMesh2 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseGreen);
+    auto pMesh3 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseBlue);
 
+    auto pSphere1 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseRed);
+    auto pSphere2 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseGreen);
+    auto pSphere3 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseBlue);
+    
+    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0, 10.0, 10.0));
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
+    
+    auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
+    //auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
     
     int n = 200;
     for (int i = 0; i < n; i++) {
@@ -338,7 +346,7 @@ int main(int argc, char *argv[])
 
         //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuseRed);
         //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
-        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), pSphere1);
+        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), shapes[i % shapes.size()]);
     }
     
     pScene->build();
