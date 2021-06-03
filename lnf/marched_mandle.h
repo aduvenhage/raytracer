@@ -7,6 +7,7 @@
 #include "trace.h"
 #include "uv.h"
 #include "vec3.h"
+#include "ray.h"
 
 
 namespace LNF
@@ -27,7 +28,7 @@ namespace LNF
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            auto bi = aaboxIntersect(m_bounds, _hit.m_ray.m_origin, _hit.m_ray.m_invDirection);
+            auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
             if (bi.m_intersect == true) {
                 // try to hit surface inside (using raymarching)
                 int bulbIterations = 0;
@@ -41,7 +42,7 @@ namespace LNF
                 _hit.m_uIterations = (uint16_t)bulbIterations;
 
                 if ( (is_hit == true) &&
-                     ((_hit.m_fPositionOnRay >= _hit.m_ray.m_fMinDist) && (_hit.m_fPositionOnRay <= _hit.m_ray.m_fMaxDist)) )
+                     (_hit.m_priRay.inside(_hit.m_fPositionOnRay) == true) )
                 {
                     return true;
                 }

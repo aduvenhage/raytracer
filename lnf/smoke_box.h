@@ -34,10 +34,10 @@ namespace LNF
         virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
             static thread_local std::uniform_real_distribution<float> dist(0, m_fVisibility);
             
-            auto bi = aaboxIntersect(m_bounds, _hit.m_ray.m_origin, _hit.m_ray.m_invDirection);
+            auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
             if (bi.m_intersect == true) {
-                if ( (bi.m_inside == true) ||
-                     ((bi.m_tmin >= _hit.m_ray.m_fMinDist) && (bi.m_tmin <= _hit.m_ray.m_fMaxDist)) )
+                if ( (bi.m_inside == true) ||                    
+                     (_hit.m_priRay.inside(bi.m_tmin) == true) )
                 {
                     // calculate random hit point on ray inside volume
                     auto tdist = bi.m_inside ? bi.m_tmax : (bi.m_tmax - bi.m_tmin);
@@ -48,7 +48,7 @@ namespace LNF
                         _hit.m_fPositionOnRay = bi.m_inside ? rdist : (bi.m_tmin + rdist);
                         
                         // NOTE: hit normal is opposite to ray direction with some randomness)
-                        _hit.m_normal = -(_hit.m_ray.m_direction + 0.5 * randomUnitSphere(_randomGen)).normalized();
+                        _hit.m_normal = -(_hit.m_priRay.m_direction + 0.5 * randomUnitSphere(_randomGen)).normalized();
 
                         return true;
                     }
@@ -60,7 +60,7 @@ namespace LNF
         
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const override {
-            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
             return _hit;
         }
                 

@@ -39,7 +39,7 @@ namespace LNF
             return false;
             
         float t = f * (edge2 * q);
-        if ( (t > _ray.m_fMinDist) && (t < _ray.m_fMaxDist) ) {
+        if (_ray.inside(t) == true) {
             _fPositionOnRay = t;
             _uv = Uv(u, v);   // NOTE: Barycentric UV (u + v + w = 1)
             return true;
@@ -88,7 +88,7 @@ namespace LNF
             int hitIndex = 0;
             Uv hitUv;
 
-            bool bHit = checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_ray, primitives);
+            bool bHit = checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_priRay, primitives);
             if (bHit == true) {
                 _hit.m_fPositionOnRay = fPositionOnRay;
                 _hit.m_uTriangleIndex = hitIndex;
@@ -158,8 +158,8 @@ namespace LNF
             const auto &v1 = m_vertices[t.m_v[1]];
             const auto &v2 = m_vertices[t.m_v[2]];
             
-            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
-            _hit.m_bInside = (_hit.m_normal * _hit.m_ray.m_direction) >= 0;
+            _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
+            _hit.m_bInside = (_hit.m_normal * _hit.m_priRay.m_direction) >= 0;
             
             // interpolate vertex normals (from hit barycentric uv)
             if (m_bUseVertexNormals == true) {

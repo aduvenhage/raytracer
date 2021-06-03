@@ -70,26 +70,40 @@ namespace LNF
             }
         }
         
+        /* Returns the material used for rendering, etc. */
+        virtual const Material *material() const {
+            return m_pTarget->material();
+        }
+        
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const {
             // check AA bounding volume first
-            if (aaboxIntersectCheck(bounds(), _hit.m_ray.m_origin, _hit.m_ray.m_invDirection) == true)
+            if (aaboxIntersectCheck(bounds(), _hit.m_viewRay) == true)
             {
-                // transform ray and check target intersect
-                auto br = Ray(m_axis.transformTo(_hit.m_ray.m_origin),
-                              m_axis.rotateTo(_hit.m_ray.m_direction));
+                // transform ray for primitive hit
+                _hit.m_priRay = transformRayTo(_hit.m_viewRay, m_axis);
                 
-                // check target hit
-                _hit.m_axis = m_axis;
-                _hit.m_ray = br;
-                _hit.m_pPrimitive = m_pTarget;
-
-                return m_pTarget->hit(_hit, _randomGen);
+                // check hit
+                bool bHit = m_pTarget->hit(_hit, _randomGen);
+                if (bHit == true) {
+                    _hit.m_pPrimitive = this;
+                    return true;
+                }
             }
     
             return false;
         }
+
+        /* Completes the Intersect properties. */
+        virtual Intersect &intersect(Intersect &_hit) const {
+            return m_pTarget->intersect(_hit);
+        }
         
+        /* tranform ray back to view space */
+        virtual Ray transformRayFrom(const Ray &_ray) const {
+            return LNF::transformRayFrom(_ray, m_axis);
+        }
+
         /* move instance */
         virtual void move(const Vec &_origin) {
             m_axis.m_origin = _origin;
@@ -111,39 +125,7 @@ namespace LNF
                 std::lock_guard<std::mutex> lock(m_mutex);
                 
                 if (m_bDirtyBounds == true) {
-                    const Bounds &tb = m_pTarget->bounds();
-                    
-                    // construct cuboid
-                    std::array<Vec, 8> points = {
-                        Vec{tb.m_min.x(), tb.m_min.y(), tb.m_min.z()},
-                        Vec{tb.m_max.x(), tb.m_min.y(), tb.m_min.z()},
-                        Vec{tb.m_max.x(), tb.m_min.y(), tb.m_max.z()},
-                        Vec{tb.m_min.x(), tb.m_min.y(), tb.m_max.z()},
-                        Vec{tb.m_min.x(), tb.m_max.y(), tb.m_min.z()},
-                        Vec{tb.m_max.x(), tb.m_max.y(), tb.m_min.z()},
-                        Vec{tb.m_max.x(), tb.m_max.y(), tb.m_max.z()},
-                        Vec{tb.m_min.x(), tb.m_max.y(), tb.m_max.z()}
-                    };
-                    
-                    // rotate and translate
-                    for (auto &vec : points) {
-                        vec = m_axis.transformFrom(vec);
-                    }
-                    
-                    // find min/max bounds
-                    m_bounds.m_min = points[0];
-                    m_bounds.m_max = points[0];
-                    
-                    for (auto &vec : points) {
-                        m_bounds.m_min.x() = vec.x() < m_bounds.m_min.x() ? vec.x() : m_bounds.m_min.x();
-                        m_bounds.m_min.y() = vec.y() < m_bounds.m_min.y() ? vec.y() : m_bounds.m_min.y();
-                        m_bounds.m_min.z() = vec.z() < m_bounds.m_min.z() ? vec.z() : m_bounds.m_min.z();
-                        
-                        m_bounds.m_max.x() = vec.x() > m_bounds.m_max.x() ? vec.x() : m_bounds.m_max.x();
-                        m_bounds.m_max.y() = vec.y() > m_bounds.m_max.y() ? vec.y() : m_bounds.m_max.y();
-                        m_bounds.m_max.z() = vec.z() > m_bounds.m_max.z() ? vec.z() : m_bounds.m_max.z();
-                    }
-                    
+                    m_bounds = rotateBounds(m_pTarget->bounds(), m_axis);
                     m_bDirtyBounds = false;
                 }
             }

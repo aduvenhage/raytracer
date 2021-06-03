@@ -127,48 +127,30 @@ class SimpleScene   : public Scene
                      RandomGen &_randomGen,
                      PrimitiveSet<PrimitiveInstance> &_hitPrimitives) const {
         bool bHit = false;
-        Intersect bh(_hit);
-        
         if (_pNode->empty() == false) {
             for (const auto &pObj : _pNode->m_primitives) {
                 if (_hitPrimitives.has(pObj) == 0) {
                     Intersect nh(_hit);
                     if ( (pObj->hit(nh, _randomGen) == true) &&
-                         ((bHit == false) || (nh.m_fPositionOnRay < bh.m_fPositionOnRay)) )
+                         ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
                     {
-                        bh = nh;
+                        _hit = nh;
                         bHit = true;
                     }
-                    
+
                     _hitPrimitives.insert(pObj);
                 }
             }
         }
 
         if ( (_pNode->m_left != nullptr) &&
-             (_pNode->m_left->intersect(_hit.m_ray) == true) ) {
-            Intersect lh(_hit);
-            if (checkBvhHit(lh, _pNode->m_left, _randomGen, _hitPrimitives) == true) {
-                if ((bHit == false) || (lh.m_fPositionOnRay < bh.m_fPositionOnRay)) {
-                    bh = lh;
-                    bHit = true;
-                }
-            }
+             (_pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
+            bHit |= checkBvhHit(_hit, _pNode->m_left, _randomGen, _hitPrimitives);
         }
         
         if ( (_pNode->m_right != nullptr) &&
-             (_pNode->m_right->intersect(_hit.m_ray) == true) ) {
-            Intersect rh(_hit);
-            if (checkBvhHit(rh, _pNode->m_right, _randomGen, _hitPrimitives) == true) {
-                if ((bHit == false) || (rh.m_fPositionOnRay < bh.m_fPositionOnRay)) {
-                    bh = rh;
-                    bHit = true;
-                }
-            }
-        }
-            
-        if (bHit == true) {
-            _hit = bh;
+             (_pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
+            bHit |= checkBvhHit(_hit, _pNode->m_right, _randomGen, _hitPrimitives);
         }
         
         return bHit;

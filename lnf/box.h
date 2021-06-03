@@ -3,6 +3,7 @@
 
 #include "constants.h"
 #include "primitive.h"
+#include "ray.h"
 #include "vec3.h"
 #include "uv.h"
 
@@ -37,10 +38,10 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            auto bi = aaboxIntersect(m_bounds, _hit.m_ray.m_origin, _hit.m_ray.m_invDirection);
+            auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
             if (bi.m_intersect == true) {
                 auto t = bi.m_inside ? bi.m_tmax : bi.m_tmin;
-                if ( (t >= _hit.m_ray.m_fMinDist) && (t <= _hit.m_ray.m_fMaxDist) ) {
+                if (_hit.m_priRay.inside(t) == true) {
                     _hit.m_fPositionOnRay = t;
                     _hit.m_bInside = bi.m_inside;
 
@@ -53,7 +54,7 @@ namespace LNF
         
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const override {
-            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
             
             _hit.m_normal = Vec((int)(_hit.m_position.x() / m_vecDiv.x()),
                                 (int)(_hit.m_position.y() / m_vecDiv.y()),

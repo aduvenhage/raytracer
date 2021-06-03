@@ -68,8 +68,8 @@ namespace LNF
        
        /* Returns the scattered ray at the intersection point. */
        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            float fIntensity = fabs(_hit.m_normal * _hit.m_ray.m_direction);
-            return ScatteredRay(_hit.m_ray, Color(), m_color * fIntensity);
+            float fIntensity = fabs(_hit.m_normal * _hit.m_priRay.m_direction);
+            return ScatteredRay(_hit.m_priRay, Color(), m_color * fIntensity);
        }
        
      private:
@@ -89,7 +89,7 @@ namespace LNF
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
             auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_fScatter).normalized();
-            auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_ray.m_direction, normal));
+            auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_priRay.m_direction, normal));
         
             return ScatteredRay(reflectedRay, m_color, Color());
         }
@@ -113,7 +113,7 @@ namespace LNF
         /* Returns the scattered ray at the intersection point. */
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
             return ScatteredRay(Ray(_hit.m_position,
-                                    refract(_hit.m_ray.m_direction, _hit.m_normal, m_fIndexOfRefraction, _hit.m_bInside, m_fScatter, _randomGen)),
+                                    refract(_hit.m_priRay.m_direction, _hit.m_normal, m_fIndexOfRefraction, _hit.m_bInside, m_fScatter, _randomGen)),
                                 m_color, Color());
         }
 
@@ -142,7 +142,7 @@ namespace LNF
                 return ScatteredRay(scatteredRay, Color(), color);
             }
             else {
-                auto passThroughRay = Ray(_hit.m_position, _hit.m_ray.m_direction);
+                auto passThroughRay = Ray(_hit.m_position, _hit.m_priRay.m_direction);
                 return ScatteredRay(passThroughRay, Color(1, 1, 1), Color());
             }
         }

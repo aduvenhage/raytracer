@@ -29,11 +29,11 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            const float denom = _hit.m_ray.m_direction.y();
+            const float denom = _hit.m_priRay.m_direction.y();
             if (denom < -0.0000001f) {
-                const auto vecRayPlane = -_hit.m_ray.m_origin;
+                const auto vecRayPlane = -_hit.m_priRay.m_origin;
                 const float t = vecRayPlane.y() / denom;
-                if ( (t > _hit.m_ray.m_fMinDist) && (t < _hit.m_ray.m_fMaxDist) ) {
+                if (_hit.m_priRay.inside(t) == true) {
                     _hit.m_fPositionOnRay = t;
                     return true;
                 }
@@ -44,7 +44,7 @@ namespace LNF
         
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const override {
-            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
             _hit.m_normal = Vec(0, 1, 0);
             _hit.m_uv = uv(_hit.m_position);
             
@@ -78,7 +78,7 @@ namespace LNF
         virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
             if (Plane::hit(_hit, _randomGen) == true) {
                 // check disc bounds
-                _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+                _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
                 return _hit.m_position.sizeSqr() < m_fRadiusSqr;
             }
             
@@ -122,7 +122,7 @@ namespace LNF
         virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
             if (Plane::hit(_hit, _randomGen) == true) {
                 // check rectangle bounds
-                _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+                _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
                 return (fabs(_hit.m_position.x()) <= m_fWidth) &&
                        (fabs(_hit.m_position.z()) <= m_fLength);
             }

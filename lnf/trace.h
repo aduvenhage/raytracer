@@ -47,7 +47,7 @@ namespace LNF
             
             // check for hits on scene
             Intersect hit;
-            hit.m_ray = _ray;
+            hit.m_viewRay = _ray;
             
             if (m_pScene->hit(hit, m_randomGen) == true) {
                 // update stats
@@ -67,8 +67,7 @@ namespace LNF
                     scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
                     
                     // transform ray back to world space
-                    scatteredRay.m_ray = Ray(hit.m_axis.transformFrom(scatteredRay.m_ray.m_origin),
-                                             hit.m_axis.rotateFrom(scatteredRay.m_ray.m_direction));
+                    scatteredRay.m_ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
 
                     // trace again (recursively)
                     tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iPerPixelRayIndex, _iDepth + 1);
@@ -108,7 +107,7 @@ namespace LNF
         float distance = 0;
         
         // first step (check inside/outside)
-        _hit.m_position = _hit.m_ray.position(0);
+        _hit.m_position = _hit.m_priRay.position(0);
         float dT = _sdf(_hit.m_position);
         
         if (dT < 0) {
@@ -137,7 +136,7 @@ namespace LNF
             distance += dT * stepScale;
             
             // check for surface crossing
-            _hit.m_position = _hit.m_ray.position(distance);
+            _hit.m_position = _hit.m_priRay.position(distance);
             auto dM = _sdf(_hit.m_position);
             if (dT * dM < -e) {
                 stepScale *= 0.5;

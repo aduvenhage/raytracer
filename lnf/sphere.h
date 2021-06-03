@@ -32,8 +32,8 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            float dRayLength = -_hit.m_ray.m_origin * _hit.m_ray.m_direction;
-            const float dIntersectRadiusSqr = _hit.m_ray.m_origin.sizeSqr() - dRayLength*dRayLength;
+            float dRayLength = -_hit.m_priRay.m_origin * _hit.m_priRay.m_direction;
+            const float dIntersectRadiusSqr = _hit.m_priRay.m_origin.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr <= m_fRadiusSqr) {
                 const float dt = sqrt(m_fRadiusSqr - dIntersectRadiusSqr);
                 if (dt <= dRayLength) {
@@ -48,7 +48,7 @@ namespace LNF
                 }
 
                 // check ray limits
-                if ( (dRayLength >= _hit.m_ray.m_fMinDist) && (dRayLength <= _hit.m_ray.m_fMaxDist) ) {
+                if (_hit.m_priRay.inside(dRayLength) == true) {
                     _hit.m_fPositionOnRay = dRayLength;
                     return true;
                 }
@@ -59,7 +59,7 @@ namespace LNF
         
         /* Completes the node intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const override {
-            _hit.m_position = _hit.m_ray.position(_hit.m_fPositionOnRay);
+            _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
             _hit.m_normal = _hit.m_position / m_fRadius;
             _hit.m_uv = getSphericalUv(_hit.m_position, m_fRadius);
 

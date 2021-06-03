@@ -39,6 +39,10 @@ namespace LNF
         Vec position(float _ft) const {
             return m_origin + m_direction * _ft;
         }
+        
+        bool inside(float _ft) const {
+            return (_ft <= m_fMaxDist) && (_ft >= m_fMinDist);
+        }
 
         Vec     m_origin;
         Vec     m_direction;
@@ -105,6 +109,7 @@ namespace LNF
         }
     }
 
+
     /* glass like reflection/refraction (includes surface scatter and inside/outside checks) */
     inline Vec refract(const Vec &_vec, const Vec &_normal, float _fIndexOfRefraction, bool _bInside, float _fScatter, RandomGen &_randomGen) {
         float dEtaiOverEtat = _bInside ? _fIndexOfRefraction : (1.0f/_fIndexOfRefraction);
@@ -113,7 +118,32 @@ namespace LNF
         
         return refract(_vec, normal, dEtaiOverEtat, _randomGen);
     }
-        
+
+
+    /* ray-box intersection (_invDir = 1 / ray_direction) */
+    inline bool aaboxIntersectCheck(const Bounds &_box, const Ray &_ray) {
+        return aaboxIntersectCheck(_box, _ray.m_origin, _ray.m_invDirection);
+    }
+
+
+    /* ray-box intersection (_invDir = 1 / ray_direction) */
+    inline AABoxItersect aaboxIntersect(const Bounds &_box, const Ray &_ray) {
+        return aaboxIntersect(_box, _ray.m_origin, _ray.m_invDirection);
+    }
+
+
+    /* transform ray to space */
+    inline Ray transformRayTo(const Ray &_ray, const Axis &_axis) {
+        return Ray(_axis.transformTo(_ray.m_origin), _axis.rotateTo(_ray.m_direction));
+    }
+
+
+    /* transform ray from space */
+    inline Ray transformRayFrom(const Ray &_ray, const Axis &_axis) {
+        return Ray(_axis.transformFrom(_ray.m_origin), _axis.rotateFrom(_ray.m_direction));
+    }
+
+
 };  // namespace LNF
 
 

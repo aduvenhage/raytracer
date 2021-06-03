@@ -47,7 +47,7 @@ namespace LNF
                                _hit.m_uMarchDepth*0.07f*scale).wrap();
             
             auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * 0.05).normalized();
-            auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_ray.m_direction, normal));
+            auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_priRay.m_direction, normal));
         
             return ScatteredRay(reflectedRay, color, Color());
         }

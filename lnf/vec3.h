@@ -2,6 +2,7 @@
 #ifndef LIBS_HEADER_VEC3_H
 #define LIBS_HEADER_VEC3_H
 
+#include <array>
 #include "constants.h"
 
 
@@ -312,6 +313,50 @@ namespace LNF
         }
         
         return std::make_pair(Bounds(_bounds.m_min, _bounds.m_min + dist), Bounds(_bounds.m_max - dist, _bounds.m_max));
+    }
+
+
+    // finds min/max bounds from input points
+    template <typename container_type>
+    Bounds findBounds(const container_type &_points) {
+        Bounds bounds;
+        
+        if (_points.empty() == false) {
+            bounds.m_min = _points[0];
+            bounds.m_max = _points[0];
+
+            for (auto &p : _points) {
+                bounds.m_min = perElementMin(bounds.m_min, p);
+                bounds.m_max = perElementMax(bounds.m_max, p);
+            }
+        }
+
+        return bounds;
+    }
+
+    // construct cuboid from bounds
+    inline std::array<Vec, 8> boundsCuboid(const Bounds &_bounds) {
+        return {
+            Vec{_bounds.m_min.x(), _bounds.m_min.y(), _bounds.m_min.z()},
+            Vec{_bounds.m_max.x(), _bounds.m_min.y(), _bounds.m_min.z()},
+            Vec{_bounds.m_max.x(), _bounds.m_min.y(), _bounds.m_max.z()},
+            Vec{_bounds.m_min.x(), _bounds.m_min.y(), _bounds.m_max.z()},
+            Vec{_bounds.m_min.x(), _bounds.m_max.y(), _bounds.m_min.z()},
+            Vec{_bounds.m_max.x(), _bounds.m_max.y(), _bounds.m_min.z()},
+            Vec{_bounds.m_max.x(), _bounds.m_max.y(), _bounds.m_max.z()},
+            Vec{_bounds.m_min.x(), _bounds.m_max.y(), _bounds.m_max.z()}
+        };
+    }
+
+
+    // rotate axis aligned box and create a new axis aligned box
+    inline Bounds rotateBounds(const Bounds &_bounds, const Axis &_axis) {
+        auto cuboid = boundsCuboid(_bounds);
+        for (auto &p : cuboid) {
+            p = _axis.transformFrom(p);
+        }
+        
+        return findBounds(cuboid);
     }
 
 
