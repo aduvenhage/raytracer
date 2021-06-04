@@ -20,7 +20,7 @@ namespace LNF
     {
         Intersect() noexcept
             :m_pPrimitive(nullptr),
-             m_fPositionOnRay(0),
+             m_fPositionOnRay(-1),
              m_uTriangleIndex(0),
              m_uTraceDepth(0),
              m_uMarchDepth(0),
@@ -36,7 +36,7 @@ namespace LNF
         Intersect &operator=(Intersect &&) noexcept = default;
 
         operator bool () const {
-            return m_fPositionOnRay > 0;
+            return m_fPositionOnRay >= 0;
         }
 
         // fields populated by tracer/caller

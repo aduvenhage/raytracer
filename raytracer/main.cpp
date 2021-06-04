@@ -116,7 +116,7 @@ class SimpleScene   : public Scene
             rawObjects[i] = m_objects[i].get();
         }
 
-        m_root = buildBvhRoot(rawObjects);
+        m_root = buildBvhRoot<2>(rawObjects, 16);
     }
     
     /*
@@ -126,16 +126,14 @@ class SimpleScene   : public Scene
                      const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode,
                      RandomGen &_randomGen,
                      PrimitiveSet<PrimitiveInstance> &_hitPrimitives) const {
-        bool bHit = false;
         if (_pNode->empty() == false) {
             for (const auto &pObj : _pNode->m_primitives) {
                 if (_hitPrimitives.has(pObj) == 0) {
                     Intersect nh(_hit);
                     if ( (pObj->hit(nh, _randomGen) == true) &&
-                         ((bHit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                         ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
                     {
                         _hit = nh;
-                        bHit = true;
                     }
 
                     _hitPrimitives.insert(pObj);
@@ -145,15 +143,15 @@ class SimpleScene   : public Scene
 
         if ( (_pNode->m_left != nullptr) &&
              (_pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
-            bHit |= checkBvhHit(_hit, _pNode->m_left, _randomGen, _hitPrimitives);
+            checkBvhHit(_hit, _pNode->m_left, _randomGen, _hitPrimitives);
         }
         
         if ( (_pNode->m_right != nullptr) &&
              (_pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
-            bHit |= checkBvhHit(_hit, _pNode->m_right, _randomGen, _hitPrimitives);
+            checkBvhHit(_hit, _pNode->m_right, _randomGen, _hitPrimitives);
         }
         
-        return bHit;
+        return _hit;
     }
     
  protected:
@@ -281,7 +279,6 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
-    
     /*
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     //auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
@@ -300,7 +297,8 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
     createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
     */
-    
+
+
     auto pDiffuseRed = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.1, 0.1));
     auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
     auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
@@ -316,8 +314,8 @@ int main(int argc, char *argv[])
     auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0, 10.0, 10.0));
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
     
-    auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
-    //auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
+    //auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
+    auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
     
     int n = 200;
     for (int i = 0; i < n; i++) {
@@ -330,6 +328,7 @@ int main(int argc, char *argv[])
         //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
         createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), shapes[i % shapes.size()]);
     }
+
     
     pScene->build();
 

@@ -57,18 +57,18 @@ Done:
 - add bounding volume hyrarchy to scene
 - depth-of-field
 - raymarched materials
+- triangle mesh rendering
+- look at instancing where shapes can be re-used in scene
+- volumes / fog
 
 Busy:
 - profile and update math operations
-- triangle mesh rendering
 - color variance based per pixel rays (quick exit)
 
 Todo:
 - triangle mesh loading (see https://github.com/assimp/assimp)
-- look at instancing where shapes can be re-used in scene
 - textured objects (texture images)
 - textured area lights
-- volumes / fog
 - replace axis-math with matrix math
 - optisation through importance sampling (for lights)
 - de-noising

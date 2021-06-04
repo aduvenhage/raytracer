@@ -126,10 +126,11 @@ namespace LNF
     /*
      Build BVH tree recursively
      */
-    template <typename primitive_type>
-    std::unique_ptr<BvhNode<primitive_type>> buildBvhNode(const std::vector<const primitive_type*> &_primitives, const Bounds &_bounds, int _iDepth) {
-        const size_t MIN_NODE_SIZE = 2;
-        
+    template <size_t BVH_MIN_NODE_SIZE, typename primitive_type>
+    std::unique_ptr<BvhNode<primitive_type>> buildBvhNode(const std::vector<const primitive_type*> &_primitives,
+                                                          const Bounds &_bounds,
+                                                          int _iDepth)
+    {
         // create node
         auto node = std::make_unique<BvhNode<primitive_type>>();
         node->m_bounds = _bounds;
@@ -148,8 +149,8 @@ namespace LNF
         else {
             // left node: go down the tree
             if (left.size() <= _primitives.size()) {
-                if ( (left.size() > MIN_NODE_SIZE) && (_iDepth > 0) ) {
-                    node->m_left = buildBvhNode(left, boxes.first, _iDepth - 1);
+                if ( (left.size() > BVH_MIN_NODE_SIZE) && (_iDepth > 0) ) {
+                    node->m_left = buildBvhNode<BVH_MIN_NODE_SIZE>(left, boxes.first, _iDepth - 1);
                 }
                 else if (left.size() > 0) {
                     node->m_primitives.insert(node->m_primitives.end(), left.begin(), left.end());
@@ -158,8 +159,8 @@ namespace LNF
             
             // right node: go down the tree
             if (right.size() <= _primitives.size()) {
-                if ( (right.size() > MIN_NODE_SIZE) && (_iDepth > 0)  ) {
-                    node->m_right = buildBvhNode(right, boxes.second, _iDepth - 1);
+                if ( (right.size() > BVH_MIN_NODE_SIZE) && (_iDepth > 0)  ) {
+                    node->m_right = buildBvhNode<BVH_MIN_NODE_SIZE>(right, boxes.second, _iDepth - 1);
                 }
                 else if (right.size() > 0) {
                     node->m_primitives.insert(node->m_primitives.end(), right.begin(), right.end());
@@ -174,12 +175,12 @@ namespace LNF
     /*
      Build BVH tree root
      */
-    template <typename primitive_type>
-    std::unique_ptr<BvhNode<primitive_type>> buildBvhRoot(const std::vector<const primitive_type*> &_srcNodes) {
-        const int BVH_MAX_DEPTH = 16;
-        
+    template <size_t BVH_MIN_NODE_SIZE, typename primitive_type>
+    std::unique_ptr<BvhNode<primitive_type>> buildBvhRoot(const std::vector<const primitive_type*> &_srcNodes,
+                                                          const size_t _bvhMaxDepth)
+    {
         Bounds bounds = findBounds(_srcNodes);
-        return buildBvhNode(_srcNodes, bounds, BVH_MAX_DEPTH);
+        return buildBvhNode<BVH_MIN_NODE_SIZE>(_srcNodes, bounds, (int)_bvhMaxDepth);
     }
 
 };  // namespace LNF
