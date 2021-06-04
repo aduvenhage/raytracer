@@ -44,6 +44,7 @@ add_subdirectory("raytracer")
 
 # non-compiling project files
 SET(PROJ_FILES
+    ${CMAKE_SOURCE_DIR}/_config.yml
     ${CMAKE_SOURCE_DIR}/README.md
     ${CMAKE_SOURCE_DIR}/.gitignore
 )

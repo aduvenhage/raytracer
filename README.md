@@ -37,6 +37,8 @@ Todo:
 ## Raytracing
 Never did raytracing before, but tried it now and I'm hooked :-)
 
+![Sample Image 1](/gallery/raytraced/raytraced_4096.jpeg)
+
 Resources:
 - http://www.realtimerendering.com/intersections.html
 - https://raytracing.github.io/
