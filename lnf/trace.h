@@ -175,7 +175,7 @@ namespace LNF
                     stats.push(color);
                     
                     if ( (_fColorTollerance > 0.0f) &&
-                         (k >= 4 * (tracer.traceDepthMax() + 1)) &&
+                         (k >= 4 * tracer.traceDepthMax() + 8) &&
                          (stats.standardDeviation() < _fColorTollerance) )
                     {
                         break;
