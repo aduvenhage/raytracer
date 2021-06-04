@@ -38,6 +38,7 @@ Todo:
 Never did raytracing before, but tried it now and I'm hooked :-)
 
 ![Sample Image 1](/gallery/raytracing/raytraced_4096.jpeg)
+![Sample Image 2](/gallery/raytracing/raytraced_bulb2.jpeg)
 
 Resources:
 - http://www.realtimerendering.com/intersections.html
