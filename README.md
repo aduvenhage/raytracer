@@ -1,10 +1,14 @@
 # Raytracing
 Never did raytracing before, but tried it now and I'm hooked :-)
 
+## Features
+
+
 ## Gallery
-Some images I have made so far:
-![Sample Image 1](/gallery/raytracing/raytraced_4096.jpeg)
-![Sample Image 2](/gallery/raytracing/raytraced_bulb2.jpeg)
+Some images I have made so far:<br>
+<img src="/gallery/raytracing/raytraced_4096.jpeg" alt="Clean raytracing (no monte carlo)" width="300"/>
+<img src="/gallery/raytracing/raytraced_bulb2.jpeg" alt="Mandlebulb (raymarched)" width="300"/>
+
 
 ## Development
 Done:
