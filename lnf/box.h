@@ -25,7 +25,7 @@ namespace LNF
         {}
         
         Box(float _fSize, const Material *_pMaterial, float _fUvScale = 0.2f)
-            :m_bounds(boxVec(-_fSize*0.5), boxVec(_fSize*0.5)),
+            :m_bounds(boxVec(-_fSize*0.5f), boxVec(_fSize*0.5f)),
              m_vecDiv(boxVec(_fSize*0.49999f)),
              m_pMaterial(_pMaterial),
              m_fUvScale(_fUvScale)
@@ -56,9 +56,9 @@ namespace LNF
         virtual Intersect &intersect(Intersect &_hit) const override {
             _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
             
-            _hit.m_normal = Vec((int)(_hit.m_position.x() / m_vecDiv.x()),
-                                (int)(_hit.m_position.y() / m_vecDiv.y()),
-                                (int)(_hit.m_position.z() / m_vecDiv.z()));
+            _hit.m_normal = Vec(trunc(_hit.m_position.x() / m_vecDiv.x()),
+                                trunc(_hit.m_position.y() / m_vecDiv.y()),
+                                trunc(_hit.m_position.z() / m_vecDiv.z()));
             
             auto e1 = crossProduct(_hit.m_normal, Vec(0.0f, 0.0f, 1.0f));
             if (e1.sizeSqr() < 0.0001f) {

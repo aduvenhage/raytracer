@@ -22,7 +22,7 @@ namespace LNF
         Ray() noexcept = default;
         Ray(const Ray &) noexcept = default;
         Ray(Ray &&) noexcept = default;
-        Ray(Ray &) noexcept = default;
+        //Ray(Ray &) noexcept = default;
 
         template <typename U, typename V>
         Ray(U &&_origin, V &&_direction) noexcept
@@ -58,7 +58,7 @@ namespace LNF
         ScatteredRay() = default;
         ScatteredRay(const ScatteredRay &) = default;
         ScatteredRay(ScatteredRay &&) = default;
-        ScatteredRay(ScatteredRay &) = default;
+        //ScatteredRay(ScatteredRay &) = default;
         
         template <typename R, typename CC, typename CE>
         ScatteredRay(R &&_ray, CC &&_color, CE &&_emitted)
@@ -84,7 +84,7 @@ namespace LNF
     float schlick(float cosi, float _fEtaiOverEtat) {
         // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
         auto r0 = sqr((1 - _fEtaiOverEtat) / (1 + _fEtaiOverEtat));
-        return r0 + (1 - r0) * pow((1 - cosi), 5);
+        return r0 + (1 - r0) * pow(1 - cosi, 5.0f);
     }
 
 
@@ -114,7 +114,7 @@ namespace LNF
     inline Vec refract(const Vec &_vec, const Vec &_normal, float _fIndexOfRefraction, bool _bInside, float _fScatter, RandomGen &_randomGen) {
         float dEtaiOverEtat = _bInside ? _fIndexOfRefraction : (1.0f/_fIndexOfRefraction);
         auto normal = (_normal + randomUnitSphere(_randomGen) * _fScatter).normalized();
-        normal *= _bInside ? -1 : 1;
+        normal *= _bInside ? -1.0f : 1.0f;
         
         return refract(_vec, normal, dEtaiOverEtat, _randomGen);
     }

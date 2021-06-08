@@ -47,7 +47,7 @@ namespace LNF
         
         /* Returns the diffuse color at the given surface position */
         virtual Color color(const Intersect &_hit) const override {
-            int c = ((int)(_hit.m_uv.u() * m_iBlockSize) + (int)(_hit.m_uv.v() * m_iBlockSize)) % 2;
+            float c = (float)(((int)(_hit.m_uv.u() * m_iBlockSize) + (int)(_hit.m_uv.v() * m_iBlockSize)) % 2);
             return m_colorA * c + m_colorB * (1 - c);
         }
         

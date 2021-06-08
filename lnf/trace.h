@@ -64,7 +64,7 @@ namespace LNF
                 // trace recursively and blend colors
                 if ( (hit.m_uTraceDepth < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
                     // move slightly to avoid self intersection
-                    scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4);
+                    scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4f);
                     
                     // transform ray back to world space
                     scatteredRay.m_ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
@@ -102,9 +102,9 @@ namespace LNF
         // TODO: play with these values and maybe adjust dynamically for best performance
         // TODO: exit criteria could include min stepScale
         const int maxSamples = 100000;
-        const float e = 0.00001;
-        float stepScale = 1.0;
-        float distance = 0;
+        const float e = 0.00001f;
+        float stepScale = 1.0f;
+        float distance = 0.0f;
         
         // first step (check inside/outside)
         _hit.m_position = _hit.m_priRay.position(0);
@@ -183,7 +183,9 @@ namespace LNF
                 }
                                 
                 // write averaged color to output image
-                auto color = stats.mean().clamp();
+                auto color = stats.mean();
+                color.clamp();
+
                 *(pPixel++) = (int)(255 * color.red() + 0.5);
                 *(pPixel++) = (int)(255 * color.green() + 0.5);
                 *(pPixel++) = (int)(255 * color.blue() + 0.5);

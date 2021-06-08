@@ -32,8 +32,10 @@
 #include <atomic>
 #include <algorithm>
 #include <iostream>
+#include <string>
 
 #include <QtWidgets>
+
 
 
 using namespace LNF;
@@ -46,12 +48,12 @@ class DiffuseMandlebrot : public Diffuse
     DiffuseMandlebrot()
         :Diffuse(Color()),
          m_mandlebrot(1, 1),
-         m_baseColor(0.4, 0.2, 0.1)
+         m_baseColor(0.4f, 0.2f, 0.1f)
     {}
     
     /* Returns the diffuse color at the given surface position */
     virtual Color color(const Intersect &_hit) const override {
-        return m_baseColor * (m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v()) * 0.1 + 0.1);
+        return m_baseColor * (m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v()) * 0.1f + 0.1f);
     }
     
  private:
@@ -178,7 +180,7 @@ class MainWindow : public QMainWindow
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
          m_iMaxSamplesPerPixel(1024),
          m_iMaxTraceDepth(16),
-         m_fColorTollerance(0.000000001)
+         m_fColorTollerance(0.000000001f)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
@@ -299,9 +301,9 @@ int main(int argc, char *argv[])
     */
 
 
-    auto pDiffuseRed = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.1, 0.1));
-    auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.9, 0.1));
-    auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1, 0.1, 0.9));
+    auto pDiffuseRed = createMaterial<Diffuse>(pScene.get(), Color(0.9f, 0.1f, 0.1f));
+    auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.9f, 0.1f));
+    auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.1f, 0.9f));
     
     auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseRed);
     auto pMesh2 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseGreen);
@@ -311,7 +313,7 @@ int main(int argc, char *argv[])
     auto pSphere2 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseGreen);
     auto pSphere3 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseBlue);
     
-    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0, 10.0, 10.0));
+    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0f, 10.0f, 10.0f));
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
     
     //auto shapes = std::vector{pSphere1, pSphere2, pSphere3};

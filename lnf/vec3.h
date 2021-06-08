@@ -20,7 +20,7 @@ namespace LNF
         
         Vec(const Vec &) noexcept = default;
         Vec(Vec &&) noexcept = default;
-        Vec(Vec &) noexcept = default;
+        //Vec(Vec &) noexcept = default;
 
         constexpr Vec(float _fX, float _fY, float _fZ) noexcept
             :m_v{_fX, _fY, _fZ}
@@ -218,7 +218,7 @@ namespace LNF
 
         Axis(const Axis &) noexcept = default;
         Axis(Axis &&) noexcept = default;
-        Axis(Axis &) noexcept = default;
+        //Axis(Axis &) noexcept = default;
         
         template <typename VX, typename VY, typename VZ, typename P>
         Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin, float _fScale) noexcept
@@ -265,7 +265,7 @@ namespace LNF
         Bounds() noexcept = default;
         Bounds(const Bounds &) noexcept = default;
         Bounds(Bounds &&) noexcept = default;
-        Bounds(Bounds &) noexcept = default;
+        //Bounds(Bounds &) noexcept = default;
         
         template <typename VX, typename VY>
         Bounds(VX &&_min, VY &&_max) noexcept
@@ -299,7 +299,7 @@ namespace LNF
     
     // split box on longest axis
     std::pair<Bounds, Bounds> splitBox(const Bounds &_bounds) {
-        static constexpr float epsilon = 0.0001;
+        static constexpr float epsilon = 0.0001f;
         
         Vec dist = _bounds.m_max - _bounds.m_min;
         if ( (dist.x() + epsilon > dist.y()) && (dist.x() + epsilon >= dist.z()) ) {
@@ -463,7 +463,7 @@ namespace LNF
     // get normal from surface function
     template <typename sdf_func>
     Vec surfaceNormal(const Vec &_p, const sdf_func &_sdf) {
-        const float e = 0.0001;
+        const float e = 0.0001f;
         return Vec(_sdf(_p + Vec{e, 0, 0}) - _sdf(_p - Vec{e, 0, 0}),
                    _sdf(_p + Vec{0, e, 0}) - _sdf(_p - Vec{0, e, 0}),
                    _sdf(_p + Vec{0, 0, e}) - _sdf(_p - Vec{0, 0, e})).normalized();

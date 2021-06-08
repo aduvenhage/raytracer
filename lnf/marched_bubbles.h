@@ -18,13 +18,13 @@ namespace LNF
         MarchedBubbles(const Vec &_size, const Material *_pMaterial)
             :m_bounds(-_size * 0.5f, _size * 0.5f),
              m_pMaterial(_pMaterial),
-             m_fSize(_size.size() * 0.5)
+             m_fSize(_size.size() * 0.5f)
         {}
 
         MarchedBubbles(float _fSize, const Material *_pMaterial)
-            :m_bounds(boxVec(-_fSize*0.5), boxVec(_fSize*0.5)),
+            :m_bounds(boxVec(-_fSize*0.5f), boxVec(_fSize*0.5f)),
              m_pMaterial(_pMaterial),
-             m_fSize(_fSize * 0.5)
+             m_fSize(_fSize * 0.5f)
         {}
         
         /* Returns the material used for rendering, etc. */

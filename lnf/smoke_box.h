@@ -20,7 +20,7 @@ namespace LNF
         {}
         
         SmokeBox(float _fSize, const Material *_pMaterial, float _fVisibility)
-            :m_bounds(boxVec(-_fSize*0.5), boxVec(_fSize*0.5)),
+            :m_bounds(boxVec(-_fSize*0.5f), boxVec(_fSize*0.5f)),
              m_pMaterial(_pMaterial),
              m_fVisibility(_fVisibility)
         {}

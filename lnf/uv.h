@@ -3,6 +3,7 @@
 
 
 #include "vec3.h"
+#include "constants.h"
 
 
 namespace LNF
@@ -20,7 +21,7 @@ namespace LNF
         
         Uv(const Uv &) noexcept = default;
         Uv(Uv &&) noexcept = default;
-        Uv(Uv &) noexcept = default;
+        //Uv(Uv &) noexcept = default;
         
         float u() const {return m_uv[0];}
         float &u() {return m_uv[0];}
@@ -73,7 +74,7 @@ namespace LNF
     Uv getSphericalUv(const Vec &_p, float _fRadius) {
         const float phi = atan2(_p.z(), _p.x());
         const float theta = acos(_p.y() / _fRadius);
-        return Uv(phi / M_PI * 0.5 + 0.5, theta / M_PI + 0.5);
+        return Uv(phi / LNF::pi * 0.5f + 0.5f, theta / LNF::pi + 0.5f);
     }
 
 

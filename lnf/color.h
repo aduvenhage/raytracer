@@ -13,6 +13,11 @@ namespace LNF
      */
     struct Color
     {
+        enum class OPERATION {
+            CLAMP = 1,
+            WRAP = 2
+        };
+
         Color() noexcept
             :m_c{}
         {}
@@ -21,9 +26,16 @@ namespace LNF
             :m_c{_fRed, _fGreen, _fBlue}
         {}
         
+        Color(float _fRed, float _fGreen, float _fBlue, const OPERATION &_op) noexcept
+            :m_c{ _fRed, _fGreen, _fBlue}
+        {
+            if (_op == OPERATION::CLAMP) clamp();
+            else if (_op == OPERATION::WRAP) wrap();
+        }
+
         Color(const Color &) noexcept = default;
         Color(Color &&) noexcept = default;
-        Color(Color &) noexcept = default;
+        //Color(Color &) noexcept = default;
         
         float red() const {return m_c[0];}
         float &red() {return m_c[0];}
@@ -167,9 +179,9 @@ namespace LNF
         }
         
         Color mean() const {
-            return Color(m_red.mean(),
-                         m_green.mean(),
-                         m_blue.mean());
+            return Color((float)m_red.mean(),
+                         (float)m_green.mean(),
+                         (float)m_blue.mean());
         }
 
      private:

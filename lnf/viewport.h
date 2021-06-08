@@ -38,7 +38,7 @@ namespace LNF
         }
         
         Ray getRay(int _iX, int _iY, RandomGen &_generator, int _iPerPixelRayIndex) const override {
-            std::uniform_real_distribution<float> pixelDist(-0.49999, 0.49999);
+            std::uniform_real_distribution<float> pixelDist(-0.49999f, 0.49999f);
 
             float x = (2 * (_iX + pixelDist(_generator)) / (float)m_iWidth - 1) * m_fViewAspect * m_fScale;
             float y = (1 - 2 * (_iY + pixelDist(_generator)) / (float)m_iHeight) * m_fScale;

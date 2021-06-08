@@ -38,7 +38,7 @@ inline float frac(float _a) {
 
 namespace LNF
 {
-    const float pi     = M_PI;
+    const float pi     = (float)M_PI;
 
     using RandomGen    = std::mt19937_64;
     

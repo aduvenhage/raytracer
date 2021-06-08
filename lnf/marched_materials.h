@@ -22,7 +22,8 @@ namespace LNF
         virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
             auto color = Color(_hit.m_uMarchDepth*0.005f,
                                _hit.m_uMarchDepth*0.005f,
-                               _hit.m_uMarchDepth*0.005f).clamp();
+                               _hit.m_uMarchDepth*0.005f,
+                               Color::OPERATION::CLAMP);
             
             auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
             return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color, Color());
@@ -44,9 +45,10 @@ namespace LNF
             float scale = 3.0f;
             auto color = Color(_hit.m_uMarchDepth*0.25f*scale,
                                _hit.m_uMarchDepth*0.13f*scale,
-                               _hit.m_uMarchDepth*0.07f*scale).wrap();
+                               _hit.m_uMarchDepth*0.07f*scale,
+                               Color::OPERATION::WRAP);
             
-            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * 0.05).normalized();
+            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * 0.05f).normalized();
             auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_priRay.m_direction, normal));
         
             return ScatteredRay(reflectedRay, color, Color());

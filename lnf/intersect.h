@@ -30,7 +30,7 @@ namespace LNF
 
         Intersect(const Intersect &) noexcept = default;
         Intersect(Intersect &&) noexcept = default;
-        Intersect(Intersect &) noexcept = default;
+        //Intersect(Intersect &) noexcept = default;
         
         Intersect &operator=(const Intersect &) noexcept = default;
         Intersect &operator=(Intersect &&) noexcept = default;

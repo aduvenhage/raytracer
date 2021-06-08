@@ -18,7 +18,7 @@ namespace LNF
      */
     bool triangleIntersect(float &_fPositionOnRay, Uv &_uv,
                            const Ray &_ray, const Vec &_v0, const Vec &_v1, const Vec &_v2) {
-        const float EPSILON = 0.000001;
+        const float EPSILON = 0.000001f;
         auto edge1 = _v1 - _v0;
         auto edge2 = _v2 - _v0;
         auto h = crossProduct(_ray.m_direction, edge2);
@@ -27,7 +27,7 @@ namespace LNF
         if (fabs(a) < EPSILON)
             return false;   // ray parallel to plane
             
-        float f = 1.0/a;
+        float f = 1.0f/a;
         auto s = _ray.m_origin - _v0;
         float u = f * (s * h);
         if ((u < 0.0) || (u > 1.0))
@@ -234,7 +234,7 @@ namespace LNF
                 }
                 
                 if (count > 0) {
-                    v.m_normal /= count;
+                    v.m_normal /= (float)count;
                 }
             }
         }
@@ -272,7 +272,7 @@ namespace LNF
      protected:
         // returns index of triangle in mesh
         uint32_t getIndex(const Triangle *_pTriangle) const {
-            return _pTriangle - m_triangles.data();
+            return (uint32_t)(_pTriangle - m_triangles.data());
         }
         
         // get list of triangles (raw pointers)
@@ -308,17 +308,17 @@ namespace LNF
             std::vector<Mesh::Vertex> vertices;
             std::vector<Mesh::Triangle> triangles;
             
-            vertices.reserve((_iSlices+1) * (_iDivs+1));
-            triangles.reserve(_iSlices * _iDivs * 2);
+            vertices.reserve(((size_t)_iSlices+1) * ((size_t)_iDivs+1));
+            triangles.reserve((size_t)_iSlices * (size_t)_iDivs * 2);
             
             for (int d = 0; d <= _iDivs; d++) {
-                float angle = M_PI / _iDivs * d;
+                float angle = LNF::pi / _iDivs * d;
                 float y = _fRadius * cos(angle);
                 float r = _fRadius * sin(angle);
                 
                 for (int s = 0; s <= _iSlices; s++) {
-                    float x = r * cos(M_PI / _iSlices * s * 2);
-                    float z = r * sin(M_PI / _iSlices * s * 2);
+                    float x = r * cos(LNF::pi / _iSlices * s * 2);
+                    float z = r * sin(LNF::pi / _iSlices * s * 2);
                     
                     auto v = Mesh::Vertex();
                     v.m_v = Vec(x, y, z);

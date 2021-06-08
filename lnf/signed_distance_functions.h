@@ -48,7 +48,7 @@ namespace LNF
             // convert to polar coordinates
             float theta = acos(z.z()/r);
             float phi = atan2(z.y(), z.x()) + PHASE;
-            dr =  pow(r, POWER - 1.0) * POWER * dr + 1.0;
+            dr =  pow(r, POWER - 1.0f) * POWER * dr + 1.0f;
             
             // scale and rotate the point
             float zr = pow(r, POWER);
@@ -61,7 +61,7 @@ namespace LNF
         }
         
         _iterations = i;        
-        return 0.1 * log(r) * r/dr;
+        return 0.1f * log(r) * r/dr;
     }
 
 
@@ -71,14 +71,14 @@ namespace LNF
         int n = 16;
         for (int i = 0; i < n; i ++) {
             float t = (float)i/n;
-            Vec origin(0.45f*_fHeight*sin(t * M_PI * 4 + _fAngleY),
+            Vec origin(0.45f*_fHeight*sin(t * LNF::pi * 4 + _fAngleY),
                        (t - 0.5f)*_fHeight,
-                       0.45f*_fHeight*cos(t * M_PI * 4 + _fAngleY));
+                       0.45f*_fHeight*cos(t * LNF::pi * 4 + _fAngleY));
             
-            sdf += exp(-k * sdfSphere(_p, origin, (frac(t/0.3f) + 0.1)*_fHeight*0.1f));
+            sdf += exp(-k * sdfSphere(_p, origin, (frac(t/0.3f) + 0.1f)*_fHeight*0.1f));
         }
         
-        return -log(sdf) * 0.1;
+        return -log(sdf) * 0.1f;
     }
 
 

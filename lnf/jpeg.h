@@ -16,8 +16,8 @@ namespace LNF
      */
     int writeJpegFile(const char *_pszFilename, int _iWidth, int _iHeight, const unsigned char *_pImageData, int _iQuality)
     {
-        struct jpeg_compress_struct cinfo;
-        struct jpeg_error_mgr jerr;
+        struct jpeg_compress_struct cinfo = {0};
+        struct jpeg_error_mgr jerr = {0};
         
         cinfo.err = jpeg_std_error(&jerr);
         jpeg_create_compress(&cinfo);
@@ -41,7 +41,7 @@ namespace LNF
         
         jpeg_start_compress(&cinfo, TRUE);
         int row_stride = cinfo.image_width * 3;        // JSAMPLEs per row in image_buffer
-        JSAMPROW row_pointer[1];
+        JSAMPROW row_pointer[1] = {0};
         
         while (cinfo.next_scanline < cinfo.image_height)
         {
