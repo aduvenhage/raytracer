@@ -184,7 +184,7 @@ class MainWindow : public QMainWindow
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
-        startTimer(200, Qt::VeryCoarseTimer);
+        startTimer(200, Qt::PreciseTimer);
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
         m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 120);
@@ -250,7 +250,7 @@ class MainWindow : public QMainWindow
             }
         }
         
-        this->update();
+        //this->update(this->rect());
     }
     
  private:
