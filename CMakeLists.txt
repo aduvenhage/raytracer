@@ -12,7 +12,7 @@ ELSE()
     SET(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: Debug Release.")
 ENDIF()
 
-PROJECT(Lost-N-Found)
+PROJECT(Raytracer)
 
 # build/configuration
 MESSAGE("Build tool: " ${CMAKE_BUILD_TOOL})
