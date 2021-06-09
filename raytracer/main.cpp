@@ -165,8 +165,6 @@ class SimpleScene   : public Scene
 
 class MainWindow : public QMainWindow
 {
- Q_OBJECT
-
  protected:
     using clock_type = std::chrono::high_resolution_clock;
     
@@ -180,13 +178,13 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(1024),
+         m_iMaxSamplesPerPixel(256),
          m_iMaxTraceDepth(16),
          m_fColorTollerance(0.000000001f)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
-        startTimer(100);
+        startTimer(200, Qt::VeryCoarseTimer);
         
         m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
         m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 120);
