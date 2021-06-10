@@ -266,7 +266,7 @@ namespace LNF
         /* build acceleration structures etc. */
         void buildBvh() {
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            m_bvhRoot = buildBvhRoot<2>(trianglePtrs, 8);
+            m_bvhRoot = buildBvhRoot<4>(trianglePtrs, 16);
         }
 
      protected:

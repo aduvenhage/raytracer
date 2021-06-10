@@ -65,9 +65,6 @@ class DiffuseMandlebrot : public Diffuse
 // simple scene with a linear search for object hits
 class SimpleScene   : public Scene
 {
- protected:
-    using clock_type = std::chrono::high_resolution_clock;
-    
  public:
     SimpleScene()
     {}
@@ -77,10 +74,16 @@ class SimpleScene   : public Scene
        Could be accessed by multiple worker threads concurrently.
      */
     virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
-        static thread_local PrimitiveSet<PrimitiveInstance> primitives;
-        primitives.clear();
-
-        return checkBvhHit(_hit, m_root, _randomGen, primitives);
+        for (const auto &pObj : m_objects) {
+            Intersect nh(_hit);
+            if ( (pObj->hit(nh, _randomGen) == true) &&
+                 ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+            {
+                _hit = nh;
+            }
+        }
+        
+        return _hit;
     }
     
     /*
@@ -108,10 +111,29 @@ class SimpleScene   : public Scene
         m_objects.push_back(std::move(_pInstance));
         return m_objects.back().get();
     }
+    
+ protected:
+    std::vector<std::unique_ptr<Resource>>           m_resources;
+    std::vector<std::unique_ptr<PrimitiveInstance>>  m_objects;
+};
 
-    /*
-        Build acceleration structures
-     */
+
+// simple scene using a BVH for optimising hits
+class SimpleSceneBvh   : public SimpleScene
+{
+ public:
+    SimpleSceneBvh()
+    {}
+        
+    // Checks for an intersect with a scene object (could be accessed by multiple worker threads concurrently).
+    virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
+        static thread_local PrimitiveSet<PrimitiveInstance> primitives;
+        primitives.clear();
+
+        return checkBvhHit(_hit, m_root, _randomGen, primitives);
+    }
+
+    // Build acceleration structures
     void build() {
         std::vector<const PrimitiveInstance*> rawObjects(m_objects.size(), nullptr);
         for (size_t i = 0; i < m_objects.size(); i++) {
@@ -120,10 +142,9 @@ class SimpleScene   : public Scene
 
         m_root = buildBvhRoot<2>(rawObjects, 16);
     }
-    
-    /*
-        Search for best hit through BVH
-     */
+
+ private:
+    // Search for best hit through BVHs
     bool checkBvhHit(Intersect &_hit,
                      const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode,
                      RandomGen &_randomGen,
@@ -157,8 +178,6 @@ class SimpleScene   : public Scene
     }
     
  protected:
-    std::vector<std::unique_ptr<Resource>>           m_resources;
-    std::vector<std::unique_ptr<PrimitiveInstance>>  m_objects;
     std::unique_ptr<BvhNode<PrimitiveInstance>>      m_root;
 };
 
@@ -178,8 +197,8 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(256),
-         m_iMaxTraceDepth(16),
+         m_iMaxSamplesPerPixel(2048),
+         m_iMaxTraceDepth(8),
          m_fColorTollerance(0.000000001f)
     {
         resize(m_iWidth, m_iHeight);
@@ -223,8 +242,8 @@ class MainWindow : public QMainWindow
         }
         else {
             m_pSource->updateFrameProgress();
-            printf("active jobs = %d, progress = %.2f, time to finish = %.2fs, total time = %.2fs\n",
-                    m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal());
+            printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
+                    m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
             
             if (m_pSource->isFinished() == true) {
                 if (m_bFrameDone == false) {
@@ -250,7 +269,7 @@ class MainWindow : public QMainWindow
             }
         }
         
-        //this->update(this->rect());
+        this->update(this->rect());
     }
     
  private:
@@ -274,10 +293,8 @@ class MainWindow : public QMainWindow
 
 int main(int argc, char *argv[])
 {
-    //profileBvh();
-    
     // init
-    auto pScene = std::make_unique<SimpleScene>();
+    auto pScene = std::make_unique<SimpleSceneBvh>();
     RandomGen generator{std::random_device()()};
     
     // create scene
@@ -305,9 +322,9 @@ int main(int argc, char *argv[])
     auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.9f, 0.1f));
     auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.1f, 0.9f));
     
-    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseRed);
-    auto pMesh2 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseGreen);
-    auto pMesh3 = createPrimitive<SphereMesh>(pScene.get(), 8, 4, 4, pDiffuseBlue);
+    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 8, 8, 8, pDiffuseRed);
+    auto pMesh2 = createPrimitive<SphereMesh>(pScene.get(), 8, 8, 8, pDiffuseGreen);
+    auto pMesh3 = createPrimitive<SphereMesh>(pScene.get(), 8, 8, 8, pDiffuseBlue);
 
     auto pSphere1 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseRed);
     auto pSphere2 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseGreen);
@@ -319,7 +336,7 @@ int main(int argc, char *argv[])
     //auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
     auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
     
-    int n = 200;
+    int n = 500;
     for (int i = 0; i < n; i++) {
         
         float x = 100 * sin((float)i / n * LNF::pi * 2);

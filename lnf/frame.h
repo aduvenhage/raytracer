@@ -82,6 +82,8 @@ namespace LNF
              m_fFrameProgress(0),
              m_fTimeSpentS(0),
              m_fTimeToFinishS(0),
+             m_uViewRayCount(0),
+             m_fRaysPerSecond(0),
              m_bFinished(false)
         {
             m_tpStart = m_clock.now();
@@ -115,7 +117,7 @@ namespace LNF
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now() - m_tpStart).count();
             m_fTimeSpentS = ns * 1e-9f;
 
-            // calc progress and time to go
+            // calc perf, progress and time to go
             if (activeJobs != m_iActiveJobs) {
                 m_iActiveJobs = activeJobs;
                 m_fFrameProgress = (float)(m_uJobCount - m_iActiveJobs) / m_uJobCount;
@@ -123,6 +125,11 @@ namespace LNF
                 
                 if (m_fFrameProgress > 0.01) {
                     m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress * (1 - m_fFrameProgress);
+                }
+
+                // calc rays per second
+                if (m_fTimeSpentS > 1.0f) {
+                    m_fRaysPerSecond = m_pViewport->rayCount() / m_fTimeSpentS;
                 }
             }
         }
@@ -141,6 +148,10 @@ namespace LNF
         
         float timeTotal() const {
             return m_fTimeSpentS;
+        }
+        
+        float raysPerSecond() const {
+            return m_fRaysPerSecond;
         }
         
         bool isFinished() const {
@@ -218,10 +229,13 @@ namespace LNF
         clock_type                              m_clock;
         clock_type::time_point                  m_tpStart;
         clock_type::time_point                  m_tpEnd;
+        clock_type::time_point                  m_tpPerfCalc;
         int                                     m_iActiveJobs;
         float                                   m_fFrameProgress;
         float                                   m_fTimeSpentS;
         float                                   m_fTimeToFinishS;
+        size_t                                  m_uViewRayCount;
+        float                                   m_fRaysPerSecond;
         bool                                    m_bFinished;
     };
     
