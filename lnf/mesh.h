@@ -81,14 +81,11 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit, RandomGen &) const override {
-            static thread_local PrimitiveSet<Triangle> primitives;
-            primitives.clear();
-
             float fPositionOnRay = -1;
             int hitIndex = 0;
             Uv hitUv;
 
-            bool bHit = checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_priRay, primitives);
+            bool bHit = checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_priRay);
             if (bHit == true) {
                 _hit.m_fPositionOnRay = fPositionOnRay;
                 _hit.m_uTriangleIndex = hitIndex;
@@ -125,27 +122,23 @@ namespace LNF
         /* Search for best hit through BVH */
         bool checkBvhHit(float &_fPositionOnRay, int &_hitIndex, Uv &_hitUv,
                          const std::unique_ptr<BvhNode<Triangle>> &_pNode,
-                         const Ray &_ray,
-                         PrimitiveSet<Triangle> &_hitPrimitives) const {
+                         const Ray &_ray) const {
             bool bHit = false;
             
             if (_pNode->empty() == false) {
                 for (const auto &pTriangle : _pNode->m_primitives) {
-                    if (_hitPrimitives.has(pTriangle) == 0) {
-                        bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, pTriangle, _ray);
-                        _hitPrimitives.insert(pTriangle);
-                    }
+                    bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, pTriangle, _ray);
                 }
             }
 
             if ( (_pNode->m_left != nullptr) &&
                  (_pNode->m_left->intersect(_ray) == true) ) {
-                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_left, _ray, _hitPrimitives);
+                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_left, _ray);
             }
             
             if ( (_pNode->m_right != nullptr) &&
                  (_pNode->m_right->intersect(_ray) == true) ) {
-                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_right, _ray, _hitPrimitives);
+                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_right, _ray);
             }
             
             return bHit;

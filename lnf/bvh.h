@@ -28,7 +28,7 @@ namespace LNF
     }
 
 
-    // split nodes into 'inside' and 'outside' bounds
+    // split nodes into 'left' or 'right' groups (using left as default if a node intersects with both)
     template <typename node_type>
     void splitNodes(std::vector<const node_type*> &_nodesLeft, std::vector<const node_type*> &_nodesRight,
                     const std::vector<const node_type*> &_nodes,
@@ -40,8 +40,7 @@ namespace LNF
             if (aaboxIntersectCheck(nb, _boundsLeft) == true) {
                 _nodesLeft.push_back(pNode);
             }
-
-            if (aaboxIntersectCheck(nb, _boundsRight) == true) {
+            else if (aaboxIntersectCheck(nb, _boundsRight) == true) {
                 _nodesRight.push_back(pNode);
             }
         }
@@ -73,101 +72,45 @@ namespace LNF
 
 
     /*
-     Container to hold and manage unique instances of primitives.
-     NOTE: using vector and linear search internally for best performance.
-     */
-    template <typename primitive_type>
-    class PrimitiveSet
-    {
-     public:
-        PrimitiveSet()
-            :m_count(0)
-        {}
-        
-        void clear() {
-            m_count = 0;
-        }
-        
-        bool has(const primitive_type *_pObj) {
-            for (size_t i = 0; i < m_count; i++) {
-                if (m_primeObjects[i] == _pObj) {
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-        
-        void insert(const primitive_type *_pObj) {
-            if (has(_pObj) == false) {
-                if (m_count >= m_primeObjects.size()) {
-                    m_primeObjects.resize(m_primeObjects.size() + 4);
-                }
-                
-                m_primeObjects[m_count] = _pObj;
-                m_count++;
-            }
-        }
-        
-        const primitive_type **begin() {
-            return m_primeObjects.data();
-        }
-        
-        const primitive_type **end() {
-            return m_primeObjects.data() + m_count;
-        }
-
-     private:
-        std::vector<const primitive_type*>           m_primeObjects;
-        size_t                                       m_count;
-    };
-
-
-    /*
      Build BVH tree recursively
      */
     template <size_t BVH_MIN_NODE_SIZE, typename primitive_type>
     std::unique_ptr<BvhNode<primitive_type>> buildBvhNode(const std::vector<const primitive_type*> &_primitives,
-                                                          const Bounds &_bounds,
+                                                          const Bounds &_splitBounds,
                                                           int _iDepth)
     {
         // create node
         auto node = std::make_unique<BvhNode<primitive_type>>();
-        node->m_bounds = _bounds;
 
         // split in left and right
-        auto boxes = splitBox(_bounds);
+        auto boxes = splitBox(_splitBounds);
         std::vector<const primitive_type*> left;
         std::vector<const primitive_type*> right;
         splitNodes(left, right, _primitives, boxes.first, boxes.second);
+        std::vector<Bounds> boundsList;
         
-        // cannot split: just add to node
-        if ( (left.size() == _primitives.size()) &&
-             (right.size() == _primitives.size()) ) {
-            node->m_primitives.insert(node->m_primitives.end(), _primitives.begin(), _primitives.end());
+        // left node: go down the tree
+        if ( (left.size() > BVH_MIN_NODE_SIZE) && (_iDepth > 0) ) {
+            node->m_left = buildBvhNode<BVH_MIN_NODE_SIZE>(left, boxes.first, _iDepth - 1);
+            boundsList.emplace_back(node->m_left->m_bounds);
         }
-        else {
-            // left node: go down the tree
-            if (left.size() <= _primitives.size()) {
-                if ( (left.size() > BVH_MIN_NODE_SIZE) && (_iDepth > 0) ) {
-                    node->m_left = buildBvhNode<BVH_MIN_NODE_SIZE>(left, boxes.first, _iDepth - 1);
-                }
-                else if (left.size() > 0) {
-                    node->m_primitives.insert(node->m_primitives.end(), left.begin(), left.end());
-                }
-            }
-            
-            // right node: go down the tree
-            if (right.size() <= _primitives.size()) {
-                if ( (right.size() > BVH_MIN_NODE_SIZE) && (_iDepth > 0)  ) {
-                    node->m_right = buildBvhNode<BVH_MIN_NODE_SIZE>(right, boxes.second, _iDepth - 1);
-                }
-                else if (right.size() > 0) {
-                    node->m_primitives.insert(node->m_primitives.end(), right.begin(), right.end());
-                }
-            }
+        else if (left.size() > 0) {
+            node->m_primitives.insert(node->m_primitives.end(), left.begin(), left.end());
+            boundsList.emplace_back(findBounds(node->m_primitives));
+        }
+        
+        // right node: go down the tree
+        if ( (right.size() > BVH_MIN_NODE_SIZE) && (_iDepth > 0)  ) {
+            node->m_right = buildBvhNode<BVH_MIN_NODE_SIZE>(right, boxes.second, _iDepth - 1);
+            boundsList.emplace_back(node->m_right->m_bounds);
+        }
+        else if (right.size() > 0) {
+            node->m_primitives.insert(node->m_primitives.end(), right.begin(), right.end());
+            boundsList.emplace_back(findBounds(node->m_primitives));
         }
 
+        node->m_bounds = combineBoxes(boundsList);
+        
         return node;
     }
 

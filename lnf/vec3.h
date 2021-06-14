@@ -315,6 +315,29 @@ namespace LNF
         return std::make_pair(Bounds(_bounds.m_min, _bounds.m_min + dist), Bounds(_bounds.m_max - dist, _bounds.m_max));
     }
 
+    
+    // combine bounds into one
+    Bounds combineBoxes(const Bounds &_left, Bounds &_right) {
+        return Bounds(perElementMin(_left.m_min, _right.m_min),
+                      perElementMax(_left.m_max, _right.m_max));
+    }
+
+
+    // combine bounds into one
+    Bounds combineBoxes(std::vector<Bounds> &_bounds) {
+        Bounds bounds;
+        
+        if (_bounds.empty() == false) {
+            bounds = _bounds[0];
+
+            for (auto &b : _bounds) {
+                bounds = combineBoxes(bounds, b);
+            }
+        }
+
+        return bounds;
+    }
+
 
     // finds min/max bounds from input points
     template <typename container_type>

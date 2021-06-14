@@ -45,7 +45,6 @@ namespace LNF
          May not be safe to call while worker threads are calling 'hit'/
          */
         virtual PrimitiveInstance *addPrimitiveInstance(std::unique_ptr<PrimitiveInstance> &&_pInstance) = 0;
-
     };
     
     

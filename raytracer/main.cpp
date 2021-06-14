@@ -127,10 +127,7 @@ class SimpleSceneBvh   : public SimpleScene
         
     // Checks for an intersect with a scene object (could be accessed by multiple worker threads concurrently).
     virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
-        static thread_local PrimitiveSet<PrimitiveInstance> primitives;
-        primitives.clear();
-
-        return checkBvhHit(_hit, m_root, _randomGen, primitives);
+        return checkBvhHit(_hit, m_root, _randomGen);
     }
 
     // Build acceleration structures
@@ -147,31 +144,27 @@ class SimpleSceneBvh   : public SimpleScene
     // Search for best hit through BVHs
     bool checkBvhHit(Intersect &_hit,
                      const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode,
-                     RandomGen &_randomGen,
-                     PrimitiveSet<PrimitiveInstance> &_hitPrimitives) const {
+                     RandomGen &_randomGen) const
+    {
         if (_pNode->empty() == false) {
             for (const auto &pObj : _pNode->m_primitives) {
-                if (_hitPrimitives.has(pObj) == 0) {
-                    Intersect nh(_hit);
-                    if ( (pObj->hit(nh, _randomGen) == true) &&
-                         ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
-                    {
-                        _hit = nh;
-                    }
-
-                    _hitPrimitives.insert(pObj);
+                Intersect nh(_hit);
+                if ( (pObj->hit(nh, _randomGen) == true) &&
+                     ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                {
+                    _hit = nh;
                 }
             }
         }
 
         if ( (_pNode->m_left != nullptr) &&
              (_pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
-            checkBvhHit(_hit, _pNode->m_left, _randomGen, _hitPrimitives);
+            checkBvhHit(_hit, _pNode->m_left, _randomGen);
         }
         
         if ( (_pNode->m_right != nullptr) &&
              (_pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
-            checkBvhHit(_hit, _pNode->m_right, _randomGen, _hitPrimitives);
+            checkBvhHit(_hit, _pNode->m_right, _randomGen);
         }
         
         return _hit;
@@ -197,7 +190,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(2048),
+         m_iMaxSamplesPerPixel(64),
          m_iMaxTraceDepth(8),
          m_fColorTollerance(0.000000001f)
     {
@@ -298,7 +291,6 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
-    /*
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     //auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
     auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
@@ -315,16 +307,15 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 50), 40.0), pGlow);
     createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
     createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
-    */
 
-
+    /*
     auto pDiffuseRed = createMaterial<Diffuse>(pScene.get(), Color(0.9f, 0.1f, 0.1f));
     auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.9f, 0.1f));
     auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.1f, 0.9f));
     
-    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 8, 8, 8, pDiffuseRed);
-    auto pMesh2 = createPrimitive<SphereMesh>(pScene.get(), 8, 8, 8, pDiffuseGreen);
-    auto pMesh3 = createPrimitive<SphereMesh>(pScene.get(), 8, 8, 8, pDiffuseBlue);
+    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 16, 16, 4, pDiffuseRed);
+    auto pMesh2 = createPrimitive<SphereMesh>(pScene.get(), 16, 16, 4, pDiffuseGreen);
+    auto pMesh3 = createPrimitive<SphereMesh>(pScene.get(), 16, 16, 4, pDiffuseBlue);
 
     auto pSphere1 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseRed);
     auto pSphere2 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseGreen);
@@ -336,18 +327,18 @@ int main(int argc, char *argv[])
     //auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
     auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
     
-    int n = 500;
+    int n = 200;
     for (int i = 0; i < n; i++) {
         
         float x = 100 * sin((float)i / n * LNF::pi * 2);
-        float y = 20 * (cos((float)i / n * LNF::pi * 8) + 1);
+        float y = 20 * (cos((float)i / n * LNF::pi * 16) + 1);
         float z = 100 * cos((float)i / n * LNF::pi * 2);
 
         //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuseRed);
         //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
         createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), shapes[i % shapes.size()]);
     }
-
+    */
     
     pScene->build();
 
