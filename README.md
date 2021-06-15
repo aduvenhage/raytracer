@@ -28,6 +28,7 @@ List of implemented features:
 - generic materials: diffuse, metal, glass, checkered diffuse
 - raymarched materials
 - triangle mesh rendering
+- volumes / fog
 
 - monte-carlo based sampling and materials
 - multi-threaded rendering (through job system) using sub-images
@@ -35,8 +36,8 @@ List of implemented features:
 
 - rotated and translated objects, and re-used objects (instancing)
 - axis aligned box intersections
-- add bounding volume hyrarchy to scene
-- volumes / fog
+- bounding volume hyrarchy hit optimisations for scene objects
+- bounding volume hyrarchy hit optimisations for triangles within a mesh
 
 
 Todo:
