@@ -47,10 +47,15 @@ Todo:
 - replace axis-math with matrix math
 - optisation through importance sampling (for lights)
 - de-noising
+- z-buffer and rasterised debug views (like viewing BVH volumes)
 
 ## Feature blog
 Ramblings on cool features and implementation details.
-
+- [Rendering with Qt](pages/qt.md)
+- [Job system](pages/jobs.md)
+- [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md)
+- [Using axis vectors not matrices](pages/axis.md)
+- [Raymarching and mandlebulb](pages/raymarching.md)
 
 ## Resources
 - http://www.realtimerendering.com/intersections.html
