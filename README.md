@@ -1,8 +1,7 @@
+[About Me](https://aduvenhage.github.io/)
+
 # Raytracing
 Never did raytracing before, but tried it now and I'm hooked :-)
-
-## Features
-
 
 ## Gallery
 Some images I have made so far:<br>
@@ -15,7 +14,6 @@ Some images I have made so far:<br>
   <img src="gallery/raytracing/raytraced_smog2.jpeg" alt="Volume scattering" width="300"/>
   <img src="gallery/raytracing/raytraced_nougat3.jpeg" alt="Raymarched goodness" width="300"/>
 </p>
-
 
 ## Feautures
 List of implemented features:
@@ -38,7 +36,6 @@ List of implemented features:
 - axis aligned box intersections
 - bounding volume hyrarchy hit optimisations for scene objects
 - bounding volume hyrarchy hit optimisations for triangles within a mesh
-
 
 Todo:
 - triangle mesh loading (see https://github.com/assimp/assimp)
