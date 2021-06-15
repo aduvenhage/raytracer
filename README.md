@@ -6,12 +6,15 @@ Never did raytracing before, but tried it now and I'm hooked :-)
 
 ## Gallery
 Some images I have made so far:<br>
-<img src="gallery/raytracing/raytraced_4096.jpeg" alt="Clean raytracing (no monte carlo)" width="300"/>
-<img src="gallery/raytracing/raytraced_bulb2.jpeg" alt="Mandlebulb (raymarched)" width="300"/>
-<img src="gallery/raytracing/raymarched_nougat2.jpeg" alt="Raymarched goodness" width="300"/>
-<img src="gallery/raytracing/raytraced_bvh.jpeg" alt="Tracing many object fast" width="300"/>
-<img src="gallery/raytracing/raytraced_mist.jpeg" alt="Volume scattering" width="300"/>
-<img src="gallery/raytracing/raytraced_smog2.jpeg" alt="Volume scattering" width="300"/>
+<p float="left">
+  <img src="gallery/raytracing/raytraced_4096.jpeg" alt="Clean raytracing (no monte carlo)" width="300"/>
+  <img src="gallery/raytracing/raytraced_bulb2.jpeg" alt="Mandlebulb (raymarched)" width="300"/>
+  <img src="gallery/raytracing/raymarched_nougat2.jpeg" alt="Raymarched goodness" width="300"/>
+  <img src="gallery/raytracing/raytraced_bvh.jpeg" alt="Tracing many object fast" width="300"/>
+  <img src="gallery/raytracing/raytraced_mist.jpeg" alt="Volume scattering" width="300"/>
+  <img src="gallery/raytracing/raytraced_smog2.jpeg" alt="Volume scattering" width="300"/>
+  <img src="gallery/raytracing/raytraced_nougat3.jpeg" alt="Raymarched goodness" width="300"/>
+</p>
 
 
 ## Development
