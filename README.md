@@ -17,29 +17,27 @@ Some images I have made so far:<br>
 </p>
 
 
-## Development
-Done:
+## Feautures
+List of implemented features:
 - rays and viewport
+- camera position and orientation
+- depth-of-field
+
 - ray sphere interactions
 - sphere UV mapping
-- monte-carlo based sampling and materials
-- multi-threaded rendering (through job system) using sub-images
 - generic materials: diffuse, metal, glass, checkered diffuse
-- rotated and translated objects (instancing)
-- rotated box intersections
-- sphere rotations (affects UV)
-- axis aligned box intersections
-- camera position and orientation
-- add bounding volume hyrarchy to scene
-- depth-of-field
 - raymarched materials
 - triangle mesh rendering
-- look at instancing where shapes can be re-used in scene
+
+- monte-carlo based sampling and materials
+- multi-threaded rendering (through job system) using sub-images
+- color variance based per pixel rays (quick exit)
+
+- rotated and translated objects, and re-used objects (instancing)
+- axis aligned box intersections
+- add bounding volume hyrarchy to scene
 - volumes / fog
 
-Busy:
-- profile and update math operations
-- color variance based per pixel rays (quick exit)
 
 Todo:
 - triangle mesh loading (see https://github.com/assimp/assimp)
@@ -49,11 +47,15 @@ Todo:
 - optisation through importance sampling (for lights)
 - de-noising
 
+## Feature blog
+Ramblings on cool features and implementation details.
+
+
 ## Resources
 - http://www.realtimerendering.com/intersections.html
 - https://raytracing.github.io/
 - https://www.scratchapixel.com/
-
+- https://github.com/aras-p/ToyPathTracer
 
 
 
