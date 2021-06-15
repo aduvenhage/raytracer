@@ -1,4 +1,4 @@
-[About Me](https://aduvenhage.github.io/)
+[ --> About Me <-- ](https://aduvenhage.github.io/)
 
 # Raytracing
 Never did raytracing before, but tried it now and I'm hooked :-)
