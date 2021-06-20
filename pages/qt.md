@@ -57,6 +57,8 @@ On each paint event we can manipulate the Qt image buffer directly.
 
 ```
 
+In this case the raytracer should output with the same width, height and color format (RGB888) as the Qt buffer.
+
 
 ## Notes on using CMake
 
