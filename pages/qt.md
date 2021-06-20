@@ -44,6 +44,19 @@ class MainWindow : public QMainWindow
 
 ```
 
+On each paint event we can manipulate the Qt image buffer directly.
+```C++
+   
+   // copy from source to Qt
+   uchar *pDstData = image.bits();
+   uchar *pSrcData = m_pSourceRGB888
+   std::memcpy(pDstData, pSrcData, width * height * 3);
+   
+   // or, just fill image
+   image.fill(Qt::black);
+
+```
+
 
 ## Notes on using CMake
 
