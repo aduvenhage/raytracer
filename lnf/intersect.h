@@ -28,6 +28,17 @@ namespace LNF
              m_bInside(false)
         {}
 
+        Intersect(const Ray &_viewRay) noexcept
+            :m_viewRay(_viewRay),
+             m_pPrimitive(nullptr),
+             m_fPositionOnRay(-1),
+             m_uTriangleIndex(0),
+             m_uTraceDepth(0),
+             m_uMarchDepth(0),
+             m_uIterations(0),
+             m_bInside(false)
+        {}
+
         Intersect(const Intersect &) noexcept = default;
         Intersect(Intersect &&) noexcept = default;
         //Intersect(Intersect &) noexcept = default;

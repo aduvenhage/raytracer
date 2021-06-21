@@ -198,7 +198,7 @@ class MainWindow : public QMainWindow
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(200, Qt::PreciseTimer);
         
-        m_pView = std::make_unique<ViewportScreen>(m_iWidth, m_iHeight, m_fFov);
+        m_pView = std::make_unique<Viewport>(m_iWidth, m_iHeight, m_fFov);
         m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 120);
         m_pView->setCamera(m_pCamera.get());
     }
@@ -206,13 +206,12 @@ class MainWindow : public QMainWindow
  protected:
     virtual void paintEvent(QPaintEvent *_event) {
         QPainter painter(this);
-        QImage image(m_pView->width(), m_pView->height(), QImage::Format_RGB888);
+        QImage image(m_iWidth, m_iHeight, QImage::Format_RGB888);
 
         if (m_pSource != nullptr) {
-            uchar *pDstData = image.bits();
-            uchar *pSrcData = m_pSource->image().data();
-            size_t n = m_pSource->image().size();
-            std::memcpy(pDstData, pSrcData, n);
+            std::memcpy(image.bits(),
+                        m_pSource->image().data(),
+                        m_pSource->image().size());
         }
         else {
             image.fill(Qt::black);
@@ -267,7 +266,7 @@ class MainWindow : public QMainWindow
     
  private:
     const SimpleScene                   *m_pScene;
-    std::unique_ptr<ViewportScreen>     m_pView;
+    std::unique_ptr<Viewport>           m_pView;
     std::unique_ptr<Camera>             m_pCamera;
     std::unique_ptr<LNF::Frame>         m_pSource;
     int                                 m_iFrameCount;
@@ -291,6 +290,8 @@ int main(int argc, char *argv[])
     RandomGen generator{std::random_device()()};
     
     // create scene
+    
+    /*
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     //auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
     auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
@@ -307,8 +308,9 @@ int main(int argc, char *argv[])
     createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 50), 40.0), pGlow);
     createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
     createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
+    */
+    
 
-    /*
     auto pDiffuseRed = createMaterial<Diffuse>(pScene.get(), Color(0.9f, 0.1f, 0.1f));
     auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.9f, 0.1f));
     auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.1f, 0.9f));
@@ -324,8 +326,8 @@ int main(int argc, char *argv[])
     auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0f, 10.0f, 10.0f));
     createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
     
-    //auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
-    auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
+    auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
+    //auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
     
     int n = 200;
     for (int i = 0; i < n; i++) {
@@ -338,7 +340,7 @@ int main(int argc, char *argv[])
         //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
         createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), shapes[i % shapes.size()]);
     }
-    */
+
     
     pScene->build();
 

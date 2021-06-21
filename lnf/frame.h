@@ -11,9 +11,11 @@
 #include "viewport.h"
 #include "scene.h"
 #include "trace.h"
+#include "ray.h"
 
 #include <algorithm>
 #include <chrono>
+#include <random>
 
 
 
@@ -23,15 +25,16 @@ namespace LNF
     class PixelJob  : public Job
     {
      public:
-        PixelJob(OutputImageBuffer *_pImage, const Viewport *_pViewport,
-                 int _i, int _j, int _iBlockWidth, int _iBlockHeight,
+        PixelJob(const OutputImageBuffer *_pImage, int _iLine,
                  const Scene *_pScene,
+                 const Viewport *_pViewport,
                  int _iMaxSamplesPerPixel,
                  int _iMaxDepth,
                  float _fColorTollerance)
-            :m_output(_pImage, _i, _j, _iBlockWidth, _iBlockHeight),
-             m_view(_pViewport, _i, _j),
+            :m_pImage(_pImage),
              m_pScene(_pScene),
+             m_pViewport(_pViewport),
+             m_iLine(_iLine),
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iMaxDepth(_iMaxDepth),
              m_fColorTollerance(_fColorTollerance)
@@ -40,13 +43,65 @@ namespace LNF
         void run()
         {
             thread_local static RandomGen generator;
-            rayTraceImage(&m_output, &m_view, m_pScene, generator, m_iMaxSamplesPerPixel, m_iMaxDepth, m_fColorTollerance);
+
+            RayTracer tracer(m_pScene, generator, m_iMaxDepth);
+            unsigned char *pPixel = (unsigned char *)m_pImage->row(m_iLine);
+            const int iViewWidth = m_pViewport->width();
+            const int iViewHeight = m_pViewport->height();
+            const float fViewAspect = m_pViewport->viewAspect();
+            const float fFovScale = m_pViewport->fovScale();
+            const float fCameraAperature = m_pViewport->camera()->aperture();
+            const float fCameraFocusDistance = m_pViewport->camera()->focusDistance();
+            const float fSubPixelScale = 0.5f / iViewWidth;
+            const float y = (1 - 2 * m_iLine / (float)iViewHeight) * fFovScale;
+            const Axis &axisCameraView = m_pViewport->camera()->axis();
+
+            for (auto i = 0; i < iViewWidth; i++)
+            {
+                const float x = (2 * i / (float)iViewWidth - 1) * fViewAspect * fFovScale;
+                
+                auto stats = ColorStat();
+                for (int k = 0; k < m_iMaxSamplesPerPixel; k++)
+                {
+                    // set ray depth of field and focus aliasing
+                    auto rayOrigin = randomUnitDisc(generator) * fCameraAperature * 0.5;
+                    auto rayFocus = (randomUnitDisc(generator) * fSubPixelScale + Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
+                    
+                    // transform from camera to world
+                    rayOrigin = axisCameraView.transformFrom(rayOrigin);
+                    rayFocus = axisCameraView.transformFrom(rayFocus);
+                    
+                    // create ray
+                    auto ray = Ray(rayOrigin, (rayFocus - rayOrigin).normalized());
+                    
+                    // trace ray
+                    auto color = tracer.trace(ray);
+                    stats.push(color);
+                    
+                    // check color stats for a quick exit
+                    if ( (m_fColorTollerance > 0.0f) &&
+                         (k >= 4 * tracer.traceDepthMax() + 8) &&
+                         (stats.standardDeviation() < m_fColorTollerance) )
+                    {
+                        break;
+                    }
+                }
+                                
+                // write averaged color to output image
+                auto color = stats.mean();
+                color.clamp();
+
+                *(pPixel++) = (int)(255 * color.red() + 0.5);
+                *(pPixel++) = (int)(255 * color.green() + 0.5);
+                *(pPixel++) = (int)(255 * color.blue() + 0.5);
+            }
         }
 
      private:
-        OutputImageBlock               m_output;
-        ViewportBlock                  m_view;
+        const OutputImageBuffer        *m_pImage;
         const Scene                    *m_pScene;
+        const Viewport                 *m_pViewport;
+        int                            m_iLine;
         int                            m_iMaxSamplesPerPixel;
         int                            m_iMaxDepth;
         float                          m_fColorTollerance;
@@ -57,13 +112,12 @@ namespace LNF
     class Frame
     {
      protected:
-        const static int    PIXEL_BLOCK_SIZE    = 16;     // size of pixel blocks jobs work on
-        const static int    JOB_CHUNK_SIZE      = 4;      // number of jobs grabbed by worker
+        const static int    JOB_CHUNK_SIZE      = 8;      // number of jobs grabbed by worker
 
         using clock_type = std::chrono::high_resolution_clock;
         
      public:
-        Frame(const ViewportScreen *_pViewport,
+        Frame(const Viewport *_pViewport,
               const Scene *_pScene,
               int _iNumWorkers,
               int _iMaxSamplesPerPixel,
@@ -73,7 +127,6 @@ namespace LNF
              m_pScene(_pScene),
              m_uJobCount(0),
              m_image(_pViewport->width(), _pViewport->height()),
-             m_iPixelBlockSize(PIXEL_BLOCK_SIZE),
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
              m_iMaxTraceDepth(_iMaxTraceDepth),
@@ -82,7 +135,6 @@ namespace LNF
              m_fFrameProgress(0),
              m_fTimeSpentS(0),
              m_fTimeToFinishS(0),
-             m_uViewRayCount(0),
              m_fRaysPerSecond(0),
              m_bFinished(false)
         {
@@ -127,10 +179,10 @@ namespace LNF
                     m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress * (1 - m_fFrameProgress);
                 }
 
-                // calc rays per second
-                if (m_fTimeSpentS > 1.0f) {
+                // TODO: calc rays per second
+                /*if (m_fTimeSpentS > 1.0f) {
                     m_fRaysPerSecond = m_pViewport->rayCount() / m_fTimeSpentS;
-                }
+                }*/
             }
         }
         
@@ -171,33 +223,17 @@ namespace LNF
      private:
         // split output image into pixel jobs
         void createJobs() {
-            // chop output image into smaller blocks
-            int width = m_image.width();
             int height = m_image.height();
             std::vector<std::unique_ptr<Job>> jobs;
 
-            for (int j = 0; j < height; j += m_iPixelBlockSize) {
-                int iBlockHeight = m_iPixelBlockSize;
-                if (iBlockHeight > height - j) {
-                    iBlockHeight = height - j;
-                }
-
-                for (int i = 0; i < width; i += m_iPixelBlockSize) {
-                    int iBlockWidth = m_iPixelBlockSize;
-                    if (iBlockWidth > width - i) {
-                        iBlockWidth = width - i;
-                    }
-                    
-                    // create a job per block
-                    jobs.push_back(std::make_unique<PixelJob>(&m_image, m_pViewport,
-                                                               i, j, iBlockWidth, iBlockHeight,
-                                                               m_pScene,
-                                                               m_iMaxSamplesPerPixel,
-                                                               m_iMaxTraceDepth,
-                                                               m_fColorTollerance));
-                                                               
-                    m_uJobCount++;
-                }
+            for (int j = 0; j < height; j++) {
+                jobs.push_back(std::make_unique<PixelJob>(&m_image, j,
+                                                           m_pScene,
+                                                           m_pViewport,
+                                                           m_iMaxSamplesPerPixel,
+                                                           m_iMaxTraceDepth,
+                                                           m_fColorTollerance));
+                m_uJobCount++;
             }
             
             // shuffle jobs a little
@@ -213,14 +249,13 @@ namespace LNF
         }
         
      private:
-        const ViewportScreen                    *m_pViewport;
+        const Viewport                          *m_pViewport;
         const Scene                             *m_pScene;
         size_t                                  m_uJobCount;
         JobQueue                                m_jobQueue;
         std::vector<std::unique_ptr<Worker>>    m_workers;
         OutputImageBuffer                       m_image;
         RandomGen                               m_generator;
-        int                                     m_iPixelBlockSize;
         int                                     m_iMaxSamplesPerPixel;
         int                                     m_iNumWorkers;
         int                                     m_iMaxTraceDepth;
@@ -234,7 +269,6 @@ namespace LNF
         float                                   m_fFrameProgress;
         float                                   m_fTimeSpentS;
         float                                   m_fTimeToFinishS;
-        size_t                                  m_uViewRayCount;
         float                                   m_fRaysPerSecond;
         bool                                    m_bFinished;
     };

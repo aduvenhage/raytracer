@@ -205,7 +205,6 @@ namespace LNF
     }
 
 
-
     /*
      3 unit vector axis set
      (sort of like a matrix)

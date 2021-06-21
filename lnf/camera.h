@@ -18,12 +18,9 @@ namespace LNF
         // returns the camera position
         virtual Vec origin() const = 0;
 
-        // rotate from camera/view to world coordinates
-        virtual Vec rotateFrom(const Vec &_vec) const = 0;
-
-        // transform from camera/view to world coordinates
-        virtual Vec transformFrom(const Vec &_vec) const = 0;
-
+        // returns camera view axis
+        virtual const Axis &axis() const = 0;
+        
         // returns camera focus distance
         virtual float focusDistance() const = 0;
 
@@ -49,16 +46,11 @@ namespace LNF
             return m_axis.m_origin;
         }
         
-        // rotate from camera/view to world coordinates
-        virtual Vec rotateFrom(const Vec &_vec) const override {
-            return m_axis.rotateFrom(_vec);
+        // returns camera view axis
+        virtual const Axis &axis() const override {
+            return m_axis;
         }
-
-        // transform from camera/view to world coordinates
-        virtual Vec transformFrom(const Vec &_vec) const override {
-            return m_axis.transformFrom(_vec);
-        }
-
+        
         // returns camera focus distance
         virtual float focusDistance() const override {
             return m_fFocusDist;

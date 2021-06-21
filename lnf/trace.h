@@ -23,7 +23,7 @@ namespace LNF
 {
     /*
         Ray tracing functions and stats.
-        Works an a pre-constructed scene.
+        Works on a pre-constructed scene.
     */
     class RayTracer
     {
@@ -35,20 +35,18 @@ namespace LNF
              m_uTraceDepthMax(0)
         {}
         
-        Color trace(const Ray &_ray, int _iPerPixelRayIndex) {
-            return traceRay(_ray, _iPerPixelRayIndex, 0);
+        Color trace(const Ray &_ray) {
+            return traceRay(_ray, 0);
         }
         
         int traceDepthMax() const {return m_uTraceDepthMax;}
 
      protected:
         /* Trace ray (recursively) through scene */
-        Color traceRay(const Ray &_ray, int _iPerPixelRayIndex, int _iDepth) {
+        Color traceRay(const Ray &_ray, int _iDepth) {
             
             // check for hits on scene
-            Intersect hit;
-            hit.m_viewRay = _ray;
-            
+            Intersect hit(_ray);
             if (m_pScene->hit(hit, m_randomGen) == true) {
                 // update stats
                 hit.m_uTraceDepth = _iDepth+1;
@@ -70,7 +68,7 @@ namespace LNF
                     scatteredRay.m_ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
 
                     // trace again (recursively)
-                    tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iPerPixelRayIndex, _iDepth + 1);
+                    tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iDepth + 1);
                 }
 
                 return tracedColor;
@@ -94,7 +92,6 @@ namespace LNF
         - m_bInside
         - m_uHitIterationCount
         - m_fPositionOnRay
-     
      */
     template <typename sdf_func>
     bool check_marched_hit(Intersect &_hit, float _fMaxDist, const sdf_func &_sdf)
@@ -147,52 +144,6 @@ namespace LNF
         
         return false;       // missed
     }
-
-
-    /* raytrace for a specific view to a specific output block */
-    void rayTraceImage(OutputImage *_pOutput,
-                       const Viewport *_pView,
-                       const Scene *_scene,
-                       RandomGen &_generator,
-                       int _iMaxSamplesPerPixel,
-                       int _iMaxDepth,
-                       float _fColorTollerance)
-    {
-        RayTracer tracer(_scene, _generator, _iMaxDepth);
-
-        // create rays and trace them for all pixels in block
-        for (auto j = 0; j < _pOutput->height(); j++)
-        {
-            unsigned char *pPixel = _pOutput->row(j);
-            for (auto i = 0; i < _pOutput->width(); i++)
-            {
-                auto stats = ColorStat();
-                
-                for (int k = 0; k < _iMaxSamplesPerPixel; k++)
-                {
-                    auto ray = _pView->getRay(i, j, _generator, k);
-                    auto color = tracer.trace(ray, k);
-                    stats.push(color);
-                    
-                    if ( (_fColorTollerance > 0.0f) &&
-                         (k >= 4 * tracer.traceDepthMax() + 8) &&
-                         (stats.standardDeviation() < _fColorTollerance) )
-                    {
-                        break;
-                    }
-                }
-                                
-                // write averaged color to output image
-                auto color = stats.mean();
-                color.clamp();
-
-                *(pPixel++) = (int)(255 * color.red() + 0.5);
-                *(pPixel++) = (int)(255 * color.green() + 0.5);
-                *(pPixel++) = (int)(255 * color.blue() + 0.5);
-            }
-        }
-    }
-    
     
 
 };  // namespace LNF
