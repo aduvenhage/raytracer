@@ -18,9 +18,9 @@ Some images I have made so far:<br>
 ## Feautures
 List of implemented features:
 - Basic Features
--- rays and viewport
--- camera position and orientation
--- depth-of-field
+ - rays and viewport
+ - camera position and orientation
+ - depth-of-field
 
 - Primitives and Meshes
 -- spheres, boxes, planes
