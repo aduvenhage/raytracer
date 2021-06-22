@@ -61,4 +61,29 @@ In this case the raytracer should output with the same width, height and color f
 
 
 ## Notes on using CMake
+I have something like this in my main CMakeLists.txt file
+```
 
+SET(CMAKE_AUTOMOC ON)
+SET(CMAKE_AUTORCC ON)
+SET(CMAKE_AUTOUIC ON)
+
+IF(MAC)
+    FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Widgets)
+ENDIF(MAC)
+IF(WIN32)
+    FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Widgets)
+ENDIF(WIN32)
+
+```
+
+With Qt installed correctly CMake should just find it 🤞
+You can then link in Qt in your target CMakeLists.txt file like this:
+
+```
+
+TARGET_LINK_LIBRARIES(${targetname} Qt6::Widgets)
+
+```
+
+Also, made use of Brew (https://brew.sh) on OSx and vcpkg (https://vcpkg.io) on Windows.
