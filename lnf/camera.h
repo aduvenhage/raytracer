@@ -21,6 +21,9 @@ namespace LNF
         // returns camera view axis
         virtual const Axis &axis() const = 0;
         
+        // returns FOV
+        virtual float fov() const = 0;
+
         // returns camera focus distance
         virtual float focusDistance() const = 0;
 
@@ -35,8 +38,9 @@ namespace LNF
     class SimpleCamera  : public Camera
     {
      public:
-        SimpleCamera(const Vec &_origin, const Vec &_up, const Vec &_lookat, float _fAperture, float _fFocusDist)
+        SimpleCamera(const Vec &_origin, const Vec &_up, const Vec &_lookat, float _fFov, float _fAperture, float _fFocusDist)
             :m_axis(axisLookat(_lookat, _origin, _up)),
+             m_fFov(_fFov),
              m_fAperture(_fAperture),
              m_fFocusDist(_fFocusDist)
         {}
@@ -60,9 +64,15 @@ namespace LNF
         virtual float aperture() const override {
             return m_fAperture;
         }
-        
+
+        // returns FOV
+        virtual float fov() const override {
+            return m_fFov;
+        }
+
      protected:
         Axis    m_axis;
+        float   m_fFov;
         float   m_fAperture;
         float   m_fFocusDist;
     };

@@ -48,12 +48,15 @@ namespace LNF
             unsigned char *pPixel = (unsigned char *)m_pImage->row(m_iLine);
             const int iViewWidth = m_pViewport->width();
             const int iViewHeight = m_pViewport->height();
+            const int iMaxSamplesPerPixel = m_iMaxSamplesPerPixel;
             const float fViewAspect = m_pViewport->viewAspect();
-            const float fFovScale = m_pViewport->fovScale();
+            const float fFov = m_pViewport->camera()->fov();
+            const float fFovScale = tan(fFov * 0.5f);
             const float fCameraAperature = m_pViewport->camera()->aperture();
             const float fCameraFocusDistance = m_pViewport->camera()->focusDistance();
             const float fSubPixelScale = 0.5f / iViewWidth;
             const float y = (1 - 2 * m_iLine / (float)iViewHeight) * fFovScale;
+            const float fColorTollerance = m_fColorTollerance;
             const Axis &axisCameraView = m_pViewport->camera()->axis();
 
             for (auto i = 0; i < iViewWidth; i++)
@@ -61,11 +64,11 @@ namespace LNF
                 const float x = (2 * i / (float)iViewWidth - 1) * fViewAspect * fFovScale;
                 
                 auto stats = ColorStat();
-                for (int k = 0; k < m_iMaxSamplesPerPixel; k++)
+                for (int k = 0; k < iMaxSamplesPerPixel; k++)
                 {
                     // set ray depth of field and focus aliasing
                     auto rayOrigin = randomUnitDisc(generator) * fCameraAperature * 0.5;
-                    auto rayFocus = (randomUnitDisc(generator) * fSubPixelScale + Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
+                    auto rayFocus = (randomUnitSquare(generator) * fSubPixelScale + Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
                     
                     // transform from camera to world
                     rayOrigin = axisCameraView.transformFrom(rayOrigin);
@@ -79,9 +82,9 @@ namespace LNF
                     stats.push(color);
                     
                     // check color stats for a quick exit
-                    if ( (m_fColorTollerance > 0.0f) &&
+                    if ( (fColorTollerance > 0.0f) &&
                          (k >= 4 * tracer.traceDepthMax() + 8) &&
-                         (stats.standardDeviation() < m_fColorTollerance) )
+                         (stats.standardDeviation() < fColorTollerance) )
                     {
                         break;
                     }

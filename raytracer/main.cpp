@@ -191,15 +191,15 @@ class MainWindow : public QMainWindow
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
          m_iMaxSamplesPerPixel(64),
-         m_iMaxTraceDepth(8),
+         m_iMaxTraceDepth(16),
          m_fColorTollerance(0.000000001f)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(200, Qt::PreciseTimer);
         
-        m_pView = std::make_unique<Viewport>(m_iWidth, m_iHeight, m_fFov);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), 1.5, 120);
+        m_pView = std::make_unique<Viewport>(m_iWidth, m_iHeight);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 1.5, 120);
         m_pView->setCamera(m_pCamera.get());
     }
     

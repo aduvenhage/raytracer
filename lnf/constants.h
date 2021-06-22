@@ -40,6 +40,7 @@ namespace LNF
 {
     const float pi     = (float)M_PI;
 
+    // TODO: look into faster alternative random number generator
     using RandomGen    = std::mt19937_64;
     
 
