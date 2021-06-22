@@ -18,27 +18,27 @@ Some images I have made so far:<br>
 ## Feautures
 List of implemented features:
 * Basic Features
-..* rays and viewport
-..* camera position and orientation
-..* depth-of-field
+  * rays and viewport
+  * camera position and orientation
+  * depth-of-field
 
 * Primitives and Meshes
-..* spheres, boxes, planes
-..* sphere UV mapping
-..* triangle mesh rendering
-..* volumes / fog
-..* raymarched objects
-..* generic materials: diffuse, metal, glass, checkered diffuse
-..* procedural materials: fractals, etc.
+  * spheres, boxes, planes
+  * sphere UV mapping
+  * triangle mesh rendering
+  * volumes / fog
+  * raymarched objects
+  * generic materials: diffuse, metal, glass, checkered diffuse
+  * procedural materials: fractals, etc.
 
 * Rendering and optimisations
-..* monte-carlo based sampling and materials
-..* multi-threaded rendering
-..* color variance based per pixel rays (quick exit)
-..* rotated and translated objects, and re-used objects (instancing)
-..* axis aligned box intersections
-..* bounding volume hyrarchy hit optimisations for scene objects
-..* bounding volume hyrarchy hit optimisations for triangles within a mesh
+  * monte-carlo based sampling and materials
+  * multi-threaded rendering
+  * color variance based per pixel rays (quick exit) 
+  * rotated and translated objects, and re-used objects (instancing)
+  * axis aligned box intersections
+  * bounding volume hyrarchy hit optimisations for scene objects
+  * bounding volume hyrarchy hit optimisations for triangles within a mesh
 
 Todo:
 * triangle mesh loading (see https://github.com/assimp/assimp)
