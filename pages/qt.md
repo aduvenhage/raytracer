@@ -86,4 +86,4 @@ TARGET_LINK_LIBRARIES(${targetname} Qt6::Widgets)
 
 ```
 
-Also, made use of Brew (https://brew.sh) on OSx and vcpkg (https://vcpkg.io) on Windows.
+Also, made use of Brew (https://brew.sh) on OSx and vcpkg (https://vcpkg.io) on Windows to install Qt and other libs.
