@@ -13,6 +13,7 @@ Some images I have made so far:<br>
   <img src="gallery/raytracing/raytraced_mist.jpeg" alt="Volume scattering" width="300"/>
   <img src="gallery/raytracing/raytraced_smog2.jpeg" alt="Volume scattering" width="300"/>
   <img src="gallery/raytracing/raytraced_nougat3.jpeg" alt="Raymarched goodness" width="300"/>
+  <img src="gallery/raytracing/raytraced_spheres.jpeg" alt="Refraction" width="300"/>
 </p>
 
 ## Feautures
