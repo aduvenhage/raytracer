@@ -7,3 +7,5 @@
 - recursive version
 - iterative version
 
+## Applied to Triangle Meshes
+
