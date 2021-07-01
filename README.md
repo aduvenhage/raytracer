@@ -41,6 +41,7 @@ List of implemented features:
   * bounding volume hyrarchy hit optimisations for triangles within a mesh
 
 Todo:
+* gamma correction
 * triangle mesh loading (see https://github.com/assimp/assimp)
 * textured objects (texture images)
 * textured area lights
