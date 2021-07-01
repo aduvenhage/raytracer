@@ -23,6 +23,7 @@ SET(INCL_SRC
     primitive.h
     profile.h
     queue.h
+    random.h
     ray.h
     scene.h
     signed_distance_functions.h

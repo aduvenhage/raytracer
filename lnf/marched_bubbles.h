@@ -33,7 +33,7 @@ namespace LNF
         }
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, RandomGen &) const override {
+        virtual bool hit(Intersect &_hit) const override {
             auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
             if (bi.m_intersect == true) {
                 // try to hit surface inside (using raymarching)

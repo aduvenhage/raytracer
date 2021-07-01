@@ -26,7 +26,7 @@ namespace LNF
            Checks for an intersect with a scene object.
            Could be accessed by multiple worker threads concurrently.
          */
-        virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const = 0;
+        virtual bool hit(Intersect &_hit) const = 0;
         
         /*
          Checks for the background color (miss handler).

@@ -73,10 +73,10 @@ class SimpleScene   : public Scene
        Checks for an intersect with a scene object.
        Could be accessed by multiple worker threads concurrently.
      */
-    virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
+    virtual bool hit(Intersect &_hit) const override {
         for (const auto &pObj : m_objects) {
             Intersect nh(_hit);
-            if ( (pObj->hit(nh, _randomGen) == true) &&
+            if ( (pObj->hit(nh) == true) &&
                  ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
             {
                 _hit = nh;
@@ -126,8 +126,8 @@ class SimpleSceneBvh   : public SimpleScene
     {}
         
     // Checks for an intersect with a scene object (could be accessed by multiple worker threads concurrently).
-    virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const override {
-        return checkBvhHit(_hit, m_root, _randomGen);
+    virtual bool hit(Intersect &_hit) const override {
+        return checkBvhHit(_hit, m_root);
     }
 
     // Build acceleration structures
@@ -142,14 +142,12 @@ class SimpleSceneBvh   : public SimpleScene
 
  private:
     // Search for best hit through BVHs
-    bool checkBvhHit(Intersect &_hit,
-                     const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode,
-                     RandomGen &_randomGen) const
+    bool checkBvhHit(Intersect &_hit, const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode) const
     {
         if (_pNode->empty() == false) {
             for (const auto &pObj : _pNode->m_primitives) {
                 Intersect nh(_hit);
-                if ( (pObj->hit(nh, _randomGen) == true) &&
+                if ( (pObj->hit(nh) == true) &&
                      ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
                 {
                     _hit = nh;
@@ -159,12 +157,12 @@ class SimpleSceneBvh   : public SimpleScene
 
         if ( (_pNode->m_left != nullptr) &&
              (_pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
-            checkBvhHit(_hit, _pNode->m_left, _randomGen);
+            checkBvhHit(_hit, _pNode->m_left);
         }
         
         if ( (_pNode->m_right != nullptr) &&
              (_pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
-            checkBvhHit(_hit, _pNode->m_right, _randomGen);
+            checkBvhHit(_hit, _pNode->m_right);
         }
         
         return _hit;
@@ -235,7 +233,7 @@ class MainWindow : public QMainWindow
         else {
             m_pSource->updateFrameProgress();
             printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
-                    m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
+                    (int)m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
             
             if (m_pSource->isFinished() == true) {
                 if (m_bFrameDone == false) {
@@ -287,7 +285,6 @@ int main(int argc, char *argv[])
 {
     // init
     auto pScene = std::make_unique<SimpleSceneBvh>();
-    RandomGen generator{std::random_device()()};
     
     // create scene
     

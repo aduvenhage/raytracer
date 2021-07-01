@@ -3,6 +3,7 @@
 #define LIBS_HEADER_QUEUE_H
 
 #include "constants.h"
+#include "random.h"
 
 #include <atomic>
 #include <thread>
@@ -53,8 +54,8 @@ namespace LNF
         }
         
         template <typename random_gen>
-        void push_shuffle(std::vector<item_type> &_items, random_gen &_randomGen) {
-            std::shuffle(_items.begin(), _items.end(), _randomGen);
+        void push_shuffle(std::vector<item_type> &_items, random_gen &) {
+            std::shuffle(_items.begin(), _items.end(), generator());
             push(_items);
         }
 

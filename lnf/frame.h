@@ -12,15 +12,124 @@
 #include "scene.h"
 #include "trace.h"
 #include "ray.h"
+#include "random.h"
 
 #include <algorithm>
 #include <chrono>
 #include <random>
+#include <atomic>
 
 
 
 namespace LNF
 {
+    /* Gather and calculate frame stats */
+    class FrameStats
+    {
+     private:
+        using clock_type = std::chrono::high_resolution_clock;
+
+     public:
+        FrameStats()
+            :m_uActiveJobs(0),
+             m_uJobCount(0),
+             m_uRayCount(0),
+             m_fFrameProgress(0),
+             m_fTimeSpentS(0),
+             m_fTimeToFinishS(0),
+             m_fRaysPerSecond(0),
+             m_bFinished(false),
+             m_bUpdates(false)
+        {
+            m_tpStart = m_clock.now();
+        }
+        
+        void setJobCount(size_t _uJobCount) {
+            m_uJobCount = _uJobCount;
+        }
+        
+        void setActiveJobs(size_t _uActiveJobs) {
+            if (m_uActiveJobs != _uActiveJobs) {
+                m_uActiveJobs = _uActiveJobs;
+                m_bUpdates = true;
+            }
+        }
+        
+        void updateRayCount(uint64_t _uRayCountDelta) {
+            if (_uRayCountDelta > 0) {
+                m_uRayCount += _uRayCountDelta;
+                m_bUpdates = true;
+            }
+        }
+
+        // recalculate frame stats
+        void update() {
+            if (m_bUpdates == true) {
+                // calc time spent
+                auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now() - m_tpStart).count();
+                m_fTimeSpentS = ns * 1e-9f;
+
+                // calc perf, progress and time to go
+                m_fFrameProgress = (float)(m_uJobCount - m_uActiveJobs) / m_uJobCount;
+                m_bFinished = m_uActiveJobs == 0;
+                
+                if (m_fFrameProgress > 0.01) {
+                    m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress * (1 - m_fFrameProgress);
+                }
+
+                if ( (m_fTimeSpentS > 1.0f) ||
+                     (m_bFinished == true) )
+                {
+                    m_fRaysPerSecond = m_uRayCount / m_fTimeSpentS;
+                }
+                
+                m_bUpdates = false;
+            }
+        }
+        
+        size_t activeJobs() const {
+            return m_uActiveJobs;
+        }
+        
+        float progress() const {
+            return m_fFrameProgress;
+        }
+        
+        float timeToFinish() const {
+            return m_fTimeToFinishS;
+        }
+        
+        float timeTotal() const {
+            return m_fTimeSpentS;
+        }
+        
+        float raysPerSecond() const {
+            return m_fRaysPerSecond;
+        }
+        
+        bool isFinished() const {
+            return m_bFinished;
+        }
+
+     private:
+        clock_type                              m_clock;
+        clock_type::time_point                  m_tpStart;
+        clock_type::time_point                  m_tpEnd;
+        clock_type::time_point                  m_tpPerfCalc;
+        
+        size_t                                  m_uActiveJobs;
+        size_t                                  m_uJobCount;
+        std::atomic<uint64_t>                   m_uRayCount;
+
+        float                                   m_fFrameProgress;
+        float                                   m_fTimeSpentS;
+        float                                   m_fTimeToFinishS;
+        float                                   m_fRaysPerSecond;
+        bool                                    m_bFinished;
+        bool                                    m_bUpdates;
+    };
+
+
     /* Raytracing job (block of pixels on output image) */
     class PixelJob  : public Job
     {
@@ -28,12 +137,14 @@ namespace LNF
         PixelJob(const OutputImageBuffer *_pImage, int _iLine,
                  const Scene *_pScene,
                  const Viewport *_pViewport,
+                 FrameStats *_pFrameStats,
                  int _iMaxSamplesPerPixel,
                  int _iMaxDepth,
                  float _fColorTollerance)
             :m_pImage(_pImage),
              m_pScene(_pScene),
              m_pViewport(_pViewport),
+             m_pFrameStats(_pFrameStats),
              m_iLine(_iLine),
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iMaxDepth(_iMaxDepth),
@@ -42,9 +153,7 @@ namespace LNF
         
         void run()
         {
-            thread_local static RandomGen generator;
-
-            RayTracer tracer(m_pScene, generator, m_iMaxDepth);
+            RayTracer tracer(m_pScene, m_iMaxDepth);
             unsigned char *pPixel = (unsigned char *)m_pImage->row(m_iLine);
             const int iViewWidth = m_pViewport->width();
             const int iViewHeight = m_pViewport->height();
@@ -67,8 +176,8 @@ namespace LNF
                 for (int k = 0; k < iMaxSamplesPerPixel; k++)
                 {
                     // set ray depth of field and focus aliasing
-                    auto rayOrigin = randomUnitDisc(generator) * fCameraAperature * 0.5;
-                    auto rayFocus = (randomUnitSquare(generator) * fSubPixelScale + Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
+                    auto rayOrigin = randomUnitDisc() * fCameraAperature * 0.5;
+                    auto rayFocus = (randomUnitSquare() * fSubPixelScale + Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
                     
                     // transform from camera to world
                     rayOrigin = axisCameraView.transformFrom(rayOrigin);
@@ -98,12 +207,16 @@ namespace LNF
                 *(pPixel++) = (int)(255 * color.green() + 0.5);
                 *(pPixel++) = (int)(255 * color.blue() + 0.5);
             }
+
+            // update frame stats
+            m_pFrameStats->updateRayCount(tracer.rayCount());
         }
 
      private:
         const OutputImageBuffer        *m_pImage;
         const Scene                    *m_pScene;
         const Viewport                 *m_pViewport;
+        FrameStats                     *m_pFrameStats;
         int                            m_iLine;
         int                            m_iMaxSamplesPerPixel;
         int                            m_iMaxDepth;
@@ -117,7 +230,6 @@ namespace LNF
      protected:
         const static int    JOB_CHUNK_SIZE      = 8;      // number of jobs grabbed by worker
 
-        using clock_type = std::chrono::high_resolution_clock;
         
      public:
         Frame(const Viewport *_pViewport,
@@ -133,16 +245,8 @@ namespace LNF
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
              m_iMaxTraceDepth(_iMaxTraceDepth),
-             m_fColorTollerance(_fColorTollerance),
-             m_iActiveJobs(0),
-             m_fFrameProgress(0),
-             m_fTimeSpentS(0),
-             m_fTimeToFinishS(0),
-             m_fRaysPerSecond(0),
-             m_bFinished(false)
+             m_fColorTollerance(_fColorTollerance)
         {
-            m_tpStart = m_clock.now();
-            
             createJobs();
             createWorkers();
         }
@@ -168,49 +272,33 @@ namespace LNF
                 activeJobs = 0;
             }
 
-            // calc time spent
-            auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now() - m_tpStart).count();
-            m_fTimeSpentS = ns * 1e-9f;
-
-            // calc perf, progress and time to go
-            if (activeJobs != m_iActiveJobs) {
-                m_iActiveJobs = activeJobs;
-                m_fFrameProgress = (float)(m_uJobCount - m_iActiveJobs) / m_uJobCount;
-                m_bFinished = m_iActiveJobs == 0;
-                
-                if (m_fFrameProgress > 0.01) {
-                    m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress * (1 - m_fFrameProgress);
-                }
-
-                // TODO: calc rays per second
-                /*if (m_fTimeSpentS > 1.0f) {
-                    m_fRaysPerSecond = m_pViewport->rayCount() / m_fTimeSpentS;
-                }*/
-            }
+            // update stats
+            m_frameStats.setActiveJobs(activeJobs);
+            m_frameStats.update();
         }
         
-        int activeJobs() const {
-            return m_iActiveJobs;
+        size_t activeJobs() const {
+            return m_frameStats.activeJobs();
         }
         
         float progress() const {
-            return m_fFrameProgress;
+            return m_frameStats.progress();
         }
         
         float timeToFinish() const {
-            return m_fTimeToFinishS;
+            return m_frameStats.timeToFinish();
         }
         
         float timeTotal() const {
-            return m_fTimeSpentS;
+            return m_frameStats.timeTotal();
         }
         
         float raysPerSecond() const {
-            return m_fRaysPerSecond;
+            return m_frameStats.raysPerSecond();
         }
         
         bool isFinished() const {
-            return m_bFinished;
+            return m_frameStats.isFinished();
         }
         
         // write current image to file
@@ -226,21 +314,23 @@ namespace LNF
      private:
         // split output image into pixel jobs
         void createJobs() {
-            int height = m_image.height();
+            // create jobs
             std::vector<std::unique_ptr<Job>> jobs;
-
-            for (int j = 0; j < height; j++) {
+            for (int j = 0; j < m_image.height(); j++) {
                 jobs.push_back(std::make_unique<PixelJob>(&m_image, j,
                                                            m_pScene,
                                                            m_pViewport,
+                                                           &m_frameStats,
                                                            m_iMaxSamplesPerPixel,
                                                            m_iMaxTraceDepth,
                                                            m_fColorTollerance));
                 m_uJobCount++;
             }
             
+            m_frameStats.setJobCount(m_uJobCount);
+            
             // shuffle jobs a little
-            m_jobQueue.push_shuffle(jobs, m_generator);
+            m_jobQueue.push_shuffle(jobs, generator());
         }
         
         // create worker threads
@@ -258,22 +348,11 @@ namespace LNF
         JobQueue                                m_jobQueue;
         std::vector<std::unique_ptr<Worker>>    m_workers;
         OutputImageBuffer                       m_image;
-        RandomGen                               m_generator;
+        FrameStats                              m_frameStats;
         int                                     m_iMaxSamplesPerPixel;
         int                                     m_iNumWorkers;
         int                                     m_iMaxTraceDepth;
         float                                   m_fColorTollerance;
-        
-        clock_type                              m_clock;
-        clock_type::time_point                  m_tpStart;
-        clock_type::time_point                  m_tpEnd;
-        clock_type::time_point                  m_tpPerfCalc;
-        int                                     m_iActiveJobs;
-        float                                   m_fFrameProgress;
-        float                                   m_fTimeSpentS;
-        float                                   m_fTimeToFinishS;
-        float                                   m_fRaysPerSecond;
-        bool                                    m_bFinished;
     };
     
     

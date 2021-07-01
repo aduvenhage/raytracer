@@ -80,7 +80,7 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, RandomGen &) const override {
+        virtual bool hit(Intersect &_hit) const override {
             float fPositionOnRay = -1;
             int hitIndex = 0;
             Uv hitUv;

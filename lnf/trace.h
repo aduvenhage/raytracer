@@ -28,26 +28,28 @@ namespace LNF
     class RayTracer
     {
      public:
-        RayTracer(const Scene *_pScene, RandomGen &_randomGen, uint16_t _uMaxTraceDepth)
+        RayTracer(const Scene *_pScene, uint16_t _uMaxTraceDepth)
             :m_pScene(_pScene),
-             m_randomGen(_randomGen),
              m_uTraceLimit(_uMaxTraceDepth),
-             m_uTraceDepthMax(0)
+             m_uTraceDepthMax(0),
+             m_uRayCount(0)
         {}
         
         Color trace(const Ray &_ray) {
             return traceRay(_ray, 0);
         }
         
-        int traceDepthMax() const {return m_uTraceDepthMax;}
+        uint16_t traceDepthMax() const {return m_uTraceDepthMax;}
+        uint64_t rayCount() const {return m_uRayCount;}
 
      protected:
         /* Trace ray (recursively) through scene */
         Color traceRay(const Ray &_ray, int _iDepth) {
+            m_uRayCount++;
             
             // check for hits on scene
             Intersect hit(_ray);
-            if (m_pScene->hit(hit, m_randomGen) == true) {
+            if (m_pScene->hit(hit) == true) {
                 // update stats
                 hit.m_uTraceDepth = _iDepth+1;
                 m_uTraceDepthMax = std::max(hit.m_uTraceDepth, m_uTraceDepthMax);
@@ -56,7 +58,7 @@ namespace LNF
                 hit.m_pPrimitive->intersect(hit);
                 
                 // create scattered, reflected, refracted, etc. ray and color
-                auto scatteredRay = hit.m_pPrimitive->material()->scatter(hit, m_randomGen);
+                auto scatteredRay = hit.m_pPrimitive->material()->scatter(hit);
                 auto tracedColor = scatteredRay.m_emitted;
 
                 // trace recursively and blend colors
@@ -67,7 +69,7 @@ namespace LNF
                     // transform ray back to world space
                     scatteredRay.m_ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
 
-                    // trace again (recursively)
+                    // recursively trace again
                     tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iDepth + 1);
                 }
 
@@ -79,9 +81,9 @@ namespace LNF
         
      private:
         const Scene     *m_pScene;
-        RandomGen       &m_randomGen;
         uint16_t        m_uTraceLimit;
         uint16_t        m_uTraceDepthMax;
+        uint64_t        m_uRayCount;
     };
 
 

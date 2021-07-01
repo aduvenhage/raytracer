@@ -3,7 +3,10 @@
 #define LIBS_HEADER_VEC3_H
 
 #include <array>
+#include <vector>
+
 #include "constants.h"
+#include "random.h"
 
 
 namespace LNF
@@ -441,29 +444,29 @@ namespace LNF
 
 
     // returns a vector within the unit cube (-1..1, -1..1, -1..1)
-    inline Vec randomUnitCube(RandomGen &_randomGen) {
+    inline Vec randomUnitCube() {
         std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
-        return Vec(dist(_randomGen),
-                   dist(_randomGen),
-                   dist(_randomGen));
+        return Vec(dist(generator()),
+                   dist(generator()),
+                   dist(generator()));
     }
 
     
     // returns a vector within the unit disc (-1..1, -1..1, 0)
-    inline Vec randomUnitSquare(RandomGen &_randomGen) {
+    inline Vec randomUnitSquare() {
         std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
-        return Vec(dist(_randomGen),
-                   dist(_randomGen),
+        return Vec(dist(generator()),
+                   dist(generator()),
                    0);
     }
 
     
     // returns a vector within the unit sphere (radius of 1)
-    inline Vec randomUnitSphere(RandomGen &_randomGen) {
-        Vec ret = randomUnitCube(_randomGen);
+    inline Vec randomUnitSphere() {
+        Vec ret = randomUnitCube();
         
         while (ret.sizeSqr() > 1) {
-            ret = randomUnitCube(_randomGen);
+            ret = randomUnitCube();
         }
         
         return ret;
@@ -471,11 +474,11 @@ namespace LNF
 
 
     // returns a vector within the unit disc (y/x plane, radius of 1)
-    inline Vec randomUnitDisc(RandomGen &_randomGen) {
-        Vec ret = randomUnitSquare(_randomGen);
+    inline Vec randomUnitDisc() {
+        Vec ret = randomUnitSquare();
         
         while (ret.sizeSqr() > 1) {
-            ret = randomUnitSquare(_randomGen);
+            ret = randomUnitSquare();
         }
         
         return ret;

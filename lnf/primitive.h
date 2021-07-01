@@ -28,7 +28,7 @@ namespace LNF
         virtual const Material *material() const = 0;
         
         /* Quick node hit check (populates at least critical Intersect properties) */
-        virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const = 0;
+        virtual bool hit(Intersect &_hit) const = 0;
         
         /* Completes the Intersect properties. */
         virtual Intersect &intersect(Intersect &_hit) const = 0;
@@ -76,7 +76,7 @@ namespace LNF
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit, RandomGen &_randomGen) const {
+        virtual bool hit(Intersect &_hit) const {
             // check AA bounding volume first
             if (aaboxIntersectCheck(bounds(), _hit.m_viewRay) == true)
             {
@@ -84,7 +84,7 @@ namespace LNF
                 _hit.m_priRay = transformRayTo(_hit.m_viewRay, m_axis);
                 
                 // check hit
-                bool bHit = m_pTarget->hit(_hit, _randomGen);
+                bool bHit = m_pTarget->hit(_hit);
                 if (bHit == true) {
                     _hit.m_pPrimitive = this;
                     return true;

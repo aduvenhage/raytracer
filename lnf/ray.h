@@ -5,6 +5,7 @@
 #include "color.h"
 #include "vec3.h"
 #include "uv.h"
+#include "random.h"
 
 #include <algorithm>
 #include <limits>
@@ -89,7 +90,7 @@ namespace LNF
 
 
     /* bend vector around normal with specific refraction index */
-    inline Vec refract(const Vec &_vec, const Vec &_normal, float _fEtaiOverEtat, RandomGen &_randomGen)
+    inline Vec refract(const Vec &_vec, const Vec &_normal, float _fEtaiOverEtat)
     {
         // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
         float cosi = -_vec * _normal;
@@ -98,7 +99,7 @@ namespace LNF
         
         // k > 1 ==> total internal reflection
         if ( (k > 1) ||
-             (uniform01(_randomGen) < schlick(cosi, _fEtaiOverEtat)) )
+             (uniform01(generator()) < schlick(cosi, _fEtaiOverEtat)) )
         {
             // total internal reflection
             return _vec + _normal * 2 * cosi;
@@ -111,12 +112,12 @@ namespace LNF
 
 
     /* glass like reflection/refraction (includes surface scatter and inside/outside checks) */
-    inline Vec refract(const Vec &_vec, const Vec &_normal, float _fIndexOfRefraction, bool _bInside, float _fScatter, RandomGen &_randomGen) {
+    inline Vec refract(const Vec &_vec, const Vec &_normal, float _fIndexOfRefraction, bool _bInside, float _fScatter) {
         float dEtaiOverEtat = _bInside ? _fIndexOfRefraction : (1.0f/_fIndexOfRefraction);
-        auto normal = (_normal + randomUnitSphere(_randomGen) * _fScatter).normalized();
+        auto normal = (_normal + randomUnitSphere() * _fScatter).normalized();
         normal *= _bInside ? -1.0f : 1.0f;
         
-        return refract(_vec, normal, dEtaiOverEtat, _randomGen);
+        return refract(_vec, normal, dEtaiOverEtat);
     }
 
 

@@ -20,8 +20,8 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
+        virtual ScatteredRay scatter(const Intersect &_hit) const override {
+            auto scatteredDirection = (_hit.m_normal + randomUnitSphere()).normalized();
             return ScatteredRay(Ray(_hit.m_position, scatteredDirection), color(_hit), Color());
         }
         
@@ -67,7 +67,7 @@ namespace LNF
        {}
        
        /* Returns the scattered ray at the intersection point. */
-       virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+       virtual ScatteredRay scatter(const Intersect &_hit) const override {
             float fIntensity = fabs(_hit.m_normal * _hit.m_priRay.m_direction);
             return ScatteredRay(_hit.m_priRay, Color(), m_color * fIntensity);
        }
@@ -87,8 +87,8 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            auto normal = (_hit.m_normal + randomUnitSphere(_randomGen) * m_fScatter).normalized();
+        virtual ScatteredRay scatter(const Intersect &_hit) const override {
+            auto normal = (_hit.m_normal + randomUnitSphere() * m_fScatter).normalized();
             auto reflectedRay = Ray(_hit.m_position, reflect(_hit.m_priRay.m_direction, normal));
         
             return ScatteredRay(reflectedRay, m_color, Color());
@@ -111,9 +111,9 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+        virtual ScatteredRay scatter(const Intersect &_hit) const override {
             return ScatteredRay(Ray(_hit.m_position,
-                                    refract(_hit.m_priRay.m_direction, _hit.m_normal, m_fIndexOfRefraction, _hit.m_bInside, m_fScatter, _randomGen)),
+                                    refract(_hit.m_priRay.m_direction, _hit.m_normal, m_fIndexOfRefraction, _hit.m_bInside, m_fScatter)),
                                 m_color, Color());
         }
 
@@ -133,9 +133,9 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
+        virtual ScatteredRay scatter(const Intersect &_hit) const override {
             if (_hit.m_bInside == m_bInside) {
-                auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
+                auto scatteredDirection = (_hit.m_normal + randomUnitSphere()).normalized();
                 auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
                 auto color = Color((_hit.m_normal.x() + 1)/2, (_hit.m_normal.y() + 1)/2, (_hit.m_normal.z() + 1)/2);
 
@@ -160,8 +160,8 @@ namespace LNF
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual ScatteredRay scatter(const Intersect &_hit, RandomGen &_randomGen) const override {
-            auto scatteredDirection = (_hit.m_normal + randomUnitSphere(_randomGen)).normalized();
+        virtual ScatteredRay scatter(const Intersect &_hit) const override {
+            auto scatteredDirection = (_hit.m_normal + randomUnitSphere()).normalized();
             auto scatteredRay = Ray(_hit.m_position, scatteredDirection);
             
             auto color = COLOR::Red * _hit.m_uv.u() + COLOR::Green * _hit.m_uv.v() + COLOR::Blue * (1 - _hit.m_uv.u() - _hit.m_uv.v());

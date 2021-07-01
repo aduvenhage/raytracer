@@ -3,7 +3,6 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
-#include <random>
 
 
 #define ALIGN __attribute__((aligned(64)))
@@ -39,10 +38,6 @@ inline float frac(float _a) {
 namespace LNF
 {
     const float pi     = (float)M_PI;
-
-    // TODO: look into faster alternative random number generator
-    using RandomGen    = std::mt19937_64;
-    
 
 };  //namespace LNF
 
