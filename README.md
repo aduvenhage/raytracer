@@ -53,11 +53,11 @@ Todo:
 Ramblings on cool features and implementation details.  And, actually trying to write something down makes me think of improvements.
 
 - [Rendering with Qt](pages/qt.md)
-- [Job system](pages/jobs.md)
-- [Random number generation](pages/random.md)
-- [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md)
-- [Using axis vectors not matrices](pages/axis.md)
-- [Raymarching and mandlebulb](pages/raymarching.md)
+- [Job system](pages/jobs.md) [WIP]
+- [Random number generation](pages/random.md) [WIP]
+- [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
+- [Using axis vectors not matrices](pages/axis.md) [WIP]
+- [Raymarching and mandlebulb](pages/raymarching.md) [WIP]
 
 ## Resources
 - http://www.realtimerendering.com/intersections.html
