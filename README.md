@@ -61,7 +61,6 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Random number generation](pages/random.md) [TODO]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [TODO]
 - [Using axis vectors not matrices](pages/axis.md) [TODO]
-- [Raymarching and mandlebulb](pages/raymarching.md) [TODO]
 
 ## Performance
 [WIP]
