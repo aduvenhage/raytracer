@@ -13,9 +13,10 @@ After that I discovered the 'Raytracing in One Weekend' series (https://raytraci
 
 ## Intercepts
 
-## Advanced primitives
+## Advanced Primitives
 ### Volumes
 ### Raymarching
 
+## Advanced Materials
 
   
