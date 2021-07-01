@@ -225,7 +225,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(4096),
+         m_iMaxSamplesPerPixel(1024),
          m_iMaxTraceDepth(64),
          m_fColorTollerance(0.0f)
     {
@@ -234,7 +234,7 @@ class MainWindow : public QMainWindow
         startTimer(200, Qt::PreciseTimer);
         
         m_pView = std::make_unique<Viewport>(m_iWidth, m_iHeight);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(60, 100, 60), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 2.0, 60);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(15, 50, 15), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 2.0, 20);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -318,6 +318,16 @@ class MainWindow : public QMainWindow
 
 
 
+void loadScene0(Scene *_pScene) {
+    auto pAO = createMaterial<FakeAmbientOcclusion>(_pScene);
+    auto pGlow = createMaterial<Glow>(_pScene);
+    auto pLightWhite = createMaterial<Light>(_pScene, Color(30.0, 30.0, 30.0));
+
+    createPrimitiveInstance<Sphere>(_pScene, axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
+    createPrimitiveInstance<MarchedMandle>(_pScene, axisEulerZYX(0, 1, -0.8, Vec(0, 0, 0), 40.0), pGlow);
+}
+
+
 void loadScene1(Scene *_pScene) {
     auto pDiffuseFloor = createMaterial<DiffuseCheckered>(_pScene, Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
     //auto pDiffuseFog = createMaterial<Diffuse>(_pScene.get(), Color(0.9, 0.9, 0.9));
@@ -396,9 +406,10 @@ int main(int argc, char *argv[])
     // init
     auto pScene = std::make_unique<SimpleSceneBvh>();
     
+    loadScene0(pScene.get());
     //loadScene1(pScene.get());
     //loadScene2(pScene.get());
-    loadScene3(pScene.get());
+    //loadScene3(pScene.get());
     pScene->build();
 
     // start app
