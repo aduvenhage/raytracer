@@ -32,13 +32,13 @@ namespace LNF
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit) const override {
-            static thread_local std::uniform_real_distribution<float> dist(0, m_fVisibility);
-            
             auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
             if (bi.m_intersect == true) {
                 if ( (bi.m_inside == true) ||                    
                      (_hit.m_priRay.inside(bi.m_tmin) == true) )
                 {
+                    std::uniform_real_distribution<float> dist(0, m_fVisibility);
+
                     // calculate random hit point on ray inside volume
                     auto tdist = bi.m_inside ? bi.m_tmax : (bi.m_tmax - bi.m_tmin);
                     auto rdist = dist(generator());

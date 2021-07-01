@@ -72,7 +72,7 @@ namespace LNF
         virtual int completedJobs() const {
             return m_iCompletedJobs;
         }
-
+        
      private:
         // thread entry point
         void run() {

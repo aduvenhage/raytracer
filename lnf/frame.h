@@ -224,7 +224,12 @@ namespace LNF
     };
 
     
-    /* Container for output image and job system for a single frame */
+    /*
+     Container for output image and job system for a single frame
+     
+     TODO: seed worker thread random number generators.
+
+     */
     class Frame
     {
      protected:

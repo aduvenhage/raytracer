@@ -23,6 +23,7 @@
 #include "lnf/uv.h"
 #include "lnf/vec3.h"
 #include "lnf/viewport.h"
+#include "lnf/queue.h"
 
 #include <vector>
 #include <memory>
@@ -127,7 +128,8 @@ class SimpleSceneBvh   : public SimpleScene
         
     // Checks for an intersect with a scene object (could be accessed by multiple worker threads concurrently).
     virtual bool hit(Intersect &_hit) const override {
-        return checkBvhHit(_hit, m_root);
+        return checkBvhHitI(_hit);
+        //return checkBvhHitR(_hit, m_root);
     }
 
     // Build acceleration structures
@@ -141,8 +143,43 @@ class SimpleSceneBvh   : public SimpleScene
     }
 
  private:
-    // Search for best hit through BVHs
-    bool checkBvhHit(Intersect &_hit, const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode) const
+    // Search for best hit through BVHs (iterative)
+    bool checkBvhHitI(Intersect &_hit) const
+    {
+        thread_local static Stack<BvhNode<PrimitiveInstance>*> nodes;
+        nodes.push(m_root.get());
+        
+        while (nodes.empty() == false) {
+            // get last node
+            auto pNode = nodes.pop();
+            
+            // check node hits
+            for (const auto &pObj : pNode->m_primitives) {
+                Intersect nh(_hit);
+                if ( (pObj->hit(nh) == true) &&
+                     ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                {
+                    _hit = nh;
+                }
+            }
+            
+            // go down tree
+            if ( (pNode->m_right != nullptr) &&
+                 (pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
+                nodes.push(pNode->m_right.get());
+            }
+
+            if ( (pNode->m_left != nullptr) &&
+                 (pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
+                nodes.push(pNode->m_left.get());
+            }
+        }
+        
+        return _hit;
+    }
+
+    // Search for best hit through BVHs (recursive)
+    bool checkBvhHitR(Intersect &_hit, const std::unique_ptr<BvhNode<PrimitiveInstance>> &_pNode) const
     {
         if (_pNode->empty() == false) {
             for (const auto &pObj : _pNode->m_primitives) {
@@ -157,12 +194,12 @@ class SimpleSceneBvh   : public SimpleScene
 
         if ( (_pNode->m_left != nullptr) &&
              (_pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
-            checkBvhHit(_hit, _pNode->m_left);
+            checkBvhHitR(_hit, _pNode->m_left);
         }
         
         if ( (_pNode->m_right != nullptr) &&
              (_pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
-            checkBvhHit(_hit, _pNode->m_right);
+            checkBvhHitR(_hit, _pNode->m_right);
         }
         
         return _hit;
@@ -188,16 +225,16 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(64),
-         m_iMaxTraceDepth(16),
-         m_fColorTollerance(0.000000001f)
+         m_iMaxSamplesPerPixel(4096),
+         m_iMaxTraceDepth(64),
+         m_fColorTollerance(0.0f)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(200, Qt::PreciseTimer);
         
         m_pView = std::make_unique<Viewport>(m_iWidth, m_iHeight);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(0, 60, 200), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 1.5, 120);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(60, 100, 60), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 2.0, 60);
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -281,47 +318,41 @@ class MainWindow : public QMainWindow
 
 
 
-int main(int argc, char *argv[])
-{
-    // init
-    auto pScene = std::make_unique<SimpleSceneBvh>();
-    
-    // create scene
-    
-    /*
-    auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene.get(), Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
-    //auto pDiffuseFog = createMaterial<Diffuse>(pScene.get(), Color(0.9, 0.9, 0.9));
-    auto pGlass = createMaterial<Glass>(pScene.get(), Color(0.95, 0.95, 0.95), 0.01, 1.8);
-    auto pMirror = createMaterial<Metal>(pScene.get(), Color(0.95, 0.95, 0.95), 0.02);
-    auto pAO = createMaterial<FakeAmbientOcclusion>(pScene.get());
-    auto pMetalIt = createMaterial<MetalIterations>(pScene.get());
-    auto pGlow = createMaterial<Glow>(pScene.get());
-    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(30.0, 30.0, 30.0));
+void loadScene1(Scene *_pScene) {
+    auto pDiffuseFloor = createMaterial<DiffuseCheckered>(_pScene, Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
+    //auto pDiffuseFog = createMaterial<Diffuse>(_pScene.get(), Color(0.9, 0.9, 0.9));
+    auto pGlass = createMaterial<Glass>(_pScene, Color(0.95, 0.95, 0.95), 0.01, 1.8);
+    auto pMirror = createMaterial<Metal>(_pScene, Color(0.95, 0.95, 0.95), 0.02);
+    auto pAO = createMaterial<FakeAmbientOcclusion>(_pScene);
+    auto pMetalIt = createMaterial<MetalIterations>(_pScene);
+    auto pGlow = createMaterial<Glow>(_pScene);
+    auto pLightWhite = createMaterial<Light>(_pScene, Color(30.0, 30.0, 30.0));
 
-    createPrimitiveInstance<Disc>(pScene.get(), axisIdentity(), 500, pDiffuseFloor);
-    createPrimitiveInstance<Rectangle>(pScene.get(), axisTranslation(Vec(0, 1, 0)), 200, 200, pMirror);
-    //createPrimitiveInstance<SmokeBox>(pScene.get(), axisIdentity(), 400, pDiffuseFog, 400);
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
-    createPrimitiveInstance<MarchedMandle>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(-50, 45, 50), 40.0), pGlow);
-    createPrimitiveInstance<MarchedSphere>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
-    createPrimitiveInstance<MarchedBubbles>(pScene.get(), axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
-    */
-    
+    createPrimitiveInstance<Disc>(_pScene, axisIdentity(), 500, pDiffuseFloor);
+    createPrimitiveInstance<Rectangle>(_pScene, axisTranslation(Vec(0, 1, 0)), 200, 200, pMirror);
+    //createPrimitiveInstance<SmokeBox>(_pScene.get(), axisIdentity(), 400, pDiffuseFog, 400);
+    createPrimitiveInstance<Sphere>(_pScene, axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
+    createPrimitiveInstance<MarchedMandle>(_pScene, axisEulerZYX(0, 1, 0, Vec(-50, 45, 50), 40.0), pGlow);
+    createPrimitiveInstance<MarchedSphere>(_pScene, axisEulerZYX(0, 1, 0, Vec(50, 45, 50), 40.0), 2.0f, pGlass, 0.04f);
+    createPrimitiveInstance<MarchedBubbles>(_pScene, axisEulerZYX(0, 1, 0, Vec(0, 45, -50), 40.0), 2.0f, pGlass);
+}
 
-    auto pDiffuseRed = createMaterial<Diffuse>(pScene.get(), Color(0.9f, 0.1f, 0.1f));
-    auto pDiffuseGreen = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.9f, 0.1f));
-    auto pDiffuseBlue = createMaterial<Diffuse>(pScene.get(), Color(0.1f, 0.1f, 0.9f));
-    
-    auto pMesh1 = createPrimitive<SphereMesh>(pScene.get(), 16, 16, 4, pDiffuseRed);
-    auto pMesh2 = createPrimitive<SphereMesh>(pScene.get(), 16, 16, 4, pDiffuseGreen);
-    auto pMesh3 = createPrimitive<SphereMesh>(pScene.get(), 16, 16, 4, pDiffuseBlue);
 
-    auto pSphere1 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseRed);
-    auto pSphere2 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseGreen);
-    auto pSphere3 = createPrimitive<Sphere>(pScene.get(), 4, pDiffuseBlue);
+void loadScene2(Scene *_pScene) {
+    auto pDiffuseRed = createMaterial<Diffuse>(_pScene, Color(0.9f, 0.1f, 0.1f));
+    auto pDiffuseGreen = createMaterial<Diffuse>(_pScene, Color(0.1f, 0.9f, 0.1f));
+    auto pDiffuseBlue = createMaterial<Diffuse>(_pScene, Color(0.1f, 0.1f, 0.9f));
     
-    auto pLightWhite = createMaterial<Light>(pScene.get(), Color(10.0f, 10.0f, 10.0f));
-    createPrimitiveInstance<Sphere>(pScene.get(), axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
+    auto pMesh1 = createPrimitive<SphereMesh>(_pScene, 16, 16, 4, pDiffuseRed);
+    auto pMesh2 = createPrimitive<SphereMesh>(_pScene, 16, 16, 4, pDiffuseGreen);
+    auto pMesh3 = createPrimitive<SphereMesh>(_pScene, 16, 16, 4, pDiffuseBlue);
+
+    auto pSphere1 = createPrimitive<Sphere>(_pScene, 4, pDiffuseRed);
+    auto pSphere2 = createPrimitive<Sphere>(_pScene, 4, pDiffuseGreen);
+    auto pSphere3 = createPrimitive<Sphere>(_pScene, 4, pDiffuseBlue);
+    
+    auto pLightWhite = createMaterial<Light>(_pScene, Color(10.0f, 10.0f, 10.0f));
+    createPrimitiveInstance<Sphere>(_pScene, axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
     
     auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
     //auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
@@ -333,12 +364,41 @@ int main(int argc, char *argv[])
         float y = 20 * (cos((float)i / n * LNF::pi * 16) + 1);
         float z = 100 * cos((float)i / n * LNF::pi * 2);
 
-        //createPrimitiveInstance<Sphere>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuseRed);
-        //createPrimitiveInstance<SphereMesh>(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
-        createPrimitiveInstance(pScene.get(), axisEulerZYX(0, 0, 0, Vec(x, y, z)), shapes[i % shapes.size()]);
+        //createPrimitiveInstance<Sphere>(_pScene, axisEulerZYX(0, 0, 0, Vec(x, y, z)), 4, pDiffuseRed);
+        //createPrimitiveInstance<SphereMesh>(_pScene, axisEulerZYX(0, 0, 0, Vec(x, y, z)), 32, 16, 4, pDiffuseGreen);
+        createPrimitiveInstance(_pScene, axisEulerZYX(0, 0, 0, Vec(x, y, z)), shapes[i % shapes.size()]);
     }
+}
 
+
+void loadScene3(Scene *_pScene) {
+    auto pDiffuseFloor = createMaterial<DiffuseCheckered>(_pScene, Color(0.1, 1.0, 0.1), Color(0.1, 0.1, 1.0), 2);
+    auto pGlass = createMaterial<Glass>(_pScene, Color(0.99, 0.99, 0.99), 0.01, 1.8);
+    auto pLight = createMaterial<Light>(_pScene, Color(10.0f, 10.0f, 10.0f));
+
+    auto pSphere = createPrimitive<Sphere>(_pScene, 10, pGlass);
+
+    createPrimitiveInstance<Sphere>(_pScene, axisTranslation(Vec(0, 500, 0)), 100, pLight);
+    createPrimitiveInstance<Disc>(_pScene, axisTranslation(Vec(0, -100, 0)), 500, pDiffuseFloor);
+
+    for (int x = -2; x <= 2; x++) {
+        for (int y = -2; y <= 2; y++) {
+            for (int z = -2; z <= 2; z++) {
+                createPrimitiveInstance(_pScene, axisTranslation(Vec(x * 20, y * 20, z * 20)), pSphere);
+            }
+        }
+    }
+}
+                            
+
+int main(int argc, char *argv[])
+{
+    // init
+    auto pScene = std::make_unique<SimpleSceneBvh>();
     
+    //loadScene1(pScene.get());
+    //loadScene2(pScene.get());
+    loadScene3(pScene.get());
     pScene->build();
 
     // start app

@@ -238,6 +238,54 @@ namespace LNF
         uint32_t                       m_uBack;
     };
 
+
+    /* Quick LIFO container */
+    template <typename item_type>
+    class Stack
+    {
+     public:
+        Stack() noexcept
+            :m_items(16, {}),
+             m_uSize(0)
+        {}
+        
+        template <typename T>
+        void push(T &&_item) {
+            if (m_uSize >= m_items.size()) {
+                m_items.push_back(_item);
+            }
+            else {
+                m_items[m_uSize] = _item;
+            }
+            
+            m_uSize++;
+        }
+        
+        item_type pop() {
+            if (!empty()) {
+                m_uSize--;
+                return std::move(m_items[m_uSize]);
+            }
+            
+            return {};
+        }
+        
+        size_t size() const {
+            return m_uSize;
+        }
+        
+        bool empty() const {
+            return m_uSize == 0;
+        }
+        
+        void clear() {
+            m_uSize = 0;
+        }
+        
+     private:
+        std::vector<item_type>  m_items;
+        size_t                  m_uSize;
+    };
     
 };  // namespace LNF
 
