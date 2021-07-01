@@ -63,6 +63,9 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Using axis vectors not matrices](pages/axis.md) [TODO]
 - [Raymarching and mandlebulb](pages/raymarching.md) [TODO]
 
+## Performance
+[WIP]
+
 ## Resources
 - http://www.realtimerendering.com/intersections.html
 - https://raytracing.github.io/
