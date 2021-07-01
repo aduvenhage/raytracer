@@ -1,6 +1,6 @@
 
 # Realtime updates with Qt
-Using Qt 5 to build a simple app that just renders the contents of the raytracing image buffer while workers are still building the images.
+Using Qt to build a simple app that just renders the contents of the raytracing image buffer while workers are still building the images.
 
 ## Application stucture
 We need to create a main window class by inheriting from QMainWindow. We also create a timer with which we will update the view and draw the raytraced frame.  In general the raytracer takes anything from a few seconds to hours to draw a single frame and our application should also show us the raytracer progress by drawing the frame on each timer update, even before it is done rendering.
@@ -61,4 +61,29 @@ In this case the raytracer should output with the same width, height and color f
 
 
 ## Notes on using CMake
+I have something like this in my main CMakeLists.txt file
+```
 
+SET(CMAKE_AUTOMOC ON)
+SET(CMAKE_AUTORCC ON)
+SET(CMAKE_AUTOUIC ON)
+
+IF(MAC)
+    FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Widgets)
+ENDIF(MAC)
+IF(WIN32)
+    FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Widgets)
+ENDIF(WIN32)
+
+```
+
+With Qt installed correctly CMake should just find it 🤞
+You can then link in Qt in your target CMakeLists.txt file like this:
+
+```
+
+TARGET_LINK_LIBRARIES(${targetname} Qt6::Widgets)
+
+```
+
+Also, made use of Brew (https://brew.sh) on OSx and vcpkg (https://vcpkg.io) on Windows to install Qt and other libs.
