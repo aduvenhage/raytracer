@@ -55,11 +55,11 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 
 - [Rendering with Qt](pages/qt.md)
 - [Raytracing basics](pages/raytracing.md) [WIP]
-- [Job system](pages/jobs.md) [WIP]
-- [Random number generation](pages/random.md) [WIP]
-- [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
-- [Using axis vectors not matrices](pages/axis.md) [WIP]
-- [Raymarching and mandlebulb](pages/raymarching.md) [WIP]
+- [Job system](pages/jobs.md) [TODO]
+- [Random number generation](pages/random.md) [TODO]
+- [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [TODO]
+- [Using axis vectors not matrices](pages/axis.md) [TODO]
+- [Raymarching and mandlebulb](pages/raymarching.md) [TODO]
 
 ## Resources
 - http://www.realtimerendering.com/intersections.html
