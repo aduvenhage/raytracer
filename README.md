@@ -48,6 +48,7 @@ Todo:
 * textured area lights
 * replace axis-math with matrix math
 * optisation through importance sampling (for lights)
+* data based optimisations
 * de-noising
 * z-buffer and rasterised debug views (like viewing BVH volumes)
 
