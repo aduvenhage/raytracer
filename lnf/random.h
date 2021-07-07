@@ -20,7 +20,7 @@ namespace LNF
     // seed the random number generator (this should be done per thread)
     template <typename generator_type = default_rand_type>
     void seed(typename generator_type::result_type _uSeed) {
-        generator<generator_type>.seed(_uSeed);
+        generator<generator_type>().seed(_uSeed);
     }
 
 
@@ -28,7 +28,7 @@ namespace LNF
     template <typename generator_type = default_rand_type>
     void seed_auto() {
         thread_local static std::random_device noise;
-        generator<generator_type>.seed(noise());
+        generator<generator_type>().seed(noise());
     }
 
 };  // namespace LNF

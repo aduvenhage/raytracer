@@ -130,7 +130,7 @@ namespace LNF
     };
 
 
-    /* Raytracing job (block of pixels on output image) */
+    /* Raytracing job (line of pixels on output image) */
     class PixelJob  : public Job
     {
      public:
@@ -223,26 +223,43 @@ namespace LNF
         float                          m_fColorTollerance;
     };
 
+
+    /* Raytracing worker (with random seeding) */
+    class PixelWorker   : public Worker
+    {
+     public:
+        PixelWorker(JobQueue *_pJobs, int _iJobChunkSize, uint32_t _uRandSeed)
+            :Worker(_pJobs, _iJobChunkSize),
+             m_uRandomSeed(_uRandSeed)
+        {}
+        
+     private:
+        virtual void onStart() override {
+            seed(m_uRandomSeed);
+        }
+        
+     private:
+        uint32_t    m_uRandomSeed;
+    };
+
     
     /*
      Container for output image and job system for a single frame
      
-     TODO: seed worker thread random number generators.
-
      */
     class Frame
     {
      protected:
-        const static int    JOB_CHUNK_SIZE      = 8;      // number of jobs grabbed by worker
+        const static int    JOB_CHUNK_SIZE      = 4;      // number of jobs grabbed by worker
 
-        
      public:
         Frame(const Viewport *_pViewport,
               const Scene *_pScene,
               int _iNumWorkers,
               int _iMaxSamplesPerPixel,
               int _iMaxTraceDepth,
-              float _fColorTollerance)
+              float _fColorTollerance,
+              uint32_t _uRandSeed)
             :m_pViewport(_pViewport),
              m_pScene(_pScene),
              m_uJobCount(0),
@@ -250,8 +267,11 @@ namespace LNF
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
              m_iMaxTraceDepth(_iMaxTraceDepth),
-             m_fColorTollerance(_fColorTollerance)
+             m_fColorTollerance(_fColorTollerance),
+             m_uRandomSeed(_uRandSeed)
         {
+            generator().seed(m_uRandomSeed);
+
             createJobs();
             createWorkers();
         }
@@ -342,7 +362,7 @@ namespace LNF
         void createWorkers() {
             std::vector<std::unique_ptr<Worker>> workers;
             for (int i = 0; i < m_iNumWorkers; i++) {
-                m_workers.push_back(std::make_unique<Worker>(&m_jobQueue, (int)JOB_CHUNK_SIZE));
+                m_workers.push_back(std::make_unique<PixelWorker>(&m_jobQueue, (int)JOB_CHUNK_SIZE, m_uRandomSeed));
             }
         }
         
@@ -358,6 +378,7 @@ namespace LNF
         int                                     m_iNumWorkers;
         int                                     m_iMaxTraceDepth;
         float                                   m_fColorTollerance;
+        uint32_t                                m_uRandomSeed;
     };
     
     

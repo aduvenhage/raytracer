@@ -70,7 +70,7 @@ namespace LNF
             return m_fFov;
         }
 
-     protected:
+     private:
         Axis    m_axis;
         float   m_fFov;
         float   m_fAperture;

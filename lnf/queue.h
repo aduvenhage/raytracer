@@ -79,7 +79,7 @@ namespace LNF
             return ret;
         }
         
-     protected:
+     private:
         std::queue<item_type>       m_queue;
         std::atomic<int>            m_iSize;
         mutable std::mutex          m_mutex;

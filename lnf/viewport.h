@@ -37,7 +37,7 @@ namespace LNF
             return m_fViewAspect;
         }
         
-     protected:
+     private:
         Camera                      *m_pCamera;
         const int                   m_iWidth;
         const int                   m_iHeight;

@@ -42,6 +42,14 @@
 using namespace LNF;
 
 
+/*
+ TODO:
+ - add camera to load scene function.
+ - add cornell box scene
+ 
+ */
+
+
 // diffuse material
 class DiffuseMandlebrot : public Diffuse
 {
@@ -205,7 +213,7 @@ class SimpleSceneBvh   : public SimpleScene
         return _hit;
     }
     
- protected:
+ private:
     std::unique_ptr<BvhNode<PrimitiveInstance>>      m_root;
 };
 
@@ -225,16 +233,20 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_fFov(60),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(1024),
-         m_iMaxTraceDepth(64),
-         m_fColorTollerance(0.0f)
+         m_iMaxSamplesPerPixel(32),
+         m_iMaxTraceDepth(4),
+         m_fColorTollerance(0.0f),
+         m_uRandSeed(1)
     {
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(200, Qt::PreciseTimer);
         
         m_pView = std::make_unique<Viewport>(m_iWidth, m_iHeight);
-        m_pCamera = std::make_unique<SimpleCamera>(Vec(15, 50, 15), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 2.0, 20);
+
+        //m_pCamera = std::make_unique<SimpleCamera>(Vec(15, 50, 15), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 2.0, 8);
+        m_pCamera = std::make_unique<SimpleCamera>(Vec(220, 50, 15), Vec(0, 1, 0), Vec(0, 5, 0), deg2rad(m_fFov), 2.0, 200);
+
         m_pView->setCamera(m_pCamera.get());
     }
     
@@ -265,7 +277,8 @@ class MainWindow : public QMainWindow
                                                 m_iNumWorkers,
                                                 m_iMaxSamplesPerPixel,
                                                 m_iMaxTraceDepth,
-                                                m_fColorTollerance);
+                                                m_fColorTollerance,
+                                                m_uRandSeed);
         }
         else {
             m_pSource->updateFrameProgress();
@@ -314,6 +327,7 @@ class MainWindow : public QMainWindow
     int                                 m_iMaxSamplesPerPixel;
     int                                 m_iMaxTraceDepth;
     float                               m_fColorTollerance;
+    uint32_t                            m_uRandSeed;
 };
 
 
@@ -406,9 +420,9 @@ int main(int argc, char *argv[])
     // init
     auto pScene = std::make_unique<SimpleSceneBvh>();
     
-    loadScene0(pScene.get());
+    //loadScene0(pScene.get());
     //loadScene1(pScene.get());
-    //loadScene2(pScene.get());
+    loadScene2(pScene.get());
     //loadScene3(pScene.get());
     pScene->build();
 

@@ -74,8 +74,14 @@ namespace LNF
         }
         
      private:
+        virtual void onStart() {}
+        virtual void onFinished() {}
+
+     private:
         // thread entry point
         void run() {
+            onStart();
+
             while (m_bRunning == true) {
                 // grab new jobs if local list is empty
                 if (m_localJobs.empty() == true) {
@@ -96,9 +102,11 @@ namespace LNF
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             }
+            
+            onFinished();
         }
         
-     protected:
+     private:
         std::thread                                 m_thread;
         JobQueue                                    *m_pJobs;
         int                                         m_iJobChunkSize;

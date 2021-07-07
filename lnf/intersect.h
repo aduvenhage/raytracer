@@ -15,6 +15,8 @@ namespace LNF
 
     /*
      Container for intersect attributes and products.
+     
+     TODO: store material to allow for multi-material primitives.
      */
     struct Intersect
     {

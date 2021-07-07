@@ -21,6 +21,10 @@
 
 namespace LNF
 {
+    // constants
+    const float T_MIN = 1e-4f;
+
+
     /*
         Ray tracing functions and stats.
         Works on a pre-constructed scene.
@@ -64,7 +68,7 @@ namespace LNF
                 // trace recursively and blend colors
                 if ( (hit.m_uTraceDepth < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
                     // move slightly to avoid self intersection
-                    scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(1e-4f);
+                    scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(T_MIN);
                     
                     // transform ray back to world space
                     scatteredRay.m_ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
@@ -138,7 +142,7 @@ namespace LNF
             _hit.m_position = _hit.m_priRay.position(distance);
             auto dM = _sdf(_hit.m_position);
             if (dT * dM < -e) {
-                stepScale *= 0.5;
+                stepScale *= 0.8;
             }
             
             dT = dM;
