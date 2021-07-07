@@ -19,7 +19,7 @@ The camera model determines in what direction and from where we cast the initial
 
 The camera is also modelled with a variable aperture and focus distance. The values are a bit fudged, but essentially for each ray we pick a random origin within a disc on the x/y plane and cast it at a virtual pixel on the viewport some distance from the camera. The size of the disc at the camera is controlled by the aperture value and the exact pixel location is varied with some sub-pixel randomness. This gives us and depth-of-field effect, controller by the aperture value, and some anti-aliasing of primitve edges.  The camera ray is transformed from screen space to world using the camera axis before it is used by the raytracer.
 
-It the current version of the raytracer I'm also playing with pixel color stats, stopping the per pixel tracing early if the pixel color variance is low.  This is however still being tweaked, but does make the rendering a bit faster if we do not have to do the full number of samples per pixel.  
+It the current version of the raytracer I'm also playing with pixel color stats, stopping the per pixel tracing early if the pixel color variance is low.  This is however still being tweaked, but does make the rendering a bit faster, since in most cases we do not have to do the full number of samples per pixel.
 
 ## Advanced Primitives
 ### Volumes
