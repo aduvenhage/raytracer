@@ -14,14 +14,18 @@ While primitives determine where rays hit an object, `materials` determine what 
 
 The intercept also includes which material was hit so that the raytracer can go ahead and generate the next set of rays. Currently this is done recursively (i.e. ray is generated, ray is traced and hits something, hit creates more rays off of material and then we go one level deeper.  One optimisation would be to not do this recursively, but to do tracing breadth first, sort rays according to hit material and/or direction and then do the next level of tracing on the sorted rays.  This would help quite a bit when we have many more materials, with large textures etc.
 
-## Camera
+## Camera and Viewport
+The camera model determines in what direction and from where we cast the initial set of rays. The viewport ties together the camera and the output cancas size.  This is used to create the initial set of rays. Normally we would create more than one ray per pixel in the view.  Each ray follows a slightly different path and we then sum up and average out the color to get to the color value of the pixel.
+
+The camera is also modelled with a variable aperture and focus distance. ...
+
+It the current version of the raytracer I'm also playing with pixel color stats, stopping the per pixel tracing early if the pixel color variance is low.  This is however still being tweaked, but does make the rendering a bit faster if we do not have to do the full number of samples per pixel.  
 
 ## Advanced Primitives
 ### Volumes
 ### Raymarching
-
-## Advanced Materials
-
-## Subsurface scattering
+### Advanced Materials
+### Subsurface scattering
+### Caustics
 
   
