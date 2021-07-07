@@ -60,7 +60,7 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Job system](pages/jobs.md) [WIP]
 - [Random number generation](pages/random.md) [WIP]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
-- [Using axis vectors not matrices](pages/axis.md) [TODO]
+- [Using axis vectors not matrices](pages/axis.md) [WIP]
 
 ## Performance
 [WIP]
