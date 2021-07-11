@@ -49,8 +49,8 @@ namespace LNF
     
     
     // create primitive and add to scene as a resource
-    template <typename primitive_type, class... T>
-    Primitive *createPrimitive(Scene *_pScene, T ... t) {
+    template <typename primitive_type, typename scene_ptr_type, class... T>
+    Primitive *createPrimitive(scene_ptr_type &_pScene, T ... t) {
         return static_cast<Primitive*>(
             _pScene->addResource(
                 std::make_unique<primitive_type>(t ...)
@@ -60,7 +60,8 @@ namespace LNF
 
 
     // create new primitive instance that only references the provided primitive resource
-    PrimitiveInstance *createPrimitiveInstance(Scene *_pScene, const Axis &_axis, const Primitive *_pPrimitive) {
+    template <typename scene_ptr_type>
+    PrimitiveInstance *createPrimitiveInstance(scene_ptr_type &_pScene, const Axis &_axis, const Primitive *_pPrimitive) {
         return _pScene->addPrimitiveInstance(
             std::make_unique<PrimitiveInstance>(
                 _pPrimitive,
@@ -71,8 +72,8 @@ namespace LNF
 
 
     // create new primitive instance that owns a primitive (no other instancing possible)
-    template <typename primitive_type, class... T>
-    PrimitiveInstance *createPrimitiveInstance(Scene *_pScene, const Axis &_axis, T ... t) {
+    template <typename primitive_type, typename scene_ptr_type, class... T>
+    PrimitiveInstance *createPrimitiveInstance(scene_ptr_type &_pScene, const Axis &_axis, T ... t) {
         return _pScene->addPrimitiveInstance(
             std::make_unique<PrimitiveInstance>(
                 std::make_unique<primitive_type>(t ...),
@@ -83,8 +84,8 @@ namespace LNF
 
 
     // create material and add to scene as a resource
-    template <typename material_type, class... T>
-    Material *createMaterial(Scene *_pScene, T ... t) {
+    template <typename material_type, typename scene_ptr_type, class... T>
+    Material *createMaterial(scene_ptr_type &_pScene, T ... t) {
         return static_cast<Material*>(
             _pScene->addResource(
                 std::make_unique<material_type>(t ...)

@@ -6,6 +6,7 @@
 #include "material.h"
 #include "color.h"
 #include "intersect.h"
+#include "mandlebrot.h"
 #include "ray.h"
 
 
@@ -55,6 +56,27 @@ namespace LNF
         Color           m_colorA;
         Color           m_colorB;
         int             m_iBlockSize;
+    };
+
+
+    // diffuse material
+    class DiffuseMandlebrot : public Diffuse
+    {
+     public:
+        DiffuseMandlebrot()
+            :Diffuse(Color()),
+             m_mandlebrot(1, 1),
+             m_baseColor(0.4f, 0.2f, 0.1f)
+        {}
+        
+        /* Returns the diffuse color at the given surface position */
+        virtual Color color(const Intersect &_hit) const override {
+            return m_baseColor * (m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v()) * 0.1f + 0.1f);
+        }
+        
+     private:
+        MandleBrot      m_mandlebrot;
+        Color           m_baseColor;
     };
 
 
