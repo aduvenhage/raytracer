@@ -64,7 +64,7 @@ namespace LNF
         }
 
         // recalculate frame stats
-        void update() {
+        bool update() {
             if (m_bUpdates == true) {
                 // calc time spent
                 auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now() - m_tpStart).count();
@@ -74,8 +74,8 @@ namespace LNF
                 m_fFrameProgress = (float)(m_uJobCount - m_uActiveJobs) / m_uJobCount;
                 m_bFinished = m_uActiveJobs == 0;
                 
-                if (m_fFrameProgress > 0.01) {
-                    m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress * (1 - m_fFrameProgress);
+                if (m_fFrameProgress > 0.0001) {
+                    m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress - m_fTimeSpentS;
                 }
 
                 if ( (m_fTimeSpentS > 1.0f) ||
@@ -85,7 +85,10 @@ namespace LNF
                 }
                 
                 m_bUpdates = false;
+                return true;
             }
+            
+            return false;
         }
         
         size_t activeJobs() const {
@@ -291,7 +294,7 @@ namespace LNF
             m_workers.clear();
         }
         
-        void updateFrameProgress() {
+        bool updateFrameProgress() {
             // calc active jobs
             auto completedJobs = 0;
             for (const auto &pWorker : m_workers) {
@@ -305,7 +308,7 @@ namespace LNF
 
             // update stats
             m_frameStats.setActiveJobs(activeJobs);
-            m_frameStats.update();
+            return m_frameStats.update();
         }
         
         size_t activeJobs() const {

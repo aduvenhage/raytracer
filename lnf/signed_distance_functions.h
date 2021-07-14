@@ -34,7 +34,7 @@ namespace LNF
         float BAIL_OUT = 2.0f;
         float POWER = 8.0f;
         float PHASE = 0.0f;
-        int MAX_ITERATIONS = 100;
+        int MAX_ITERATIONS = 200;
         
         Vec z = _p;
         float dr = 1.0;

@@ -54,7 +54,8 @@ using namespace LNF;
 class SimpleScene   : public Scene
 {
  public:
-    SimpleScene()
+    SimpleScene(const Color &_background)
+        :m_backgroundColor(_background)
     {}
         
     /*
@@ -79,7 +80,7 @@ class SimpleScene   : public Scene
      Could be accessed by multiple worker threads concurrently.
      */
     virtual Color backgroundColor() const override {
-        return Color(0.2f, 0.2f, 0.2f);
+        return m_backgroundColor;
     }
 
     /*
@@ -101,6 +102,7 @@ class SimpleScene   : public Scene
     }
     
  protected:
+    Color                                            m_backgroundColor;
     std::vector<std::unique_ptr<Resource>>           m_resources;
     std::vector<std::unique_ptr<PrimitiveInstance>>  m_objects;
 };
@@ -110,7 +112,8 @@ class SimpleScene   : public Scene
 class SimpleSceneBvh   : public SimpleScene
 {
  public:
-    SimpleSceneBvh()
+    SimpleSceneBvh(const Color &_background)
+        :SimpleScene(_background)
     {}
         
     // Checks for an intersect with a scene object (could be accessed by multiple worker threads concurrently).
@@ -221,7 +224,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(128),
+         m_iMaxSamplesPerPixel(2048),
          m_iMaxTraceDepth(64),
          m_fColorTollerance(0.0f),
          m_uRandSeed(1)
@@ -267,10 +270,11 @@ class MainWindow : public QMainWindow
                                                 m_uRandSeed);
         }
         else {
-            m_pSource->updateFrameProgress();
-            printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
-                    (int)m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
-            
+            if (m_pSource->updateFrameProgress() == true) {
+                printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
+                        (int)m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
+            }
+
             if (m_pSource->isFinished() == true) {
                 if (m_bFrameDone == false) {
                     m_pSource->writeJpegFile("raytraced.jpeg", 100);
@@ -313,12 +317,12 @@ class LoaderScene0  : public Loader
 {
  public:
     virtual std::unique_ptr<Scene> loadScene() const override {
-        auto pScene = std::make_unique<SimpleSceneBvh>();
+        auto pScene = std::make_unique<SimpleSceneBvh>(Color(0.5, 0.5, 0.5));
         auto pAO = createMaterial<FakeAmbientOcclusion>(pScene);
         auto pGlow = createMaterial<Glow>(pScene);
-        auto pLightWhite = createMaterial<Light>(pScene, Color(30.0, 30.0, 30.0));
+        auto pLightWhite = createMaterial<Light>(pScene, Color(20.0, 20.0, 20.0));
 
-        createPrimitiveInstance<Sphere>(pScene, axisTranslation(Vec(0, 200, 100)), 30, pLightWhite);
+        createPrimitiveInstance<Sphere>(pScene, axisTranslation(Vec(0, 200, 200)), 30, pLightWhite);
         createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, Vec(0, 0, 0), 40.0), pGlow);
         
         pScene->build();   // build BVH
@@ -326,7 +330,7 @@ class LoaderScene0  : public Loader
     }
 
     virtual std::unique_ptr<Camera> loadCamera() const override {
-        return std::make_unique<SimpleCamera>(Vec(50, 0, 30), Vec(0, 1, 0), Vec(0, 0, 15), deg2rad(60), 5.0, 15);
+        return std::make_unique<SimpleCamera>(Vec(50, 0, 10), Vec(0, 1, 0), Vec(0, 0, 20), deg2rad(60), 0.5, 8);
     }
 };
 
@@ -336,7 +340,7 @@ class LoaderScene1  : public Loader
 {
  public:
     virtual std::unique_ptr<Scene> loadScene() const override {
-        auto pScene = std::make_unique<SimpleSceneBvh>();
+        auto pScene = std::make_unique<SimpleSceneBvh>(Color(0.2, 0.2, 0.2));
         auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene, Color(1.0, 1.0, 1.0), Color(1.0, 0.4, 0.2), 2);
         //auto pDiffuseFog = createMaterial<Diffuse>(_pScene.get(), Color(0.9, 0.9, 0.9));
         auto pGlass = createMaterial<Glass>(pScene, Color(0.95, 0.95, 0.95), 0.01, 1.8);
@@ -369,7 +373,7 @@ class LoaderScene2  : public Loader
 {
  public:
     virtual std::unique_ptr<Scene> loadScene() const override {
-        auto pScene = std::make_unique<SimpleSceneBvh>();
+        auto pScene = std::make_unique<SimpleSceneBvh>(Color(0.2, 0.2, 0.2));
         auto pDiffuseRed = createMaterial<Diffuse>(pScene, Color(0.9f, 0.1f, 0.1f));
         auto pDiffuseGreen = createMaterial<Diffuse>(pScene, Color(0.1f, 0.9f, 0.1f));
         auto pDiffuseBlue = createMaterial<Diffuse>(pScene, Color(0.1f, 0.1f, 0.9f));
@@ -412,7 +416,7 @@ class LoaderScene3  : public Loader
 {
  public:
     virtual std::unique_ptr<Scene> loadScene() const override {
-        auto pScene = std::make_unique<SimpleSceneBvh>();
+        auto pScene = std::make_unique<SimpleSceneBvh>(Color(0.2, 0.2, 0.2));
         auto pDiffuseFloor = createMaterial<DiffuseCheckered>(pScene, Color(0.1, 1.0, 0.1), Color(0.1, 0.1, 1.0), 2);
         auto pGlass = createMaterial<Glass>(pScene, Color(0.99, 0.99, 0.99), 0.01, 1.8);
         auto pLight = createMaterial<Light>(pScene, Color(10.0f, 10.0f, 10.0f));
