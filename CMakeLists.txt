@@ -16,16 +16,22 @@ ENDIF()
 PROJECT(Raytracer)
 
 # build/configuration
+MESSAGE("System: " ${CMAKE_SYSTEM})
+MESSAGE("System name: " ${CMAKE_SYSTEM_NAME})
+MESSAGE("Build tool: " ${CMAKE_BUILD_TOOL})
+
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(MAC ON)
     MESSAGE("Running on MAC")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-IF(NOT MAC)
+ENDIF()
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     SET(WIN32 ON)
     MESSAGE("Running on Win32")
-ENDIF(NOT MAC)
-
-MESSAGE("Build tool: " ${CMAKE_BUILD_TOOL})
+ENDIF()
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    SET(LINUX ON)
+    MESSAGE("Running on Linux")
+ENDIF()
 
 SET(CMAKE_CONFIGURATION_TYPES Debug Release CACHE STRING INTERNAL FORCE)
 SET(CMAKE_CXX_STANDARD 17)
@@ -33,17 +39,6 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # pull in libs
-SET(CMAKE_AUTOMOC ON)
-SET(CMAKE_AUTORCC ON)
-SET(CMAKE_AUTOUIC ON)
-
-IF(MAC)
-    FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Widgets)
-ENDIF(MAC)
-IF(WIN32)
-    FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Widgets)
-ENDIF(WIN32)
-
 FIND_PACKAGE(JPEG REQUIRED)
 
 # default compiler config
@@ -54,20 +49,33 @@ IF(MAC)
     SET(CMAKE_XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "")
     SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -O3 -march=native -ffast-math -Wall -DNDEBUG")
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -Wall  -DDEBUG")
-ENDIF(MAC)
+ENDIF()
 
 IF(WIN32)
     SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG -D_CRT_SECURE_NO_WARNINGS")
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -D_CRT_SECURE_NO_WARNINGS")
-ENDIF(WIN32)
+ENDIF()
 
 # sub-projects
 add_subdirectory("lnf")
-add_subdirectory("raytracer")
+
+# targets
+IF(MAC)
+    add_subdirectory("raytracer")
+    add_subdirectory("raytracer_cli")
+ENDIF()
+IF(WIN32)
+    add_subdirectory("raytracer")
+    add_subdirectory("raytracer_cli")
+ENDIF()
+IF(LINUX)
+    add_subdirectory("raytracer_cli")
+ENDIF()
 
 # non-compiling project files
 SET(PROJ_FILES
     ${CMAKE_SOURCE_DIR}/_config.yml
+    ${CMAKE_SOURCE_DIR}/Dockerfile
     ${CMAKE_SOURCE_DIR}/README.md
     ${CMAKE_SOURCE_DIR}/.gitignore
 )

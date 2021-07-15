@@ -12,7 +12,6 @@
 
 namespace LNF
 {
-
     /*
         Uses lock internally and can handle multiple-producers and consumers.
         Push and pop do not block, except while waiting for locks.

@@ -14,7 +14,6 @@
 
 namespace LNF
 {
-
     /* Job -- generic piece of work for a worker */
     class Job
     {

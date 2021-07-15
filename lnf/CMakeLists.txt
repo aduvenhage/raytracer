@@ -7,10 +7,12 @@ SET(INCL_SRC
     color.h
     constants.h
     default_materials.h
+    example_scenes.h
     frame.h
     intersect.h
     jobs.h
     jpeg.h
+    loader.h
     mandlebrot.h
     material.h
     marched_bubbles.h
@@ -25,7 +27,10 @@ SET(INCL_SRC
     queue.h
     random.h
     ray.h
+    resource.h
     scene.h
+    simple_camera.h
+    simple_scene.h
     signed_distance_functions.h
     smoke_box.h
     sphere.h
