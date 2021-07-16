@@ -1,7 +1,19 @@
 PROJECT(core)
 
 SET(INCL_SRC
-    bvh.h    color.h    constants.h    jobs.h    outputimage.h    profile.h    queue.h    random.h    ray.h    stats.h    strutil.h    uv.h    vec3.h    viewport.h
+    bvh.h
+    color.h
+    constants.h
+    outputimage.h
+    profile.h
+    queue.h
+    random.h
+    ray.h
+    stats.h
+    strutil.h
+    uv.h
+    vec3.h
+    viewport.h
 )
 
 SET(LIB_SRC

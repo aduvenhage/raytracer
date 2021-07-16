@@ -2,6 +2,7 @@ PROJECT(systems)
 
 SET(INCL_SRC
     frame.h
+    jobs.h
     trace.h
 )
 

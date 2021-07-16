@@ -1,0 +1,46 @@
+version: '3'
+
+# NOTE: .env variables are available to this file at build time
+# NOTE: .env variables are made available to containers at runtime (through 'env_file' option)
+# NOTE: build time container variables must be explicitly passed to the container using the 'args' option
+
+services:
+  dash-db:
+    image: postgres:10
+    env_file: ./.env
+    ports:
+     - "${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}"
+    restart: always
+
+  dash:
+    build:
+      context: .
+      args:
+        SRC_DEPLOY_PATH: ${SRC_DEPLOY_PATH}
+      dockerfile: ./deployment/dash/Dockerfile 
+    env_file: ./.env
+    depends_on:
+      - dash-db
+    links:
+      - dash-db
+    command:
+      sh /dash.sh
+    restart: always
+
+  dash-nginx:
+    build:
+      context: .
+      args:
+        SRC_DEPLOY_PATH: ${SRC_DEPLOY_PATH}
+      dockerfile: ./deployment/nginx/Dockerfile 
+    env_file: ./.env
+    ports:
+      - "${APP_PORT_HTTP}:80"
+      - "${APP_PORT_HTTPS}:443"
+    depends_on:
+      - dash
+    links:
+      - dash
+    command:
+      sh /nginx.sh
+    restart: always

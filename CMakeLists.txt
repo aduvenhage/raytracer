@@ -79,7 +79,6 @@ ENDIF()
 # non-compiling project files
 SET(PROJ_FILES
     ${CMAKE_SOURCE_DIR}/_config.yml
-    ${CMAKE_SOURCE_DIR}/Dockerfile
     ${CMAKE_SOURCE_DIR}/README.md
     ${CMAKE_SOURCE_DIR}/.gitignore
 )
@@ -87,17 +86,7 @@ SET(PROJ_FILES
 add_custom_target(proj_files SOURCES ${PROJ_FILES})
 set_source_files_properties(${PROJ_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-# non-compiling pages files
-SET(PAGES_FILES
-    ${CMAKE_SOURCE_DIR}/README.md
-    ${CMAKE_SOURCE_DIR}/pages/axis.md
-    ${CMAKE_SOURCE_DIR}/pages/bvh.md
-    ${CMAKE_SOURCE_DIR}/pages/jobs.md
-    ${CMAKE_SOURCE_DIR}/pages/qt.md
-    ${CMAKE_SOURCE_DIR}/pages/random.md
-    ${CMAKE_SOURCE_DIR}/pages/raytracing.md
-)
+add_subdirectory("pages")
+add_subdirectory("deployment")
 
-add_custom_target(pages SOURCES ${PAGES_FILES})
-set_source_files_properties(${PAGES_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
 

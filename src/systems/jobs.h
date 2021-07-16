@@ -1,8 +1,8 @@
-#ifndef CORE_JOBS_H
-#define CORE_JOBS_H
+#ifndef SYSTEMS_JOBS_H
+#define SYSTEMS_JOBS_H
 
-#include "constants.h"
-#include "queue.h"
+#include "core/constants.h"
+#include "core/queue.h"
 
 #include <atomic>
 #include <memory>
@@ -12,7 +12,7 @@
 
 
 
-namespace CORE
+namespace SYSTEMS
 {
     /* Job -- generic piece of work for a worker */
     class Job
@@ -25,7 +25,7 @@ namespace CORE
 
 
     /* collection of jobs for workers */
-    using JobQueue = Queue<std::unique_ptr<Job>>;
+    using JobQueue = CORE::Queue<std::unique_ptr<Job>>;
 
 
     /* Worker that can execute jobs */
@@ -116,7 +116,7 @@ namespace CORE
     };
 
 
-};  // namespace CORE
+};  // namespace SYSTEMS
 
 
-#endif  // #ifndef CORE_JOBS_H
+#endif  // #ifndef SYSTEMS_JOBS_H

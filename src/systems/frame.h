@@ -5,15 +5,15 @@
 
 
 #include "core/constants.h"
-#include "core/jobs.h"
 #include "core/outputimage.h"
 #include "core/viewport.h"
 #include "core/ray.h"
 #include "core/random.h"
 #include "base/camera.h"
 #include "base/scene.h"
-#include "systems/trace.h"
 #include "utils/jpeg.h"
+#include "jobs.h"
+#include "trace.h"
 
 #include <algorithm>
 #include <chrono>
@@ -135,7 +135,7 @@ namespace SYSTEMS
 
 
     /* Raytracing job (line of pixels on output image) */
-    class PixelJob  : public CORE::Job
+    class PixelJob  : public Job
     {
      public:
         PixelJob(const CORE::OutputImageBuffer *_pImage, int _iLine,
@@ -232,10 +232,10 @@ namespace SYSTEMS
 
 
     /* Raytracing worker (with random seeding) */
-    class PixelWorker   : public CORE::Worker
+    class PixelWorker   : public Worker
     {
      public:
-        PixelWorker(CORE::JobQueue *_pJobs, int _iJobChunkSize, uint32_t _uRandSeed)
+        PixelWorker(JobQueue *_pJobs, int _iJobChunkSize, uint32_t _uRandSeed)
             :Worker(_pJobs, _iJobChunkSize),
              m_uRandomSeed(_uRandSeed)
         {}
@@ -349,7 +349,7 @@ namespace SYSTEMS
         // split output image into pixel jobs
         void createJobs() {
             // create jobs
-            std::vector<std::unique_ptr<CORE::Job>> jobs;
+            std::vector<std::unique_ptr<Job>> jobs;
             for (int j = 0; j < m_image.height(); j++) {
                 jobs.push_back(std::make_unique<PixelJob>(&m_image, j,
                                                            m_pViewport,
@@ -370,7 +370,7 @@ namespace SYSTEMS
         
         // create worker threads
         void createWorkers() {
-            std::vector<std::unique_ptr<CORE::Worker>> workers;
+            std::vector<std::unique_ptr<Worker>> workers;
             for (int i = 0; i < m_iNumWorkers; i++) {
                 m_workers.push_back(std::make_unique<PixelWorker>(&m_jobQueue, (int)JOB_CHUNK_SIZE, m_uRandomSeed));
             }
@@ -381,8 +381,8 @@ namespace SYSTEMS
         const BASE::Camera                         *m_pCamera;
         const BASE::Scene                          *m_pScene;
         size_t                                     m_uJobCount;
-        CORE::JobQueue                             m_jobQueue;
-        std::vector<std::unique_ptr<CORE::Worker>> m_workers;
+        JobQueue                                   m_jobQueue;
+        std::vector<std::unique_ptr<Worker>>       m_workers;
         CORE::OutputImageBuffer                    m_image;
         FrameStats                                 m_frameStats;
         int                                        m_iMaxSamplesPerPixel;
