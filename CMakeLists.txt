@@ -42,7 +42,7 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 FIND_PACKAGE(JPEG REQUIRED)
 
 # default compiler config
-SET(LNF_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
+SET(LNF_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 IF(MAC)
     SET(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym" CACHE STRING "")
@@ -57,7 +57,11 @@ IF(WIN32)
 ENDIF()
 
 # sub-projects
-add_subdirectory("lnf")
+add_subdirectory("src/core")
+add_subdirectory("src/base")
+add_subdirectory("src/detail")
+add_subdirectory("src/systems")
+add_subdirectory("src/utils")
 
 # targets
 IF(MAC)

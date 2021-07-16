@@ -1,8 +1,8 @@
-#include "lnf/camera.h"
-#include "lnf/example_scenes.h"
-#include "lnf/frame.h"
-#include "lnf/scene.h"
-#include "lnf/viewport.h"
+#include "core/viewport.h"
+#include "base/camera.h"
+#include "base/scene.h"
+#include "detail/example_scenes.h"
+#include "systems/frame.h"
 
 #include <chrono>
 #include <memory>
@@ -15,7 +15,10 @@
 
 
 
-using namespace LNF;
+using namespace CORE;
+using namespace BASE;
+using namespace DETAIL;
+using namespace SYSTEMS;
 
 
 class MainWindow : public QMainWindow
