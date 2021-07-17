@@ -2,6 +2,7 @@
 #define CORE_STATS_H
 
 #include "constants.h"
+#include <cmath>
 
 
 namespace CORE
@@ -17,7 +18,7 @@ namespace CORE
         {}
     
         void push(double _x) {
-            if (isnan(_x) == false) {
+            if (std::isnan(_x) == false) {
                 m_uCount++;
                 auto delta = _x - m_dMean;
                 m_dMean += delta / m_uCount;

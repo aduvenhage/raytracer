@@ -11,6 +11,7 @@ echo Root folder content:
 ls
 
 # start rendering
-
+cd raytracer_cli
+./raytracer_cli
 
 exit 1

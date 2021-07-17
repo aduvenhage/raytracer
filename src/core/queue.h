@@ -8,6 +8,7 @@
 #include <atomic>
 #include <thread>
 #include <queue>
+#include <condition_variable>
 
 
 namespace CORE
