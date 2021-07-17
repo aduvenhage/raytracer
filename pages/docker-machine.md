@@ -12,7 +12,7 @@ doctl compute size ls
 # docker-machine
 - create VM (ubuntu 18.04 LTS -- Digital Ocean):
   ```
-  docker-machine create --driver digitalocean --digitalocean-image ubuntu-18-04-x64 --digitalocean-region sfo2 --digitalocean-size c-4 --digitalocean-access-token=... raytracer
+  docker-machine create --driver digitalocean --digitalocean-image ubuntu-18-04-x64 --digitalocean-region sfo3 --digitalocean-size c-4 --digitalocean-access-token=$TOKEN --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" raytracer
   ```
 - activate docker env: `eval $(docker-machine env raytracer) .`
 - deactivate docker env: `eval $(docker-machine env -u)`

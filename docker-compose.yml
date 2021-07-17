@@ -12,4 +12,4 @@ services:
     env_file: ./.env
     command:
       sh /run.sh
-    restart: never
+    restart: always
