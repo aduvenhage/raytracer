@@ -1,15 +1,31 @@
-# install
-brew install docker-machine, doctl
+# Running in the Cloud
+With docker we can containarise our software, which helps with deployability of software.
+Check out docker (https://www.docker.com/) and docker-machine (https://docs.docker.com/machine/) for background.
 
-DO API token: https://cloud.digitalocean.com/account/api/tokens
-doctl auth init [token]
+With docker you can run and mangage containers locally as well as remotely.  In the remote case the docker CLI essentailly points to the remote docker-engine.
+Additionally docker-machine helps provision new instances of machines on cloud services, like Digital Ocean, and AWS and helps maintain some local config (in the environment)
+to easily switch between different remote connections.
 
-# list machine sizes (slugs)
-doctl compute size ls
-`c-4                   8192      4        50      80.00            0.119050`
-`c-32                  65536     32       400     640.00           0.952380`
+I'm using DigitalOcean for my raytracing cloud runner, since I really like their simple and clean interfaces and APIs.  Also the VMs are called Droplets.
+Now I can render a scene with 32 cores, which is much quicker than running on my laptop locally.  Though you have to be carefull
+of the pricing of the higher end VMs :-)
 
-# docker-machine
+For this cloud runner I also revived an older project of mine (https://github.com/aduvenhage/docker-machine-api) to automate the docker-machine calls.
+
+
+## Installing docker-machine
+The install on my macbook was straightforward:
+- Docker: download docker desktop from https://www.docker.com/products/docker-desktop
+- docker-machine: brew install docker-machine, doctl
+- create API token: https://cloud.digitalocean.com/account/api/tokens
+- login on API: doctl auth init $TOKEN
+- list droplet sizes: doctl compute size ls
+  for example:
+  `c-4                   8192      4        50      80.00            0.119050`
+  `c-32                  65536     32       400     640.00           0.952380`
+
+
+## Using docker-machine
 - create VM (ubuntu 18.04 LTS -- Digital Ocean):
   ```
   docker-machine create --driver digitalocean --digitalocean-image ubuntu-18-04-x64 --digitalocean-region sfo3 --digitalocean-size c-4 --digitalocean-access-token=$TOKEN --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" raytracer
@@ -19,8 +35,11 @@ doctl compute size ls
 - ssh into remote machine: `docker-machine ssh raytracer`
 - list machines: `docker-machine ls`
 - remove machines: `docker-machine rm raytracer`
-- provision a system: docker-machine (create --> ssh --> docker-compose up)
+- provision a system: docker-machine (create --> eval ... --> docker-compose up)
 
 - NOTE: Docker containers may not use volumes/shares/mounts. All shared data must be copied from Dockerfiles
 - NOTE: Digital Ocean VMs have to be in the same data center (in this case sfo2) as their floating IPs
+
+## Cloud Runner
+I created a python script to automate the docker-machine calls and I also created a CLI version of the raytracer app.
 

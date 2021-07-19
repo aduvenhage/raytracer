@@ -65,6 +65,6 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader)
 
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_shared<LoaderScene3>();
+    auto pLoader = std::make_shared<LoaderScene0>();
     return runFrame(pLoader);
 }

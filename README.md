@@ -43,6 +43,7 @@ List of implemented features:
   * bounding volume hyrarchy hit optimisations for triangles within a mesh
 
 Todo:
+* cloud runner
 * gamma correction
 * triangle mesh loading (see https://github.com/assimp/assimp)
 * textured objects (texture images)
@@ -57,6 +58,7 @@ Todo:
 Ramblings on cool features and implementation details.  And, actually trying to write something down makes me think of improvements.
 
 - [Rendering with Qt](pages/qt.md)
+- [Running in the cloud with docker-machine](pages/docker-machine.md)
 - [Raytracing basics](pages/raytracing.md) [WIP]
 - [Job system](pages/jobs.md) [WIP]
 - [Random number generation](pages/random.md) [WIP]
