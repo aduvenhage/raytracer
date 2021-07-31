@@ -4,6 +4,13 @@ import click
 
 from docker_machine_api.cl_api import DockerMachine
 
+"""
+TODO:
+- know when to terminate, copy back rendered image and remove remote VM
+- create README.md (incl usage instructions) for cloud_runner
+- accept different cloud provider options AWS/GCE/DO
+"""
+
 
 def start_render_machine(token):
     # create new docker machine
