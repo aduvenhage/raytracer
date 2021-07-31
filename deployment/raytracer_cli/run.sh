@@ -12,6 +12,7 @@ ls
 
 # start rendering
 cd raytracer_cli
-./raytracer_cli
+echo Running $SCENARIO
+./raytracer_cli $SCENARIO
 
 exit 1

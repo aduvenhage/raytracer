@@ -80,6 +80,7 @@ ENDIF()
 SET(PROJ_FILES
     ${CMAKE_SOURCE_DIR}/_config.yml
     ${CMAKE_SOURCE_DIR}/README.md
+    ${CMAKE_SOURCE_DIR}/.env
     ${CMAKE_SOURCE_DIR}/.gitignore
     ${CMAKE_SOURCE_DIR}/docker-compose.yml
 )
@@ -89,5 +90,6 @@ set_source_files_properties(${PROJ_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 add_subdirectory("pages")
 add_subdirectory("deployment")
+add_subdirectory("cloud_runner")
 
 

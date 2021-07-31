@@ -43,10 +43,11 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader)
                                            maxTraceDepth,
                                            colorTollerance,
                                            randSeed);
-    
+
+    printf("Starting with scene ...");
     while (pSource->isFinished() == false) {
         if (pSource->updateFrameProgress() == true) {
-            printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
+            printf("update: active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
                     (int)pSource->activeJobs(), pSource->progress(), pSource->timeToFinish(), pSource->timeTotal(), pSource->raysPerSecond());
         }
         
@@ -65,6 +66,6 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader)
 
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_shared<LoaderScene0>();
+    auto pLoader = std::make_shared<LoaderScene2>();
     return runFrame(pLoader);
 }

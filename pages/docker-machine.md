@@ -10,20 +10,19 @@ I'm using DigitalOcean for my raytracing cloud runner, since I really like their
 Now I can render a scene with 32 cores, which is much quicker than running on my laptop locally.  Though you have to be carefull
 of the pricing of the higher end VMs :-)
 
-For this cloud runner I also revived an older project of mine (https://github.com/aduvenhage/docker-machine-api) to automate the docker-machine calls.
-
-
 ## Installing docker-machine
 The install on my macbook was straightforward:
 - Docker: download docker desktop from https://www.docker.com/products/docker-desktop
 - docker-machine: brew install docker-machine, doctl
 - create API token: https://cloud.digitalocean.com/account/api/tokens
-- login on API: doctl auth init $TOKEN
-- list droplet sizes: doctl compute size ls
+- login on API: `doctl auth init $TOKEN`
+- list droplet sizes: `doctl compute size ls`
   for example:
-  `c-4                   8192      4        50      80.00            0.119050`
-  `c-32                  65536     32       400     640.00           0.952380`
-
+  ```
+  Slug                  Memory    VCPUs    Disk    Price Monthly    Price Hourly
+  c-4                   8192      4        50      80.00            0.119050
+  c-32                  65536     32       400     640.00           0.952380
+  ```
 
 ## Using docker-machine
 - create VM (ubuntu 18.04 LTS -- Digital Ocean):
@@ -42,4 +41,8 @@ The install on my macbook was straightforward:
 
 ## Cloud Runner
 I created a python script to automate the docker-machine calls and I also created a CLI version of the raytracer app.
+For this cloud runner I also revived an older project of mine (https://github.com/aduvenhage/docker-machine-api) to automate the docker-machine calls.
+
+
+
 
