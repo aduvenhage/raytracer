@@ -37,7 +37,6 @@ The install on my macbook was straightforward:
 - provision a system: docker-machine (create --> eval ... --> docker-compose up)
 
 - NOTE: Docker containers may not use volumes/shares/mounts. All shared data must be copied from Dockerfiles
-- NOTE: Digital Ocean VMs have to be in the same data center (in this case sfo2) as their floating IPs
 
 ## Cloud Runner
 I created a python script to automate the docker-machine calls and I also created a CLI version of the raytracer app.

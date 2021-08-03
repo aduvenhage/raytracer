@@ -2,17 +2,11 @@ import logging
 import time
 import click
 
+# https://github.com/aduvenhage/docker-machine-api
 from docker_machine_api.cl_api import DockerMachine
 
-"""
-TODO:
-- know when to terminate, copy back rendered image and remove remote VM
-- create README.md (incl usage instructions) for cloud_runner
-- accept different cloud provider options AWS/GCE/DO
-"""
 
-
-def start_render_machine(token):
+def start_render_machine(token, scenario):
     # create new docker machine
     dm = DockerMachine(name='raytracer',
                        cwd='../',
@@ -21,6 +15,10 @@ def start_render_machine(token):
                             'digitalocean-image': 'ubuntu-18-04-x64', 
                             'digitalocean-access-token': token,
                             'engine-install-url': 'https://releases.rancher.com/install-docker/19.03.9.sh'
+                       },
+                       user_env={
+                           'SCENARIO': scenario,
+                           'OUTPUT': 'raytraced_frame.jpeg'
                        })
 
     dm.tskStartServices()
@@ -28,6 +26,7 @@ def start_render_machine(token):
 
 
 def end_render_machine(dm):
+    dm.tskSecureCopyFromMachine("output/raytraced.jpeg", "raytraced.jpeg")
     dm.tskStopMachine()
     dm.tskKillMachine()
     dm.tskRemoveMachine()
@@ -40,7 +39,7 @@ def runner(token):
     logging.basicConfig(level=20)
     logger = logging.getLogger(__name__)
 
-    dm = start_render_machine(token)
+    dm = start_render_machine(token, 'scene2')
 
     # wait for rendering to complete
     while True:

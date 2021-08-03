@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <map>
 
 
 using namespace CORE;
@@ -29,7 +30,7 @@ const uint32_t randSeed = 1;
 using clock_type = std::chrono::high_resolution_clock;
 
 
-int runFrame(const std::shared_ptr<Loader> &_pLoader)
+int runFrame(const std::shared_ptr<Loader> &_pLoader, const std::string &_strOutputPath)
 {
     auto pViewport = std::make_unique<Viewport>(width, height);
     auto pCamera = _pLoader->loadCamera();
@@ -44,7 +45,7 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader)
                                            colorTollerance,
                                            randSeed);
 
-    printf("Starting with scene ...");
+    printf("Starting with scene ...\n");
     while (pSource->isFinished() == false) {
         if (pSource->updateFrameProgress() == true) {
             printf("update: active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
@@ -54,7 +55,7 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader)
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     
-    pSource->writeJpegFile("raytraced.jpeg", 100);
+    pSource->writeJpegFile(_strOutputPath, 100);
     
     auto td = clock_type::now() - tpInit;
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(td).count();
@@ -64,8 +65,48 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader)
 }
 
 
+std::shared_ptr<Loader> findScenarioLoader(const std::string &_strLoaderName) {
+    static std::map<std::string, std::shared_ptr<Loader>> loaders = {
+        {"scene0", std::make_shared<LoaderScene0>()},
+        {"scene1", std::make_shared<LoaderScene1>()},
+        {"scene2", std::make_shared<LoaderScene2>()},
+        {"scene3", std::make_shared<LoaderScene3>()}
+    };
+
+    auto it = loaders.find(_strLoaderName);
+    if (it != loaders.end()) {
+        return it->second;
+    }
+    else {
+        return nullptr;
+    }
+}
+
+
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_shared<LoaderScene2>();
-    return runFrame(pLoader);
+    // parse command line
+    std::string scenario;
+    std::string output;
+    
+    if (argc == 3) {
+        scenario = argv[1];
+        output = argv[2];
+    }
+    else if (argc == 2){
+        scenario = argv[1];
+        output = "raytraced.jpeg";
+    }
+    
+    printf("Running frame '%s' saving to '%s'\n", scenario.c_str(), output.c_str());
+    
+    // load and run frame
+    auto pLoader = findScenarioLoader(scenario);
+    if (pLoader != nullptr) {
+        return runFrame(pLoader, output);
+    }
+    else {
+        printf("Could not run frame: No scenario loader found!\n");
+        return 1;
+    }
 }

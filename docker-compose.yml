@@ -1,15 +1,14 @@
 version: '3'
-
-# NOTE: .env variables are available to this file at build time
-# NOTE: .env variables are made available to containers at runtime (through 'env_file' option)
-# NOTE: build time container variables must be explicitly passed to the container using the 'args' build option
-
 services:
   raytracer:
     build:
       context: .
       dockerfile: ./deployment/raytracer_cli/Dockerfile
-    env_file: ./.env
+    volumes:
+      - "./output:/var/raytracer"
+    environment:
+      - "SCENARIO=${SCENARIO}"
+      - "OUTPUT=/var/raytracer/${OUTPUT}"
     command:
       sh /run.sh
-    restart: always
+    restart: "no"

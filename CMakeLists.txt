@@ -80,7 +80,6 @@ ENDIF()
 SET(PROJ_FILES
     ${CMAKE_SOURCE_DIR}/_config.yml
     ${CMAKE_SOURCE_DIR}/README.md
-    ${CMAKE_SOURCE_DIR}/.env
     ${CMAKE_SOURCE_DIR}/.gitignore
     ${CMAKE_SOURCE_DIR}/docker-compose.yml
 )

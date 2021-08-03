@@ -11,8 +11,9 @@ echo Root folder content:
 ls
 
 # start rendering
+echo
 cd raytracer_cli
-echo Running $SCENARIO
-./raytracer_cli $SCENARIO
+echo Running: raytracer_cli $SCENARIO $OUTPUT
+./raytracer_cli $SCENARIO $OUTPUT
 
 exit 1
