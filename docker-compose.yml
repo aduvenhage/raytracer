@@ -5,8 +5,9 @@ services:
       context: .
       dockerfile: ./deployment/raytracer_cli/Dockerfile
     volumes:
-      - "./output:/var/raytracer"
+      - "${VOLUME}:/var/raytracer"
     environment:
+      - "VOLUME=${VOLUME}"
       - "SCENARIO=${SCENARIO}"
       - "OUTPUT=/var/raytracer/${OUTPUT}"
     command:

@@ -14,6 +14,7 @@ ls
 echo
 cd raytracer_cli
 echo Running: raytracer_cli $SCENARIO $OUTPUT
+echo Host volume is at $VOLUME
 ./raytracer_cli $SCENARIO $OUTPUT
 
 exit 1

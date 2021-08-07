@@ -18,10 +18,11 @@ def start_render_machine(token, scenario):
                        },
                        user_env={
                            'SCENARIO': scenario,
-                           'OUTPUT': 'raytraced_frame.jpeg'
+                           'OUTPUT': 'raytraced_frame.jpeg',
+                           'VOLUME': '/root/output/'
                        })
 
-    dm.tskStartServices()
+    dm.tskRunServices()
     return dm
 
 
@@ -59,7 +60,7 @@ def runner(token):
             pass
 
         if idle:
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":
