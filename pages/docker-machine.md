@@ -40,7 +40,7 @@ The install on my macbook was straightforward:
 
 ## Cloud Runner
 I created a python script to automate the docker-machine calls and I also created a CLI version of the raytracer app.
-For this cloud runner I also revived an older project of mine (https://github.com/aduvenhage/docker-machine-api) to automate the docker-machine calls.
+For this cloud runner I also revived an older project of mine [https://github.com/aduvenhage/docker-machine-api] to automate the docker-machine calls.
 
 
 

@@ -44,6 +44,7 @@ List of implemented features:
 
 Todo:
 * cloud runner
+* ovcerloaded memory operations to allocate BVH nodes from a single piece of memory.
 * gamma correction
 * triangle mesh loading (see https://github.com/assimp/assimp)
 * textured objects (texture images)
