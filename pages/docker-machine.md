@@ -53,9 +53,9 @@ The script goes through the following steps:
 - kill machine: Terminate remote VM.
 - remove machine: Delete remote VM and cleanup local docker-machine state.
 
-Running on Digitial Ocean:<br>
+Running on Digitial Ocean using all 32 cores:<br>
 <p float="left">
-  <img src="../gallery/cloud_runner/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="70%"/>
+  <img src="../gallery/cloud_runner/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="100%"/>
 </p>
 
 

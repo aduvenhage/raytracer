@@ -4,6 +4,6 @@ For this cloud runner I also revived an older project of mine (https://github.co
 
 # Features
 - [x] use docker-machine to create and run remote instances
+- [x] specify which raytracing scene/scenario to build though the command line
 - [ ] allow using different cloud providers
-- [ ] specify which raytracing scene/scenario to build though the command line
-
+- [ ] optimize VM provisioning (look at pre-built images, etc.)
