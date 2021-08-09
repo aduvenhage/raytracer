@@ -55,7 +55,7 @@ The script goes through the following steps:
 
 Running on Digitial Ocean:<br>
 <p float="left">
-  <img src="../gallery/cloud_runner/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="300"/>
+  <img src="../gallery/cloud_runner/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="70%"/>
 </p>
 
 
