@@ -23,7 +23,7 @@ def start_render_machine(token, scenario):
                            'VOLUME': '/root/output/'
                        })
 
-    dm.tskRunServices()
+    dm.tskRunServices(timeout=60*60)
     dm.tskSecureCopyFromMachine("/root/output/raytraced_frame.jpeg", "raytraced.jpeg")
     dm.tskStopMachine()
     dm.tskKillMachine()
