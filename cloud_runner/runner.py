@@ -23,15 +23,11 @@ def start_render_machine(token, scenario):
                        })
 
     dm.tskRunServices()
-    return dm
-
-
-def end_render_machine(dm):
-    dm.tskSecureCopyFromMachine("output/raytraced.jpeg", "raytraced.jpeg")
+    dm.tskSecureCopyFromMachine("/root/output/raytraced_frame.jpeg", "raytraced.jpeg")
     dm.tskStopMachine()
     dm.tskKillMachine()
     dm.tskRemoveMachine()
-    dm.wait()
+    return dm
 
 
 @click.command('runner')
@@ -43,12 +39,14 @@ def runner(token):
     dm = start_render_machine(token, 'scene2')
 
     # wait for rendering to complete
-    while True:
+    idle = False
+    while dm.busy() or not idle:
         idle = True
         try:
             text = dm._stdout_queue.get(block=False)
             logger.info(text)
             idle = False
+
         except Exception:
             pass
 
@@ -56,11 +54,12 @@ def runner(token):
             text = dm._stderr_queue.get(block=False)
             logger.error(text)
             idle = False
+
         except Exception:
             pass
 
         if idle:
-            time.sleep(0.1)
+            time.sleep(0.2)
 
 
 if __name__ == "__main__":

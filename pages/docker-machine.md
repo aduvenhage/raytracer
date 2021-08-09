@@ -36,12 +36,22 @@ The install on my macbook was straightforward:
 - remove machines: `docker-machine rm raytracer`
 - provision a system: docker-machine (create --> eval ... --> docker-compose up)
 
-- NOTE: Docker containers may not use volumes/shares/mounts. All shared data must be copied from Dockerfiles
+
 
 ## Cloud Runner
 I created a python script to automate the docker-machine calls and I also created a CLI version of the raytracer app.
 For this cloud runner I also revived an older project of mine [https://github.com/aduvenhage/docker-machine-api] to automate the docker-machine calls.
 
+The script goes through the following steps:
+- provision/start VM: docker-machine integrates with the cloud provider API to create the appropriate VM and install docker remotely.
+- get machine IP: Get VM IP (not used for anything at the moment).
+- get machine environment variables: Get docker-machine env variables required for docker to interact with remote VM.  These variables are passed in with each sub-process call so that the apply to the process's environment.
+- get machine status: Check if machine is running or not.
+- run services: Do a docker-compose up call that runs the raytracer_cli application once.
+- secure copy from machine: Copy output image from remote VM back to local host.
+- stop machine: Stop remote VM.
+- kill machine: Terminate remote VM.
+- remove machine: Delete remote VM and cleanup local docker-machine state.
 
 
 
