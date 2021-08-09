@@ -11,7 +11,8 @@ def start_render_machine(token, scenario):
     dm = DockerMachine(name='raytracer',
                        cwd='../',
                        config={
-                            'driver': 'digitalocean', 
+                            'driver': 'digitalocean',
+                            'digitalocean-size': 'c-32',
                             'digitalocean-image': 'ubuntu-18-04-x64', 
                             'digitalocean-access-token': token,
                             'engine-install-url': 'https://releases.rancher.com/install-docker/19.03.9.sh'
@@ -36,7 +37,7 @@ def runner(token):
     logging.basicConfig(level=20)
     logger = logging.getLogger(__name__)
 
-    dm = start_render_machine(token, 'scene2')
+    dm = start_render_machine(token, 'scene0')
 
     # wait for rendering to complete
     idle = False
