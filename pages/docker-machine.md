@@ -45,9 +45,9 @@ For this cloud runner I also revived an older project of mine (https://github.co
 The script goes through the following steps:
 - provision/start VM: docker-machine integrates with the cloud provider API to create the appropriate VM and install docker remotely.
 - get machine IP: Get VM IP (not used for anything at the moment).
-- get machine environment variables: Get docker-machine env variables required for docker to interact with remote VM.  These variables are passed in with each sub-process call so that the apply to the process's environment.
+- get machine environment variables: Get docker-machine env variables required for docker to interact with remote VM.  These variables are passed in with each sub-process call so that they apply to the process's environment.
 - get machine status: Check if machine is running or not.
-- run services: Do a docker-compose up call that runs the raytracer_cli application once.
+- run services: Do a 'docker-compose up' call that runs the raytracer_cli application once.
 - secure copy from machine: Copy output image from remote VM back to local host.
 - stop machine: Stop remote VM.
 - kill machine: Terminate remote VM.
