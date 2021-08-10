@@ -43,7 +43,7 @@ List of implemented features:
   * bounding volume hyrarchy hit optimisations for triangles within a mesh
 
 * Advanced Features
- * cloud runner
+  * cloud runner
 
 Todo:
 * overloaded memory operations to allocate BVH nodes from a single piece of memory.
@@ -60,9 +60,8 @@ Todo:
 ## Feature blog
 Ramblings on cool features and implementation details.  And, actually trying to write something down makes me think of improvements.
 
-- [Overview of Raytracing Performance](pages/performance.md)
 - [Rendering with Qt](pages/qt.md)
-- [Running in the cloud with docker-machine](pages/docker-machine.md)
+- [Running in the cloud with docker-machine](pages/docker-machine.md) [WIP]
 - [Raytracing basics](pages/raytracing.md) [WIP]
 - [Job system](pages/jobs.md) [WIP]
 - [Random number generation](pages/random.md) [WIP]
