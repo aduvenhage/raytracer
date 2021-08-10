@@ -42,8 +42,10 @@ List of implemented features:
   * bounding volume hyrarchy hit optimisations for scene objects
   * bounding volume hyrarchy hit optimisations for triangles within a mesh
 
+* Advanced Features
+ * cloud runner
+
 Todo:
-* cloud runner
 * overloaded memory operations to allocate BVH nodes from a single piece of memory.
 * gamma correction
 * triangle mesh loading (see https://github.com/assimp/assimp)
@@ -58,6 +60,7 @@ Todo:
 ## Feature blog
 Ramblings on cool features and implementation details.  And, actually trying to write something down makes me think of improvements.
 
+- [Overview of Raytracing Performance](pages/performance.md)
 - [Rendering with Qt](pages/qt.md)
 - [Running in the cloud with docker-machine](pages/docker-machine.md)
 - [Raytracing basics](pages/raytracing.md) [WIP]
@@ -65,9 +68,6 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Random number generation](pages/random.md) [WIP]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
 - [Coordinates, Axis & Matrices](pages/axis.md) [WIP]
-
-## Performance
-[WIP]
 
 ## Resources
 - https://www.realtimerendering.com/intersections.html
