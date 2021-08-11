@@ -519,6 +519,8 @@ namespace CORE
      alpha - angle around Z axis
      beta  - angle around Y axis
      gamma - angle around X axis
+     
+     Relies on right handed coordinate system (with y up).
      */
     template <typename P>
     Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma, P &&_origin, float _fScale = 1.0f) {
@@ -543,6 +545,8 @@ namespace CORE
      alpha - angle around Z axis
      beta  - angle around Y axis
      gamma - angle around X axis
+     
+     Relies on right handed coordinate system (with y up).
      */
     inline Axis axisEulerZYX(float _fAlpha, float _fBeta, float _fGamma) {
         return axisEulerZYX(_fAlpha, _fBeta, _fGamma, Vec{0, 0, 0});
@@ -551,6 +555,8 @@ namespace CORE
 
     /*
      Creates a lookat at axis set.
+     Relies on right handed coordinate system (with y up).
+
      lookat - position camera is aiming at
      origin - position of camera
      up - local camera 'up' vector

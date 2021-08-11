@@ -69,11 +69,11 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Coordinates, Axis & Matrices](pages/axis.md) [WIP]
 
 ## Resources
-- https://www.realtimerendering.com/intersections.html
-- https://www.realtimerendering.com/raytracinggems/
-- https://raytracing.github.io/
-- https://www.scratchapixel.com/
-- https://github.com/aras-p/ToyPathTracer
+- <https://www.realtimerendering.com/intersections.html>
+- <https://www.realtimerendering.com/raytracinggems/>
+- <https://raytracing.github.io/>
+- <https://www.scratchapixel.com/>
+- <https://github.com/aras-p/ToyPathTracer>
 
 
 

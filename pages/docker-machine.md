@@ -1,6 +1,6 @@
 # Running in the Cloud
 With docker we can containarise our software, which helps with deployability of software.
-Check out docker (https://www.docker.com/) and docker-machine (https://docs.docker.com/machine/) for background.
+Check out docker <https://www.docker.com/> and docker-machine <https://docs.docker.com/machine/> for background.
 
 With docker you can run and mangage containers locally as well as remotely.  In the remote case the docker CLI essentailly points to the remote docker-engine.
 Additionally docker-machine helps provision new instances of machines on cloud services, like Digital Ocean, and AWS and helps maintain some local config (in the environment)
@@ -12,9 +12,9 @@ of the pricing of the higher end VMs :-)
 
 ## Installing docker-machine
 The install on my macbook was straightforward:
-- Docker: download docker desktop from https://www.docker.com/products/docker-desktop
+- Docker: download docker desktop from <https://www.docker.com/products/docker-desktop>
 - docker-machine: brew install docker-machine, doctl
-- create API token: https://cloud.digitalocean.com/account/api/tokens
+- create API token: <https://cloud.digitalocean.com/account/api/tokens>
 - login on API: `doctl auth init $TOKEN`
 - list droplet sizes: `doctl compute size ls`
   for example:
@@ -37,10 +37,9 @@ The install on my macbook was straightforward:
 - provision a system: docker-machine (create --> eval ... --> docker-compose up)
 
 
-
 ## Cloud Runner
 I created a python script to automate the docker-machine calls and I also created a CLI version of the raytracer app.
-For this cloud runner I also revived an older project of mine (https://github.com/aduvenhage/docker-machine-api) to automate the docker-machine calls.
+For this cloud runner I also revived an older project of mine <https://github.com/aduvenhage/docker-machine-api> to automate the docker-machine calls.
 
 The script goes through the following steps:
 - provision/start VM: docker-machine integrates with the cloud provider API to create the appropriate VM and install docker remotely.
@@ -55,7 +54,7 @@ The script goes through the following steps:
 
 Running on Digitial Ocean using all 32 cores:<br>
 <p float="left">
-  <img src="../gallery/cloud_runner/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="100%"/>
+  <img src="./images/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="100%"/>
 </p>
 
 
