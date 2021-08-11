@@ -75,6 +75,7 @@ std::shared_ptr<Loader> findScenarioLoader(const std::string &_strLoaderName) {
 
     auto it = loaders.find(_strLoaderName);
     if (it != loaders.end()) {
+        printf("Scene %s loaded.\n", _strLoaderName.c_str());
         return it->second;
     }
     else {

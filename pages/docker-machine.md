@@ -27,7 +27,7 @@ The install on my macbook was straightforward:
 ## Using docker-machine
 - create VM (ubuntu 18.04 LTS -- Digital Ocean):
   ```
-  docker-machine create --driver digitalocean --digitalocean-image ubuntu-18-04-x64 --digitalocean-region sfo3 --digitalocean-size c-4 --digitalocean-access-token=$TOKEN --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" raytracer
+  docker-machine create --driver digitalocean --digitalocean-image ubuntu-18-04-x64 --digitalocean-region sfo3 --digitalocean-size c-32 --digitalocean-access-token=$TOKEN --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" raytracer
   ```
 - activate docker env: `eval $(docker-machine env raytracer) .`
 - deactivate docker env: `eval $(docker-machine env -u)`
@@ -44,7 +44,7 @@ For this cloud runner I also revived an older project of mine <https://github.co
 The script goes through the following steps:
 - provision/start VM: docker-machine integrates with the cloud provider API to create the appropriate VM and install docker remotely.
 - get machine IP: Get VM IP (not used for anything at the moment).
-- get machine environment variables: Get docker-machine env variables required for docker to interact with remote VM.  These variables are passed in with each sub-process call so that they apply to the process's environment.
+- get machine environment variables: Get docker-machine env variables required for docker to interact with remote VM.  These variables are passed in with each sub-process call so that they apply to the process's environment, which is required for docker commands to apply remotely.
 - get machine status: Check if machine is running or not.
 - run services: Do a 'docker-compose up' call that runs the raytracer_cli application once.
 - secure copy from machine: Copy output image from remote VM back to local host.
