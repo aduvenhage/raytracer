@@ -60,8 +60,10 @@ The script goes through the following steps:
 Running in the cloud, you can get much more resources than what is available on a typical laptop, when you need it.  The current script creates the VM, runs one frame and then destroys the VM.  The overhead of creating and managing the VM should be small compared to the rendering of the frame for this to really make sense.  Rendering more than one frame at a time is not yet supported.
 
 ## Some results
-For testing I used a scene of stacked glass balls.
-<img src="../gallery/raytracing/raytraced_do.jpeg" alt="Cloud Rendered" width="300"/>
+For testing I used a scene of stacked glass balls.<br>
+<p float="left">
+  <img src="../gallery/raytracing/raytraced_do.jpeg" alt="Cloud Rendered" width="300"/>
+</p>
 
 The following table shows rendering results on my Macbook and on different DigitalOcean droplets:
 
