@@ -61,7 +61,7 @@ Running in the cloud, you can get much more resources than what is available on 
 
 ## Some results
 For testing I used a scene of stacked glass balls.
-<img src="./gallery/raytracing/raytraced_do.jpeg" alt="Cloud Rendered" width="300"/>
+<img src="../gallery/raytracing/raytraced_do.jpeg" alt="Cloud Rendered" width="300"/>
 
 The following table shows rendering results on my Macbook and on different DigitalOcean droplets:
 
