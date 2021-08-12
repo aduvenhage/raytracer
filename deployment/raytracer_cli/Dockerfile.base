@@ -1,0 +1,9 @@
+# Base image for raytracer cli
+# (debian, including build essentials, cmake, etc.)
+# How to build:
+# - docker build -t arnoduvenhage/raytracer_cli - Dockerfile.base . --no-cache
+# - docker push arnoduvenhage/raytracer_cli
+FROM debian:buster-slim
+
+RUN apt-get update && \
+    apt-get install -y build-essential cmake libjpeg-dev

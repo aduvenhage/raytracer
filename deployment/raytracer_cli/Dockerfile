@@ -1,12 +1,9 @@
-FROM debian:buster-slim
-WORKDIR /usr/local/raytracer
+FROM arnoduvenhage/raytracer_cli
 
-RUN apt-get update && \
-    apt-get install -y build-essential cmake libjpeg-dev
+WORKDIR /usr/local/raytracer
 
 COPY . .
 COPY ./deployment/raytracer_cli/run.sh /run.sh
-
 
 RUN cmake -DCMAKE_BUILD_TYPE=RELEASE && \
     make -j4

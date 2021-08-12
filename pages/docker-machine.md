@@ -15,7 +15,7 @@ The install on my macbook was straightforward:
 - Docker: download docker desktop from <https://www.docker.com/products/docker-desktop>
 - docker-machine: brew install docker-machine, doctl
 - create API token: <https://cloud.digitalocean.com/account/api/tokens>
-- login on API: `doctl auth init $TOKEN`
+- login on API: `doctl auth init -t $TOKEN`
 - list droplet sizes: `doctl compute size ls`
   for example:
   ```

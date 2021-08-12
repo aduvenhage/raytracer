@@ -2,7 +2,9 @@ PROJECT(deployment)
 
 # non-compiling pages files
 SET(DEPLOYMENT_FILES
-    raytracer_cli/Dockerfile    raytracer_cli/run.sh
+    raytracer_cli/Dockerfile
+    raytracer_cli/Dockerfile.base
+    raytracer_cli/run.sh
 )
 
 add_custom_target(deployment SOURCES ${DEPLOYMENT_FILES})

@@ -19,10 +19,10 @@ using namespace DETAIL;
 using namespace SYSTEMS;
 
 
-const int width = 1024;
-const int height = 768;
+const int width = 1600;
+const int height = 1200;
 const int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 2u);
-const int maxSamplesPerPixel = 64;
+const int maxSamplesPerPixel = 256;
 const int maxTraceDepth = 64;
 const float colorTollerance = 0.0f;
 const uint32_t randSeed = 1;
