@@ -37,7 +37,7 @@ def runner(token):
     logging.basicConfig(level=20)
     logger = logging.getLogger(__name__)
 
-    dm = start_render_machine(token, 'scene0')
+    dm = start_render_machine(token, 'scene2')
 
     # wait for rendering to complete
     idle = False

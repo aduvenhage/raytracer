@@ -41,6 +41,11 @@ The install on my macbook was straightforward:
 I created a python script to automate the docker-machine calls and I also created a CLI version of the raytracer app.
 For this cloud runner I also revived an older project of mine <https://github.com/aduvenhage/docker-machine-api> to automate the docker-machine calls.
 
+Running on Digitial Ocean using all 32 cores:<br>
+<p float="left">
+  <img src="./images/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="100%"/>
+</p>
+
 The script goes through the following steps:
 - provision/start VM: docker-machine integrates with the cloud provider API to create the appropriate VM and install docker remotely.
 - get machine IP: Get VM IP (not used for anything at the moment).
@@ -52,9 +57,8 @@ The script goes through the following steps:
 - kill machine: Terminate remote VM.
 - remove machine: Delete remote VM and cleanup local docker-machine state.
 
-Running on Digitial Ocean using all 32 cores:<br>
-<p float="left">
-  <img src="./images/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="100%"/>
-</p>
+Running in the cloud, you can get much more resources than what is available on a typical laptop, when you need it.  The current script creates the VM, runs one frame and then destroys the VM.  The overhead of creating and managing the VM should be small compared to the rendering of the frame for this to really make sense.  Rendering more than one frame at a time is not yet supported.
 
-
+## Notes
+Some notes and ongoing work:
+- the single core performance of the digitial ocean droplets are less than that of my laptop

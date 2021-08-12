@@ -19,10 +19,19 @@ using namespace DETAIL;
 using namespace SYSTEMS;
 
 
+/*
+ TODO: include these fields on the scene loader:
+ - width
+ - height
+ - max samples per pixel
+ - max trace depth
+ - rand seed
+*/
+
 const int width = 1600;
 const int height = 1200;
-const int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 2u);
-const int maxSamplesPerPixel = 256;
+const int numWorkers = 1;//std::max(std::thread::hardware_concurrency() * 2, 2u);
+const int maxSamplesPerPixel = 64;
 const int maxTraceDepth = 64;
 const float colorTollerance = 0.0f;
 const uint32_t randSeed = 1;
