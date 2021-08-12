@@ -77,6 +77,7 @@ The following table shows rendering results on my Macbook and on different Digit
 | DO g-32vcpu-128gb | 30 |
 | DO gd-40vcpu-160gb | 32 |
 
+
 NOTE: These results exclude the overhead of provisioning and deleting the remote VMs.
 It clearly shows how well raytracing can scale with more cores and the results on DigitalOcean match quite well with the results on my macbook.
 
