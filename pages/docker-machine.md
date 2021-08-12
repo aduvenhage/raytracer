@@ -3,7 +3,7 @@ With docker we can containarise our software, which helps with deployability of 
 Check out docker <https://www.docker.com/> and docker-machine <https://docs.docker.com/machine/> for background.
 
 With docker you can run and mangage containers locally as well as remotely.  In the remote case the docker CLI essentailly points to the remote docker-engine.
-Additionally docker-machine helps provision new instances of machines on cloud services, like Digital Ocean, and AWS and helps maintain some local config (in the environment)
+Additionally docker-machine helps provision new instances of machines on cloud services, like DigitalOcean, and AWS and helps maintain some local config (in the environment)
 to easily switch between different remote connections.
 
 I'm using DigitalOcean for my raytracing cloud runner, since I really like their simple and clean interfaces and APIs.  Also the VMs are called Droplets.
@@ -43,7 +43,7 @@ For this cloud runner I also revived an older project of mine <https://github.co
 
 Running on Digitial Ocean using all 32 cores:<br>
 <p float="left">
-  <img src="./images/do_32_cores.png" alt="Digital Ocean Compute 32 cores maxed-out!" width="100%"/>
+  <img src="./images/do_32_cores.png" alt="DigitalOcean Compute 32 cores maxed-out!" width="100%"/>
 </p>
 
 The script goes through the following steps:
@@ -59,6 +59,32 @@ The script goes through the following steps:
 
 Running in the cloud, you can get much more resources than what is available on a typical laptop, when you need it.  The current script creates the VM, runs one frame and then destroys the VM.  The overhead of creating and managing the VM should be small compared to the rendering of the frame for this to really make sense.  Rendering more than one frame at a time is not yet supported.
 
-## Notes
-Some notes and ongoing work:
-- the single core performance of the digitial ocean droplets are less than that of my laptop
+## Some results
+For testing I used a scene of stacked glass balls.
+<img src="gallery/raytracing/raytraced_do.jpeg" alt="Cloud Rendered" width="300"/>
+
+The following table shows rendering results on my Macbook and on different DigitalOcean droplets:
+
+| VM Type | Timing (s)
+| DO c-2 | 420 |
+| DO c-4 | 223 |
+| macbook pro 2017 (8 cores) | 115 |
+| DO c-8 | 110 |
+| DO s-8vcpu-16gb-intel | 110 |
+| DO s-8vcpu-16gb-amd | 87 |
+| DO c-16 | 59 |
+| DO c-32 | 32 |
+| DO g-32vcpu-128gb | 30 |
+| DO gd-40vcpu-160gb | 32 |
+
+NOTE: These results exclude the overhead of provisioning and deleting the remote VMs.
+It clearly shows how well raytracing can scale with more cores and the results on DigitalOcean match quite well with the results on my macbook.
+
+I also tried various droplet types:
+- Basic Shared (s): not dedicated, but better hardware than other types
+- CPU-Optimized (c): dedicted, but older generation hardware
+- General Purpose (g): general purpose (somewhere in the middle) droplets
+- General Purpose Dedicated (gd): general purpose droplets
+
+The raytracing tests use very little memory and disk with mostly short periods of high CPU utilisation.
+

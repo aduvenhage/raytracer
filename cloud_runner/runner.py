@@ -12,7 +12,7 @@ def start_render_machine(token, scenario):
                        cwd='../',
                        config={
                             'driver': 'digitalocean',
-                            'digitalocean-size': 'gd-40vcpu-160gb',
+                            'digitalocean-size': 's-8vcpu-16gb-amd',
                             'digitalocean-image': 'ubuntu-18-04-x64', 
                             'digitalocean-access-token': token,
                             'engine-install-url': 'https://releases.rancher.com/install-docker/19.03.9.sh'
@@ -37,7 +37,7 @@ def runner(token):
     logging.basicConfig(level=20)
     logger = logging.getLogger(__name__)
 
-    dm = start_render_machine(token, 'scene2')
+    dm = start_render_machine(token, 'scene3')
 
     # wait for rendering to complete
     idle = False
