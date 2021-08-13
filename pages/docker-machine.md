@@ -61,7 +61,7 @@ Running in the cloud, you can get much more resources than what is available on 
 
 ## Some results
 For testing I used a scene of stacked glass balls.<br>
-<p float="left">
+<p float="center">
   <img src="../gallery/raytracing/raytraced_do.jpeg" alt="Cloud Rendered" width="300"/>
 </p>
 
@@ -76,8 +76,8 @@ The following table shows rendering results on my Macbook and on different Digit
 | DO s-8vcpu-16gb-amd | 87 |
 | DO c-16 | 59 |
 | DO c-32 | 32 |
-| DO g-32vcpu-128gb | 30 |
 | DO gd-40vcpu-160gb | 32 |
+| DO g-32vcpu-128gb | 30 |
 
 
 NOTE: These results exclude the overhead of provisioning and deleting the remote VMs.

@@ -12,7 +12,7 @@ def start_render_machine(token, scenario):
                        cwd='../',
                        config={
                             'driver': 'digitalocean',
-                            'digitalocean-size': 's-8vcpu-16gb-amd',
+                            'digitalocean-size': 's-8vcpu-16gb-intel',
                             'digitalocean-image': 'ubuntu-18-04-x64', 
                             'digitalocean-access-token': token,
                             'engine-install-url': 'https://releases.rancher.com/install-docker/19.03.9.sh'
