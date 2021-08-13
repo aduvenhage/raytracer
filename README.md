@@ -17,7 +17,7 @@ Some images I have made so far:<br>
   <img src="gallery/raytracing/raytraced_mandlebug.jpeg" alt="Refraction" width="300"/>
 </p>
 
-## Feautures
+## Features
 List of implemented features:
 * Basic Features
   * rays and viewport
@@ -61,8 +61,9 @@ Todo:
 Ramblings on cool features and implementation details.  And, actually trying to write something down makes me think of improvements.
 
 - [Rendering with Qt](pages/qt.md)
-- [Running in the cloud with docker-machine](pages/docker-machine.md) [WIP]
-- [Raytracing basics](pages/raytracing.md) [WIP]
+- [Running in the cloud with docker-machine](pages/docker-machine.md)
+- [Raytracing basics](pages/raytracing.md)
+- [Advanced Raytracing](pages/raytracing_advanced.md) [WIP]
 - [Job system](pages/jobs.md) [WIP]
 - [Random number generation](pages/random.md) [WIP]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]

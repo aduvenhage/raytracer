@@ -57,17 +57,27 @@ The script goes through the following steps:
 - kill machine: Terminate remote VM.
 - remove machine: Delete remote VM and cleanup local docker-machine state.
 
-Running in the cloud, you can get much more resources than what is available on a typical laptop, when you need it.  The current script creates the VM, runs one frame and then destroys the VM.  The overhead of creating and managing the VM should be small compared to the rendering of the frame for this to really make sense.  Rendering more than one frame at a time is not yet supported.
+Running in the cloud, you can get much more resources than what is available on a typical laptop, when you need it.
+The current script creates the VM, runs one frame and then destroys the VM.
+The overhead of creating and managing the VM is high and the cloud rendering is really only worth-while on frames that take very long to render.
+Rendering more than one frame at a time is not yet supported.
 
 ## Some results
 For testing I used a scene of stacked glass balls.<br>
-<p float="center">
+<p float="left">
   <img src="../gallery/raytracing/raytraced_do.jpeg" alt="Cloud Rendered" width="300"/>
 </p>
 
+I experimented with various droplet types:
+- Basic Shared (s): not dedicated, but better hardware than other types
+- CPU-Optimized (c): dedicted, but older generation hardware
+- General Purpose (g): general purpose (somewhere in the middle) droplets
+- General Purpose Dedicated (gd): general purpose droplets
+
+The raytracing tests use very little memory and disk with mostly short periods of high CPU utilisation.
 The following table shows rendering results on my Macbook and on different DigitalOcean droplets:
 
-| VM Type | Timing (s)
+| VM Type | Timing (s) |
 | DO c-2 | 420 |
 | DO c-4 | 223 |
 | macbook pro 2017 (8 cores) | 115 |
@@ -78,16 +88,15 @@ The following table shows rendering results on my Macbook and on different Digit
 | DO c-32 | 32 |
 | DO gd-40vcpu-160gb | 32 |
 | DO g-32vcpu-128gb | 30 |
-
-
 NOTE: These results exclude the overhead of provisioning and deleting the remote VMs.
+
 It clearly shows how well raytracing can scale with more cores and the results on DigitalOcean match quite well with the results on my macbook.
 
-I also tried various droplet types:
-- Basic Shared (s): not dedicated, but better hardware than other types
-- CPU-Optimized (c): dedicted, but older generation hardware
-- General Purpose (g): general purpose (somewhere in the middle) droplets
-- General Purpose Dedicated (gd): general purpose droplets
+## Future Work
+Some future additions I would like to make:
+- [ ] Support AWS and GCP (generic configs)
+- [ ] Support larger scenarios rendering multiple frames or multiple scenes per VM
+- [ ] optimize VM promisioning (cloud-local images, smaller images, etc.)
 
-The raytracing tests use very little memory and disk with mostly short periods of high CPU utilisation.
+
 
