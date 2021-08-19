@@ -78,6 +78,7 @@ The raytracing tests use very little memory and disk with mostly short periods o
 The following table shows rendering results on my Macbook and on different DigitalOcean droplets:
 
 | VM Type | Timing (s) |
+| ------- | ---------- |
 | DO c-2 | 420 |
 | DO c-4 | 223 |
 | macbook pro 2017 (8 cores) | 115 |
@@ -88,6 +89,7 @@ The following table shows rendering results on my Macbook and on different Digit
 | DO c-32 | 32 |
 | DO gd-40vcpu-160gb | 32 |
 | DO g-32vcpu-128gb | 30 |
+
 NOTE: These results exclude the overhead of provisioning and deleting the remote VMs.
 
 It clearly shows how well raytracing can scale with more cores and the results on DigitalOcean match quite well with the results on my macbook.
