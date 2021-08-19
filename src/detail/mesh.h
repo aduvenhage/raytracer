@@ -1,12 +1,12 @@
 #ifndef DETAIL_MESH_H
 #define DETAIL_MESH_H
 
-#include "bvh.h"
-#include "constants.h"
-#include "primitive.h"
-#include "material.h"
-#include "vec3.h"
-#include "uv.h"
+#include "core/bvh.h"
+#include "core/constants.h"
+#include "core/vec3.h"
+#include "core/uv.h"
+#include "base/primitive.h"
+#include "base/material.h"
 
 
 namespace DETAIL
@@ -16,8 +16,8 @@ namespace DETAIL
      Populates position on ray (t) and UV (barycentric) hit properties.
      Returns true on intersect.
      */
-    bool triangleIntersect(float &_fPositionOnRay, Uv &_uv,
-                           const Ray &_ray, const Vec &_v0, const Vec &_v1, const Vec &_v2) {
+    bool triangleIntersect(float &_fPositionOnRay, CORE::Uv &_uv,
+                           const CORE::Ray &_ray, const CORE::Vec &_v0, const CORE::Vec &_v1, const CORE::Vec &_v2) {
         const float EPSILON = 0.000001f;
         auto edge1 = _v1 - _v0;
         auto edge2 = _v2 - _v0;
@@ -41,7 +41,7 @@ namespace DETAIL
         float t = f * (edge2 * q);
         if (_ray.inside(t) == true) {
             _fPositionOnRay = t;
-            _uv = Uv(u, v);   // NOTE: Barycentric UV (u + v + w = 1)
+            _uv = CORE::Uv(u, v);   // NOTE: Barycentric UV (u + v + w = 1)
             return true;
         }
         
@@ -50,40 +50,40 @@ namespace DETAIL
 
 
     /* Mesh defined by vertices, triangle indices and a material */
-    class Mesh        : public Primitive
+    class Mesh        : public BASE::Primitive
     {
      public:
         struct Triangle {
-            const Bounds &bounds() const {return m_bounds;}
+            const CORE::Bounds &bounds() const {return m_bounds;}
             
-            Vec         m_normal;
-            Bounds      m_bounds;
-            uint32_t    m_v[3];
+            CORE::Vec         m_normal;
+            CORE::Bounds      m_bounds;
+            uint32_t          m_v[3];
         };
         
         struct Vertex {
-            Vec         m_v;
-            Uv          m_uv;
-            Vec         m_normal;
+            CORE::Vec         m_v;
+            CORE::Uv          m_uv;
+            CORE::Vec         m_normal;
         };
         
      public:
-        Mesh(const Material *_pMaterial)
+        Mesh(const BASE::Material *_pMaterial)
             :m_pMaterial(_pMaterial),
              m_bBoundsInit(false),
              m_bUseVertexNormals(false)
         {}
 
         /* Returns the material used for rendering, etc. */
-        const Material *material() const override {
+        const BASE::Material *material() const override {
             return m_pMaterial;
         }
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
-        virtual bool hit(Intersect &_hit) const override {
+        virtual bool hit(BASE::Intersect &_hit) const override {
             float fPositionOnRay = -1;
             int hitIndex = 0;
-            Uv hitUv;
+            CORE::Uv hitUv;
 
             bool bHit = checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_priRay);
             if (bHit == true) {
@@ -97,13 +97,13 @@ namespace DETAIL
         }
 
         /* Triangle intersect check */
-        bool checkTriangleHit(float &_fPositionOnRay, int &_hitIndex, Uv &_hitUv, const Triangle *_pTriangle, const Ray &_ray) const {
+        bool checkTriangleHit(float &_fPositionOnRay, int &_hitIndex, CORE::Uv &_hitUv, const Triangle *_pTriangle, const CORE::Ray &_ray) const {
             const auto &v0 = m_vertices[_pTriangle->m_v[0]];
             const auto &v1 = m_vertices[_pTriangle->m_v[1]];
             const auto &v2 = m_vertices[_pTriangle->m_v[2]];
             
             float p = 0;
-            Uv uv;
+            CORE::Uv uv;
             
             if (triangleIntersect(p, uv, _ray, v0.m_v, v1.m_v, v2.m_v) == true) {
                 if ( (_fPositionOnRay < 0) ||
@@ -120,9 +120,9 @@ namespace DETAIL
         }
         
         /* Search for best hit through BVH */
-        bool checkBvhHit(float &_fPositionOnRay, int &_hitIndex, Uv &_hitUv,
-                         const std::unique_ptr<BvhNode<Triangle>> &_pNode,
-                         const Ray &_ray) const {
+        bool checkBvhHit(float &_fPositionOnRay, int &_hitIndex, CORE::Uv &_hitUv,
+                         const std::unique_ptr<CORE::BvhNode<Triangle>> &_pNode,
+                         const CORE::Ray &_ray) const {
             bool bHit = false;
             
             if (_pNode->empty() == false) {
@@ -145,7 +145,7 @@ namespace DETAIL
         }
 
         /* Completes the node intersect properties. */
-        virtual Intersect &intersect(Intersect &_hit) const override {
+        virtual BASE::Intersect &intersect(BASE::Intersect &_hit) const override {
             const auto &t = m_triangles[_hit.m_uTriangleIndex];
             const auto &v0 = m_vertices[t.m_v[0]];
             const auto &v1 = m_vertices[t.m_v[1]];
@@ -173,7 +173,7 @@ namespace DETAIL
         }
 
         /* returns bounds for shape */
-        virtual const Bounds &bounds() const override {
+        virtual const CORE::Bounds &bounds() const override {
             return m_bounds;
         }
 
@@ -212,7 +212,7 @@ namespace DETAIL
             
             for (size_t i = 0; i < m_vertices.size(); i++) {
                 auto &v = m_vertices[i];
-                v.m_normal = Vec();
+                v.m_normal = CORE::Vec();
                 int count = 0;
                 
                 for (size_t j = 0; j < m_triangles.size(); j++) {
@@ -259,7 +259,7 @@ namespace DETAIL
         /* build acceleration structures etc. */
         void buildBvh() {
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            m_bvhRoot = buildBvhRoot<4>(trianglePtrs, 16);
+            m_bvhRoot = CORE::buildBvhRoot<4>(trianglePtrs, 16);
         }
 
      protected:
@@ -281,13 +281,13 @@ namespace DETAIL
         }
 
      private:
-        std::vector<Vertex>                 m_vertices;
-        std::vector<Triangle>               m_triangles;
-        Bounds                              m_bounds;
-        const Material                      *m_pMaterial;
-        bool                                m_bBoundsInit;
-        bool                                m_bUseVertexNormals;
-        std::unique_ptr<BvhNode<Triangle>>  m_bvhRoot;
+        std::vector<Vertex>                       m_vertices;
+        std::vector<Triangle>                     m_triangles;
+        CORE::Bounds                              m_bounds;
+        const BASE::Material                      *m_pMaterial;
+        bool                                      m_bBoundsInit;
+        bool                                      m_bUseVertexNormals;
+        std::unique_ptr<CORE::BvhNode<Triangle>>  m_bvhRoot;
     };
 
 
@@ -295,7 +295,7 @@ namespace DETAIL
     class SphereMesh    : public Mesh
     {
      public:
-        SphereMesh(int _iSlices, int _iDivs, float _fRadius, const Material *_pMaterial)
+        SphereMesh(int _iSlices, int _iDivs, float _fRadius, const BASE::Material *_pMaterial)
             :Mesh(_pMaterial)
         {
             std::vector<Mesh::Vertex> vertices;
@@ -305,16 +305,16 @@ namespace DETAIL
             triangles.reserve((size_t)_iSlices * (size_t)_iDivs * 2);
             
             for (int d = 0; d <= _iDivs; d++) {
-                float angle = LNF::pi / _iDivs * d;
+                float angle = CORE::pi / _iDivs * d;
                 float y = _fRadius * cos(angle);
                 float r = _fRadius * sin(angle);
                 
                 for (int s = 0; s <= _iSlices; s++) {
-                    float x = r * cos(LNF::pi / _iSlices * s * 2);
-                    float z = r * sin(LNF::pi / _iSlices * s * 2);
+                    float x = r * cos(CORE::pi / _iSlices * s * 2);
+                    float z = r * sin(CORE::pi / _iSlices * s * 2);
                     
                     auto v = Mesh::Vertex();
-                    v.m_v = Vec(x, y, z);
+                    v.m_v = CORE::Vec(x, y, z);
                     v.m_uv = getSphericalUv(v.m_v, _fRadius);
                     vertices.push_back(v);
                     

@@ -11,7 +11,6 @@
 
 namespace DETAIL
 {
-    /* Axis aligned box shape class -- fixed at origin [0, 0, 0]; base class for raymarched nodes */
     class MarchedBubbles        : public BASE::Primitive
     {
      public:

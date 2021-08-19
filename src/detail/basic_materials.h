@@ -1,6 +1,6 @@
 
-#ifndef DETAIL_DEFAULT_MATERIALS_H
-#define DETAIL_DEFAULT_MATERIALS_H
+#ifndef DETAIL_BASIC_MATERIALS_H
+#define DETAIL_BASIC_MATERIALS_H
 
 
 #include "core/color.h"
@@ -56,27 +56,6 @@ namespace DETAIL
         CORE::Color     m_colorA;
         CORE::Color     m_colorB;
         int             m_iBlockSize;
-    };
-
-
-    // diffuse material
-    class DiffuseMandlebrot : public Diffuse
-    {
-     public:
-        DiffuseMandlebrot()
-            :Diffuse(CORE::Color()),
-             m_mandlebrot(1, 1),
-             m_baseColor(0.4f, 0.2f, 0.1f)
-        {}
-        
-        /* Returns the diffuse color at the given surface position */
-        virtual CORE::Color color(const BASE::Intersect &_hit) const override {
-            return m_baseColor * (m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v()) * 0.1f + 0.1f);
-        }
-        
-     private:
-        UTILS::MandleBrot     m_mandlebrot;
-        CORE::Color           m_baseColor;
     };
 
 
@@ -144,54 +123,8 @@ namespace DETAIL
         float          m_fScatter;
         float          m_fIndexOfRefraction;
     };
-    
-    
-    // material that colors surface based on surface normal
-    class SurfaceNormal : public BASE::Material
-    {
-     public:
-        SurfaceNormal(bool _bInside=false)
-            :m_bInside(_bInside)
-        {}
-        
-        /* Returns the scattered ray at the intersection point. */
-        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
-            if (_hit.m_bInside == m_bInside) {
-                auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere()).normalized();
-                auto scatteredRay = CORE::Ray(_hit.m_position, scatteredDirection);
-                auto color = CORE::Color((_hit.m_normal.x() + 1)/2, (_hit.m_normal.y() + 1)/2, (_hit.m_normal.z() + 1)/2);
-
-                return CORE::ScatteredRay(scatteredRay, CORE::Color(), color);
-            }
-            else {
-                auto passThroughRay = CORE::Ray(_hit.m_position, _hit.m_priRay.m_direction);
-                return CORE::ScatteredRay(passThroughRay, CORE::Color(1, 1, 1), CORE::Color());
-            }
-        }
-
-     private:
-        bool           m_bInside;
-    };
-
-
-    // triangle tri-color surface
-    class TriangleRGB    : public BASE::Material
-    {
-     public:
-        TriangleRGB()
-        {}
-        
-        /* Returns the scattered ray at the intersection point. */
-        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
-            auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere()).normalized();
-            auto scatteredRay = CORE::Ray(_hit.m_position, scatteredDirection);
-            
-            auto color = CORE::COLOR::Red * _hit.m_uv.u() + CORE::COLOR::Green * _hit.m_uv.v() + CORE::COLOR::Blue * (1 - _hit.m_uv.u() - _hit.m_uv.v());
-            return CORE::ScatteredRay(scatteredRay, CORE::Color(), color);
-        }
-    };
 
 };  // namespace DETAIL
 
 
-#endif  // #ifndef DETAIL_DEFAULT_MATERIALS_H
+#endif  // #ifndef DETAIL_BASIC_MATERIALS_H

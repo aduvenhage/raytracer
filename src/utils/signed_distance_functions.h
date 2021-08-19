@@ -17,11 +17,6 @@ namespace UTILS
     }
 
 
-    float sdfSphereDeformed(const CORE::Vec &_p, float _fRadius, float _fWaveHeight) {
-        return (_p.size() - _fRadius + _fWaveHeight * sin(_p.x()/_fRadius*8) * sin(_p.y()/_fRadius*8) * sin(_p.z()/_fRadius*8));
-    }
-
-
     float sdfSwirl(const CORE::Vec &_p, float _fRadius, float _fWaveHeight) {
         auto axis = CORE::axisEulerZYX(0, _p.y()/6, 0);
         auto pr = axis.rotateFrom(_p);

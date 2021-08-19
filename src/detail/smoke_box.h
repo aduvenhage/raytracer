@@ -9,7 +9,10 @@
 
 namespace DETAIL
 {
-    /* Axis aligned box shape class -- fixed at origin [0, 0, 0] (with random intersection for smoke, fog, etc.) */
+    /*
+        Axis aligned box shape class -- fixed at origin [0, 0, 0] (with random intersection for smoke, fog, etc.)
+        TODO: can this be done in a material?
+    */
     class SmokeBox        : public Primitive
     {
      public:

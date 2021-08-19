@@ -1,5 +1,5 @@
-#ifndef DETAIL_MARCHED_SPHERE_H
-#define DETAIL_MARCHED_SPHERE_H
+#ifndef DETAIL_MARCHED_BLOB_H
+#define DETAIL_MARCHED_BLOB_H
 
 #include "core/constants.h"
 #include "core/uv.h"
@@ -11,19 +11,21 @@
 
 namespace DETAIL
 {
-    class MarchedSphere        : public BASE::Primitive
+    class MarchedBlob        : public BASE::Primitive
     {
      public:
-        MarchedSphere(const CORE::Vec &_size, const BASE::Material *_pMaterial)
+        MarchedBlob(const CORE::Vec &_size, const BASE::Material *_pMaterial, float _fRouhgness)
             :m_bounds(-_size * 0.5f, _size * 0.5f),
              m_pMaterial(_pMaterial),
-             m_fSize(_size.size() * 0.5f)
+             m_fSize(_size.size() * 0.5f),
+             m_fRouhgness(_fRouhgness)
         {}
 
-        MarchedSphere(float _fSize, const BASE::Material *_pMaterial)
+        MarchedBlob(float _fSize, const BASE::Material *_pMaterial, float _fRouhgness)
             :m_bounds(CORE::boxVec(-_fSize*0.5f), CORE::boxVec(_fSize*0.5f)),
              m_pMaterial(_pMaterial),
-             m_fSize(_fSize * 0.5f)
+             m_fSize(_fSize * 0.5f),
+             m_fRouhgness(_fRouhgness)
         {}
         
         /* Returns the material used for rendering, etc. */
@@ -39,7 +41,7 @@ namespace DETAIL
                 bool is_hit = SYSTEMS::check_marched_hit(_hit,
                                                          bi.m_tmax,
                                                          [this](const CORE::Vec &_p){
-                                                            return UTILS::sdfSphere(_p, m_fSize);
+                                                            return sdf(_p);
                                                          });
 
                 if ( (is_hit == true) &&
@@ -68,7 +70,7 @@ namespace DETAIL
         // get normal from surface function
         CORE::Vec surfaceNormal(const CORE::Vec &_p) const {
             return CORE::surfaceNormal(_p, [this](const CORE::Vec &_x){
-                return UTILS::sdfSphere(_x, m_fSize);
+                return sdf(_x);
             });
         }
 
@@ -76,15 +78,24 @@ namespace DETAIL
         CORE::Uv surfaceUv(const CORE::Vec &_p) const {
             return getSphericalUv(_p, _p.size());
         }
+        
+        // calc sdf
+        float sdf(const CORE::Vec &_x) const {
+            return _x.size() - m_fSize +
+                   m_fRouhgness * sin(_x.x()/m_fSize*8) * sin(_x.y()/m_fSize*8) * sin(_x.z()/m_fSize*8) +
+                   0.2 * m_fRouhgness * sin(_x.x()/m_fSize*16) * sin(_x.y()/m_fSize*16) * sin(_x.z()/m_fSize*16);
+        }
 
      private:
+        CORE::Axis             m_axis;
         CORE::Bounds           m_bounds;
         const BASE::Material   *m_pMaterial;
         float                  m_fSize;
+        float                  m_fRouhgness;
     };
 
 };  // namespace DETAIL
 
 
-#endif  // #ifndef DETAIL_MARCHED_SPHERE_H
+#endif  // #ifndef DETAIL_MARCHED_BLOB_H
 

@@ -31,7 +31,7 @@ using namespace SYSTEMS;
 const int width = 1600;
 const int height = 1200;
 const int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 2u);
-const int maxSamplesPerPixel = 64;
+const int maxSamplesPerPixel = 1024;
 const int maxTraceDepth = 64;
 const float colorTollerance = 0.0f;
 const uint32_t randSeed = 1;
@@ -75,21 +75,15 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader, const std::string &_strOut
 
 
 std::shared_ptr<Loader> findScenarioLoader(const std::string &_strLoaderName) {
-    static std::map<std::string, std::shared_ptr<Loader>> loaders = {
-        {"scene0", std::make_shared<LoaderScene0>()},
-        {"scene1", std::make_shared<LoaderScene1>()},
-        {"scene2", std::make_shared<LoaderScene2>()},
-        {"scene3", std::make_shared<LoaderScene3>()}
-    };
-
-    auto it = loaders.find(_strLoaderName);
-    if (it != loaders.end()) {
-        printf("Scene %s loaded.\n", _strLoaderName.c_str());
-        return it->second;
+    static auto loaders = DETAIL::getSceneList();
+    
+    for (auto &loader : loaders) {
+        if (loader->name() == _strLoaderName) {
+            return loader;
+        }
     }
-    else {
-        return nullptr;
-    }
+    
+    return nullptr;
 }
 
 
@@ -113,6 +107,7 @@ int main(int argc, char *argv[])
     // load and run frame
     auto pLoader = findScenarioLoader(scenario);
     if (pLoader != nullptr) {
+        printf("Loader: %s\nDesc: %s\n", pLoader->name().c_str(), pLoader->description().c_str());
         return runFrame(pLoader, output);
     }
     else {

@@ -10,6 +10,7 @@ SET(PAGES_FILES
     ${CMAKE_SOURCE_DIR}/pages/qt.md
     ${CMAKE_SOURCE_DIR}/pages/random.md
     ${CMAKE_SOURCE_DIR}/pages/raytracing.md
+    ${CMAKE_SOURCE_DIR}/pages/raytracing_advanced.md
 )
 
 add_custom_target(pages SOURCES ${PAGES_FILES})

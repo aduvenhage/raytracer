@@ -82,7 +82,7 @@ The following table shows rendering results on my Macbook and on different Digit
 | DO c-4 | 223 |
 | macbook pro 2017 (8 cores) | 115 |
 | DO c-8 | 110 |
-| DO s-8vcpu-16gb-intel | 110 |
+| DO s-8vcpu-16gb-intel | 94 |
 | DO s-8vcpu-16gb-amd | 87 |
 | DO c-16 | 59 |
 | DO c-32 | 32 |
@@ -92,11 +92,6 @@ NOTE: These results exclude the overhead of provisioning and deleting the remote
 
 It clearly shows how well raytracing can scale with more cores and the results on DigitalOcean match quite well with the results on my macbook.
 
-## Future Work
-Some future additions I would like to make:
-- [ ] Support AWS and GCP (generic configs)
-- [ ] Support larger scenarios rendering multiple frames or multiple scenes per VM
-- [ ] optimize VM promisioning (cloud-local images, smaller images, etc.)
 
 
 

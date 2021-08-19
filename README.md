@@ -15,6 +15,7 @@ Some images I have made so far:<br>
   <img src="gallery/raytracing/raytraced_nougat3.jpeg" alt="Raymarched goodness" width="300"/>
   <img src="gallery/raytracing/raytraced_spheres.jpeg" alt="Refraction" width="300"/>
   <img src="gallery/raytracing/raytraced_mandlebug.jpeg" alt="Refraction" width="300"/>
+  <img src="gallery/raytracing/raytraced_subsurface_scatter.jpeg" alt="Refraction" width="300"/>
 </p>
 
 ## Features
@@ -56,6 +57,10 @@ Todo:
 * data based optimisations
 * de-noising
 * z-buffer and rasterised debug views (like viewing BVH volumes)
+* support AWS and GCP (generic configs) for cloud runner
+* support larger scenarios rendering multiple frames or multiple scenes per cloud VM (specific to cloud runner)
+* optimize cloud VM promisioning (cloud-local images, smaller images, etc.)
+
 
 ## Feature blog
 Ramblings on cool features and implementation details.  And, actually trying to write something down makes me think of improvements.
