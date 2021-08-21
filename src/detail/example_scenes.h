@@ -14,16 +14,55 @@
 #include "marched_materials.h"
 #include "marched_sphere.h"
 #include "marched_blob.h"
+#include "marched_torus.h"
 #include "simple_scene.h"
 #include "sphere.h"
 #include "mesh.h"
 #include "plane.h"
+#include "box.h"
 
 #include <memory>
 
 
 namespace DETAIL
 {
+    class LoaderDefaultScene  : public BASE::Loader
+    {
+     public:
+        virtual std::string &name() const override {
+            static std::string name = "default_scene";
+            return name;
+        }
+        
+        virtual std::string &description() const override {
+            static std::string desc = "Default scene with many different primitives and materials";
+            return desc;
+        }
+
+        virtual std::unique_ptr<BASE::Scene> loadScene() const override {
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.2, 0.2, 0.2));
+            auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.1), CORE::Color(0.8, 0.1, 0.1), 2);
+            auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.1, 0.1, 0.8), CORE::Color(0.1, 0.8, 0.8), 8);
+            auto pDiffuseBlue = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.4, 0.4, 0.8));
+            auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.05);
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
+
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.8, 0, CORE::Vec(20, 20, 0)), 20, pMirror);
+            BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-20, 20, 0)), 15.0f, 7.0f, pDiffuseCheck);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 20, -40)), 15.0f, pDiffuseBlue);
+            
+            pScene->build();   // build BVH
+            return pScene;
+        }
+
+        virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 2.0, 180);
+        }
+    };
+
+
     class LoaderMandleBulb  : public BASE::Loader
     {
      public:
@@ -129,7 +168,79 @@ namespace DETAIL
     };
 
 
-    class LoaderSubsurface  : public BASE::Loader
+    class LoaderRaymarchingTorus  : public BASE::Loader
+    {
+     public:
+        virtual std::string &name() const override {
+            static std::string name = "raymarching_torus";
+            return name;
+        }
+        
+        virtual std::string &description() const override {
+            static std::string desc = "Marched shiny torus";
+            return desc;
+        }
+
+        virtual std::unique_ptr<BASE::Scene> loadScene() const override {
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.2, 0.2, 0.2));
+            auto pDiffuse = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.2, 0.2), CORE::Color(0.9, 0.9, 0.9), 8);
+            auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.2, 0.2, 0.2), CORE::Color(0.8, 0.8, 0.8), 2);
+            auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.05);
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
+
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisTranslation(CORE::Vec(0, 1, 0)), 80, pMirror);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(50, 100, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisTranslation(CORE::Vec(0, 20, 0)), 40.0f, 10.0f, pDiffuse);
+            
+            pScene->build();   // build BVH
+            return pScene;
+        }
+
+        virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 40, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 2.0, 140);
+        }
+    };
+
+
+    class LoaderSubsurfaceSpheres  : public BASE::Loader
+    {
+     public:
+        virtual std::string &name() const override {
+            static std::string name = "raymarching_subsurface";
+            return name;
+        }
+        
+        virtual std::string &description() const override {
+            static std::string desc = "Raymarched blobs with sub-surface scattering.";
+            return desc;
+        }
+
+        virtual std::unique_ptr<BASE::Scene> loadScene() const override {
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.4, 0.4, 0.4));
+            auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(1.0, 1.0, 1.0), CORE::Color(1.0, 0.4, 0.2), 2);
+            auto pGlassGreen = BASE::createMaterial<Glass>(pScene, CORE::Color(0.4f, 0.9f, 0.6f), 0.05, 1.2);
+            auto pGlassGreenSs = BASE::createMaterial<GlassScatter>(pScene, CORE::Color(0.4f, 0.9f, 0.6f), 0.05, 1.2);
+            auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.02);
+            auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(30.0, 30.0, 30.0));
+
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
+            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisTranslation(CORE::Vec(0, 1, 0)), 200, 200, pMirror);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, -50)), 30, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(-45, 45, 50), 20.0), 2.0f, pGlassGreen);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(45, 45, 50), 20.0), 2.0f, pGlassGreenSs);
+            
+            pScene->build();   // build BVH
+            return pScene;
+        }
+
+        virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 50, 220), CORE::Vec(0, 1, 0), CORE::Vec(0, 5, 0), deg2rad(60), 2.0, 200);
+        }
+    };
+
+
+    class LoaderSubsurfaceBlobs  : public BASE::Loader
     {
      public:
         virtual std::string &name() const override {
@@ -164,6 +275,8 @@ namespace DETAIL
             return std::make_unique<SimpleCamera>(CORE::Vec(0, 50, 220), CORE::Vec(0, 1, 0), CORE::Vec(0, 5, 0), deg2rad(60), 2.0, 200);
         }
     };
+
+
     class LoaderManySpheres  : public BASE::Loader
     {
      public:
@@ -308,7 +421,8 @@ namespace DETAIL
             std::make_shared<LoaderManySpheres>(),
             std::make_shared<LoaderManySpheresTri>(),
             std::make_shared<LoaderSceneStackedSpheres>(),
-            std::make_shared<LoaderSubsurface>()
+            std::make_shared<LoaderSubsurfaceSpheres>(),
+            std::make_shared<LoaderSubsurfaceBlobs>(),
         };
     }
 

@@ -29,8 +29,8 @@ namespace DETAIL
                 std::uniform_real_distribution<float> uniform01(0, 1);
         
                 if (uniform01(CORE::generator()) <= 0.6) {
-                    auto position = _hit.m_priRay.position(_hit.m_fPositionOnRay * 0.98);
-                    auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere() * 0.5).normalized();
+                    auto position = _hit.m_priRay.position(_hit.m_fPositionOnRay * 0.95);
+                    auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere() * 0.6).normalized();
                     
                     return CORE::ScatteredRay(CORE::Ray(position, scatteredDirection), m_color, CORE::Color());
                 }
@@ -46,6 +46,39 @@ namespace DETAIL
         float          m_fScatter;
         float          m_fIndexOfRefraction;
     };
+
+
+    // fog material
+    class FogScatter : public BASE::Material
+    {
+     public:
+        FogScatter(const CORE::Color &_color, float _fDensity)
+            :m_color(_color),
+             m_fDensity(_fDensity)
+        {}
+        
+        /* Returns the scattered ray at the intersection point. */
+        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
+            if (_hit.m_bInside == true) {
+                std::uniform_real_distribution<float> uniform01(0, 1);
+        
+                if (uniform01(CORE::generator()) <= m_fDensity) {
+                    auto position = _hit.m_priRay.position(_hit.m_fPositionOnRay * uniform01(CORE::generator()));
+                    auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere() * 0.6).normalized();
+                    
+                    return CORE::ScatteredRay(CORE::Ray(position, scatteredDirection), m_color, CORE::Color());
+                }
+            }
+
+            auto passThroughRay = CORE::Ray(_hit.m_position, _hit.m_priRay.m_direction);
+            return CORE::ScatteredRay(passThroughRay, CORE::Color(1, 1, 1), CORE::Color());
+        }
+
+     private:
+        CORE::Color    m_color;
+        float          m_fDensity;
+    };
+
 
 };  // namespace DETAIL
 

@@ -25,6 +25,14 @@ namespace UTILS
     }
 
 
+    float sdfTorus(const CORE::Vec &_p, float a, float b)
+    {
+        
+        auto q = CORE::Vec(_p.xz().size() - a, _p.y(), 0);
+        return q.size() - b;
+    }
+
+
     float sdfMandle(const CORE::Vec &_p, int &_iterations) {
         float BAIL_OUT = 2.0f;
         float POWER = 8.0f;

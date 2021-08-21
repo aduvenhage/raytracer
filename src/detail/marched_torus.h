@@ -1,5 +1,5 @@
-#ifndef DETAIL_MARCHED_SPHERE_H
-#define DETAIL_MARCHED_SPHERE_H
+#ifndef DETAIL_MARCHED_TORUS_H
+#define DETAIL_MARCHED_TORUS_H
 
 #include "core/constants.h"
 #include "core/uv.h"
@@ -11,13 +11,14 @@
 
 namespace DETAIL
 {
-    class MarchedSphere        : public BASE::Primitive
+    class MarchedTorus        : public BASE::Primitive
     {
      public:
-        MarchedSphere(float _fSize, const BASE::Material *_pMaterial)
-            :m_bounds(CORE::boxVec(-_fSize*0.5f), CORE::boxVec(_fSize*0.5f)),
+        MarchedTorus(float _fA, float _fB, const BASE::Material *_pMaterial)
+            :m_bounds(CORE::boxVec(-100), CORE::boxVec(100)),
              m_pMaterial(_pMaterial),
-             m_fSize(_fSize * 0.5f)
+             m_fA(_fA),
+             m_fB(_fB)
         {}
         
         /* Returns the material used for rendering, etc. */
@@ -33,7 +34,7 @@ namespace DETAIL
                 bool is_hit = SYSTEMS::check_marched_hit(_hit,
                                                          bi.m_tmax,
                                                          [this](const CORE::Vec &_p){
-                                                            return UTILS::sdfSphere(_p, m_fSize);
+                                                            return UTILS::sdfTorus(_p, m_fA, m_fB);
                                                          });
 
                 if ( (is_hit == true) &&
@@ -62,7 +63,7 @@ namespace DETAIL
         // get normal from surface function
         CORE::Vec surfaceNormal(const CORE::Vec &_p) const {
             return CORE::surfaceNormal(_p, [this](const CORE::Vec &_x){
-                return UTILS::sdfSphere(_x, m_fSize);
+                return UTILS::sdfTorus(_x, m_fA, m_fB);
             });
         }
 
@@ -74,11 +75,12 @@ namespace DETAIL
      private:
         CORE::Bounds           m_bounds;
         const BASE::Material   *m_pMaterial;
-        float                  m_fSize;
+        float                  m_fA;
+        float                  m_fB;
     };
 
 };  // namespace DETAIL
 
 
-#endif  // #ifndef DETAIL_MARCHED_SPHERE_H
+#endif  // #ifndef DETAIL_MARCHED_TORUS_H
 

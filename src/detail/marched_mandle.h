@@ -20,7 +20,7 @@ namespace DETAIL
             :m_bounds(CORE::boxVec(-1.25), CORE::boxVec(1.25)),
              m_pMaterial(_pMaterial)
         {}
-        
+
         /* Returns the material used for rendering, etc. */
         const BASE::Material *material() const override {
             return m_pMaterial;

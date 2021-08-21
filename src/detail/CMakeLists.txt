@@ -10,6 +10,7 @@ SET(INCL_SRC
     marched_mandle.h
     marched_materials.h
     marched_sphere.h
+    marched_torus.h
     mesh.h
     plane.h
     scatter_materials.h
