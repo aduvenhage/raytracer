@@ -328,8 +328,8 @@ namespace DETAIL
                     
                     if (d > 0) {
                         auto t = Mesh::Triangle();
-                        t.m_v[0] = (uint32_t)i+1;
-                        t.m_v[1] = (uint32_t)i;
+                        t.m_v[0] = (uint32_t)i;
+                        t.m_v[1] = (uint32_t)i+1;
                         t.m_v[2] = (uint32_t)i+_iSlices+2;
                         triangles.push_back(t);
                     }
