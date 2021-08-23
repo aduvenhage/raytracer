@@ -53,7 +53,7 @@ namespace DETAIL
             auto scatteredRay = CORE::Ray(_hit.m_position, scatteredDirection);
             
             auto color = CORE::COLOR::Red * _hit.m_uv.u() + CORE::COLOR::Green * _hit.m_uv.v() + CORE::COLOR::Blue * (1 - _hit.m_uv.u() - _hit.m_uv.v());
-            return CORE::ScatteredRay(scatteredRay, CORE::Color(), color);
+            return CORE::ScatteredRay(scatteredRay, CORE::Color(), color.clamp());
         }
     };
 

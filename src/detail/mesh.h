@@ -298,44 +298,48 @@ namespace DETAIL
         SphereMesh(int _iSlices, int _iDivs, float _fRadius, const BASE::Material *_pMaterial)
             :Mesh(_pMaterial)
         {
+            // create vertices
             std::vector<Mesh::Vertex> vertices;
-            std::vector<Mesh::Triangle> triangles;
-            
             vertices.reserve(((size_t)_iSlices+1) * ((size_t)_iDivs+1));
-            triangles.reserve((size_t)_iSlices * (size_t)_iDivs * 2);
             
             for (int d = 0; d <= _iDivs; d++) {
-                float angle = CORE::pi / _iDivs * d;
-                float y = _fRadius * cos(angle);
+                float angle = pi / _iDivs * d;
                 float r = _fRadius * sin(angle);
+                float y = _fRadius * cos(angle);
                 
                 for (int s = 0; s <= _iSlices; s++) {
-                    float x = r * cos(CORE::pi / _iSlices * s * 2);
-                    float z = r * sin(CORE::pi / _iSlices * s * 2);
+                    float x = r * cos(pi2 / _iSlices * s);
+                    float z = r * sin(pi2 / _iSlices * s);
                     
                     auto v = Mesh::Vertex();
                     v.m_v = CORE::Vec(x, y, z);
                     v.m_uv = getSphericalUv(v.m_v, _fRadius);
                     vertices.push_back(v);
+                }
+            }
+
+            // create triangles
+            std::vector<Mesh::Triangle> triangles;
+            triangles.reserve((size_t)_iSlices * (size_t)_iDivs * 2);
+
+            for (int d = 0; d < _iDivs; d++) {
+                for (int s = 0; s < _iSlices; s++) {
+                    int i = d * (_iSlices+1) + s;
                     
-                    if ( (d > 0) && (s > 0) ) {
-                        auto i = vertices.size() - 1;
-                        
-                        if (d > 1) {
-                            auto t1 = Mesh::Triangle();
-                            t1.m_v[0] = (uint32_t)i-_iSlices-2;
-                            t1.m_v[1] = (uint32_t)i-_iSlices-1;
-                            t1.m_v[2] = (uint32_t)i-1;
-                            triangles.push_back(t1);
-                        }
-                        
-                        if (d < _iDivs) {
-                            auto t2 = Mesh::Triangle();
-                            t2.m_v[0] = (uint32_t)i-_iSlices-1;
-                            t2.m_v[1] = (uint32_t)i;
-                            t2.m_v[2] = (uint32_t)i-1;
-                            triangles.push_back(t2);
-                        }
+                    if (d > 0) {
+                        auto t = Mesh::Triangle();
+                        t.m_v[0] = (uint32_t)i+1;
+                        t.m_v[1] = (uint32_t)i;
+                        t.m_v[2] = (uint32_t)i+_iSlices+2;
+                        triangles.push_back(t);
+                    }
+                    
+                    if (d < _iDivs-1) {
+                        auto t = Mesh::Triangle();
+                        t.m_v[0] = (uint32_t)i+_iSlices+1;
+                        t.m_v[1] = (uint32_t)i;
+                        t.m_v[2] = (uint32_t)i+_iSlices+2;
+                        triangles.push_back(t);
                     }
                 }
             }

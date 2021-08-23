@@ -48,8 +48,10 @@ namespace DETAIL
         
         /* Returns the diffuse color at the given surface position */
         virtual CORE::Color color(const BASE::Intersect &_hit) const override {
-            float c = (float)(((int)(_hit.m_uv.u() * m_iBlockSize) + (int)(_hit.m_uv.v() * m_iBlockSize)) % 2);
-            return m_colorA * c + m_colorB * (1 - c);
+            int u = (int)(_hit.m_uv.u() * m_iBlockSize + 0.5);
+            int v = (int)(_hit.m_uv.v() * m_iBlockSize + 0.5);
+            
+            return (u + v) % 2 ? m_colorA : m_colorB;
         }
         
      private:

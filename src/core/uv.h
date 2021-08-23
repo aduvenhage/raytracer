@@ -72,9 +72,9 @@ namespace CORE
 
     /* Calculates UV coordinates from vector and radius. */
     Uv getSphericalUv(const Vec &_p, float _fRadius) {
-        const float phi = atan2(_p.z(), _p.x());
+        const float phi = angleWrap2Pi(atan2(_p.z(), _p.x()));
         const float theta = acos(_p.y() / _fRadius);
-        return Uv(phi / CORE::pi * 0.5f + 0.5f, theta / CORE::pi + 0.5f);
+        return Uv(phi / pi * 0.5, theta / pi);
     }
 
 

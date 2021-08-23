@@ -8,8 +8,17 @@
 #define ALIGN __attribute__((aligned(64)))
 
 
+constexpr float pi    = (float)M_PI;
+constexpr float pi2    = (float)(M_PI*2);
+
+
 constexpr float deg2rad(float _fDeg) {
-    return _fDeg / 180.0f * (float)M_PI;
+    return _fDeg / 180.0f * pi;
+}
+
+
+inline float angleWrap2Pi(float _a) {
+    return _a - pi2 * floor(_a/pi2);
 }
 
 
@@ -35,11 +44,6 @@ inline float frac(float _a) {
 }
 
 
-namespace CORE
-{
-    const float pi     = (float)M_PI;
-
-};  // namespace CORE
 
 
 #endif  // #ifndef CORE_CONSTANTS_H

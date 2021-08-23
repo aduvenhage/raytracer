@@ -15,6 +15,7 @@
 #include "marched_sphere.h"
 #include "marched_blob.h"
 #include "marched_torus.h"
+#include "special_materials.h"
 #include "simple_scene.h"
 #include "sphere.h"
 #include "mesh.h"
@@ -40,34 +41,44 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Scene> loadScene() const override {
-            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.2, 0.2, 0.2));
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.4, 0.4, 0.5));
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.1), CORE::Color(0.8, 0.1, 0.1), 2);
-            auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.1, 0.1, 0.8), CORE::Color(0.1, 0.8, 0.8), 8);
-            auto pDiffuseBlue = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.4, 0.4, 0.8));
-            auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.05);
             auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
+            auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.1, 0.1, 0.8), CORE::Color(0.1, 0.8, 0.8), 8);
+            auto pDiffuseBlue = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.2, 0.2, 0.6));
+            auto pDiffuseWhite = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.3, 0.3, 0.3), CORE::Color(0.9, 0.9, 0.9), 8);
+            auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01);
+            auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.1);
+            auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01, 1.8);
+            auto pMeshUv = BASE::createMaterial<TriangleRGB>(pScene);
+            
+            auto pMeshSphere = BASE::createPrimitive<SphereMesh>(pScene, 16, 16, 10, pDiffuseWhite);
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight);
-            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.8, 0, CORE::Vec(20, 20, 0)), 20, pMirror);
+            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.8, 0, CORE::Vec(20, 30, 0)), CORE::Vec(20, 40, 20), pMirror);
+            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.8, 0, CORE::Vec(-35, 20, 30)), 15, pMetal);
             BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-20, 20, 0)), 15.0f, 7.0f, pDiffuseCheck);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 20, -40)), 15.0f, pDiffuseBlue);
-            
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 17, 25)), 15.0f, pGlass);
+            BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 1.4, 0, CORE::Vec(-20, 7, 40)), pMeshSphere);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1.4, 0, CORE::Vec(20, 7, 40)), 10.0f, pDiffuseWhite);
+
             pScene->build();   // build BVH
             return pScene;
         }
 
         virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
-            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 2.0, 180);
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 1.4, 180);
         }
     };
 
 
-    class LoaderMandleBulb  : public BASE::Loader
+    class LoaderMandleBulbZoom  : public BASE::Loader
     {
      public:
         virtual std::string &name() const override {
-            static std::string name = "mandlebulb";
+            static std::string name = "mandlebulb_zoom";
             return name;
         }
         
@@ -307,9 +318,9 @@ namespace DETAIL
             int n = 200;
             for (int i = 0; i < n; i++) {
                 
-                float x = 100 * sin((float)i / n * CORE::pi * 2);
-                float y = 20 * (cos((float)i / n * CORE::pi * 16) + 1);
-                float z = 100 * cos((float)i / n * CORE::pi * 2);
+                float x = 100 * sin((float)i / n * pi * 2);
+                float y = 20 * (cos((float)i / n * pi * 16) + 1);
+                float z = 100 * cos((float)i / n * pi * 2);
 
                 BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(x, y, z)), shapes[i % shapes.size()]);
             }
@@ -354,9 +365,9 @@ namespace DETAIL
             int n = 200;
             for (int i = 0; i < n; i++) {
                 
-                float x = 100 * sin((float)i / n * CORE::pi * 2);
-                float y = 20 * (cos((float)i / n * CORE::pi * 16) + 1);
-                float z = 100 * cos((float)i / n * CORE::pi * 2);
+                float x = 100 * sin((float)i / n * pi * 2);
+                float y = 20 * (cos((float)i / n * pi * 16) + 1);
+                float z = 100 * cos((float)i / n * pi * 2);
 
                 BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(x, y, z)), shapes[i % shapes.size()]);
             }
@@ -415,7 +426,8 @@ namespace DETAIL
 
     auto getSceneList() {
         return std::vector<std::shared_ptr<BASE::Loader>>{
-            std::make_shared<LoaderMandleBulb>(),
+            std::make_shared<LoaderDefaultScene>(),
+            std::make_shared<LoaderMandleBulbZoom>(),
             std::make_shared<LoaderRaymarchingBlobs>(),
             std::make_shared<LoaderRaymarchingSpheres>(),
             std::make_shared<LoaderManySpheres>(),
