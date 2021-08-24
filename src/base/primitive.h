@@ -42,7 +42,7 @@ namespace BASE
         Transform and reference of a primitive.        
         API could be accessed by multiple worker threads concurrently.
     */
-    class PrimitiveInstance
+    class PrimitiveInstance      : public Resource
     {
      public:
         PrimitiveInstance()

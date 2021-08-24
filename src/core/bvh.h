@@ -3,6 +3,7 @@
 #define CORE_BVH_H
 
 #include "constants.h"
+#include "memory.h"
 #include "vec3.h"
 #include "ray.h"
 
@@ -64,6 +65,14 @@ namespace CORE
             return m_primitives.empty();
         }
         
+        void *operator new(size_t _uSize) {
+            return CORE::MemoryManager::instance<1>().allocate(_uSize);
+        }
+        
+        void operator delete(void *_p) {
+            return CORE::MemoryManager::instance<1>().deallocate(_p);
+        }
+
         Bounds                              m_bounds;
         std::unique_ptr<BvhNode>            m_left;
         std::unique_ptr<BvhNode>            m_right;
