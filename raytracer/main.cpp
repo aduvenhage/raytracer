@@ -124,12 +124,6 @@ int main(int argc, char *argv[])
 {
     auto pLoader = std::make_unique<LoaderDefaultScene>();
     
-    float a = angleWrap2Pi(0);
-    a = angleWrap2Pi(M_PI/2);
-    a = angleWrap2Pi(M_PI);
-    a = angleWrap2Pi(-M_PI/2);
-    a = angleWrap2Pi(-M_PI);
-
     // start app
     QApplication app(argc, argv);
     MainWindow window(std::move(pLoader));

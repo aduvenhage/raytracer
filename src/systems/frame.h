@@ -198,7 +198,7 @@ namespace SYSTEMS
                     
                     // check color stats for a quick exit
                     if ( (fColorTollerance > 0.0f) &&
-                         (k >= 4 * tracer.traceDepthMax() + 8) &&
+                         (k >= 16) &&
                          (stats.standardDeviation() < fColorTollerance) )
                     {
                         break;

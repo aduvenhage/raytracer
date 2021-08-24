@@ -35,58 +35,50 @@ namespace SYSTEMS
         RayTracer(const BASE::Scene *_pScene, uint16_t _uMaxTraceDepth)
             :m_pScene(_pScene),
              m_uTraceLimit(_uMaxTraceDepth),
-             m_uTraceDepthMax(0),
              m_uRayCount(0)
         {}
         
         CORE::Color trace(const CORE::Ray &_ray) {
-            return traceRay(_ray, 0);
+            CORE::Color tracedColor(0, 0, 0);
+            CORE::Color attColor(1, 1, 1);
+            CORE::Ray ray(_ray);
+            
+            for (uint16_t i = 0; i < m_uTraceLimit; i++) {
+                m_uRayCount++;
+                BASE::Intersect hit(ray);
+
+                // check for hits on scene
+                if (m_pScene->hit(hit) == true) {
+                    // complete hit
+                    hit.m_pPrimitive->intersect(hit);
+                    hit.m_uTraceDepth = i + 1;
+
+                    // calculate hit on material
+                    auto scatteredRay = hit.m_pPrimitive->material()->scatter(hit);
+                    tracedColor += attColor * scatteredRay.m_emitted;
+                    attColor *= scatteredRay.m_color;
+                    if (attColor.isBlack() == true) {
+                        break;  // stop -- attenuation down to zero
+                    }
+
+                    // transform ray back to world space, and move slightly to avoid self intersection
+                    ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
+                    ray.m_origin = ray.position(T_MIN);
+                }
+                else {
+                    tracedColor += attColor * m_pScene->backgroundColor();
+                    break;  // stop -- no hits
+                }
+            }
+            
+            return tracedColor;
         }
         
-        uint16_t traceDepthMax() const {return m_uTraceDepthMax;}
         uint64_t rayCount() const {return m_uRayCount;}
 
-     protected:
-        /* Trace ray (recursively) through scene */
-        CORE::Color traceRay(const CORE::Ray &_ray, int _iDepth) {
-            m_uRayCount++;
-            
-            // check for hits on scene
-            BASE::Intersect hit(_ray);
-            if (m_pScene->hit(hit) == true) {
-                // update stats
-                hit.m_uTraceDepth = _iDepth+1;
-                m_uTraceDepthMax = std::max(hit.m_uTraceDepth, m_uTraceDepthMax);
-                
-                // normal hit -- complete hit
-                hit.m_pPrimitive->intersect(hit);
-                
-                // create scattered, reflected, refracted, etc. ray and color
-                auto scatteredRay = hit.m_pPrimitive->material()->scatter(hit);
-                auto tracedColor = scatteredRay.m_emitted;
-
-                // trace recursively and blend colors
-                if ( (hit.m_uTraceDepth < m_uTraceLimit) && (scatteredRay.m_color.isBlack() == false) ) {
-                    // move slightly to avoid self intersection
-                    scatteredRay.m_ray.m_origin = scatteredRay.m_ray.position(T_MIN);
-                    
-                    // transform ray back to world space
-                    scatteredRay.m_ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
-
-                    // recursively trace again
-                    tracedColor += scatteredRay.m_color * traceRay(scatteredRay.m_ray, _iDepth + 1);
-                }
-
-                return tracedColor;
-            }
-
-            return m_pScene->backgroundColor();
-        }
-        
      private:
         const BASE::Scene   *m_pScene;
         uint16_t            m_uTraceLimit;
-        uint16_t            m_uTraceDepthMax;
         uint64_t            m_uRayCount;
     };
 
