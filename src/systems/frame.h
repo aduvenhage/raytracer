@@ -260,7 +260,7 @@ namespace SYSTEMS
         const static int    JOB_CHUNK_SIZE      = 4;      // number of jobs grabbed by worker
 
      public:
-        Frame(const CORE::Viewport *_pViewport,
+        Frame(int _iWidth, int _iHeight,
               const BASE::Camera *_pCamera,
               const BASE::Scene *_pScene,
               int _iNumWorkers,
@@ -268,11 +268,11 @@ namespace SYSTEMS
               int _iMaxTraceDepth,
               float _fColorTollerance,
               uint32_t _uRandSeed)
-            :m_pViewport(_pViewport),
+            :m_viewport(_iWidth, _iHeight),
              m_pCamera(_pCamera),
              m_pScene(_pScene),
              m_uJobCount(0),
-             m_image(_pViewport->width(), _pViewport->height()),
+             m_image(_iWidth, _iHeight),
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
              m_iMaxTraceDepth(_iMaxTraceDepth),
@@ -352,13 +352,13 @@ namespace SYSTEMS
             std::vector<std::unique_ptr<Job>> jobs;
             for (int j = 0; j < m_image.height(); j++) {
                 jobs.push_back(std::make_unique<PixelJob>(&m_image, j,
-                                                           m_pViewport,
-                                                           m_pCamera,
-                                                           m_pScene,
-                                                           &m_frameStats,
-                                                           m_iMaxSamplesPerPixel,
-                                                           m_iMaxTraceDepth,
-                                                           m_fColorTollerance));
+                                                          &m_viewport,
+                                                          m_pCamera,
+                                                          m_pScene,
+                                                          &m_frameStats,
+                                                          m_iMaxSamplesPerPixel,
+                                                          m_iMaxTraceDepth,
+                                                          m_fColorTollerance));
                 m_uJobCount++;
             }
             
@@ -377,7 +377,7 @@ namespace SYSTEMS
         }
         
      private:
-        const CORE::Viewport                       *m_pViewport;
+        const CORE::Viewport                       m_viewport;
         const BASE::Camera                         *m_pCamera;
         const BASE::Scene                          *m_pScene;
         size_t                                     m_uJobCount;

@@ -74,6 +74,45 @@ namespace DETAIL
     };
 
 
+    class LoaderBulbFieldScene  : public BASE::Loader
+    {
+     public:
+        virtual std::string &name() const override {
+            static std::string name = "bulb_field";
+            return name;
+        }
+        
+        virtual std::string &description() const override {
+            static std::string desc = "Default scene with many different primitives and materials";
+            return desc;
+        }
+
+        virtual std::unique_ptr<BASE::Scene> loadScene() const override {
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.4, 0.4, 0.5));
+            auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.1), CORE::Color(0.8, 0.1, 0.1), 2);
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
+            auto pDiffuseWhite = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.9, 0.9, 0.9));
+            auto pAO = BASE::createMaterial<FakeAmbientOcclusion>(pScene);
+            auto pIterations = BASE::createMaterial<MetalIterations>(pScene);
+            auto pGlow = BASE::createMaterial<Glow>(pScene);
+            
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 0), 15.0), pDiffuseWhite);
+            BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(-30, 15, 0), 15.0), pAO);
+            BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(30, 15, 0), 15.0), pIterations);
+            BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 40), 15.0), pGlow);
+
+            pScene->build();   // build BVH
+            return pScene;
+        }
+
+        virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 0.1, 180);
+        }
+    };
+
+
     class LoaderMandleBulbZoom  : public BASE::Loader
     {
      public:

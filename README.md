@@ -16,6 +16,7 @@ Some images I have made so far:<br>
   <img src="gallery/raytracing/raytraced_spheres.jpeg" alt="Refraction" width="300"/>
   <img src="gallery/raytracing/raytraced_mandlebug.jpeg" alt="Refraction" width="300"/>
   <img src="gallery/raytracing/raytraced_subsurface_scatter.jpeg" alt="Refraction" width="300"/>
+  <img src="gallery/raytracing/raytraced_bulb_field.jpeg" alt="Many bulb materials" width="300"/>
 </p>
 
 ## Features

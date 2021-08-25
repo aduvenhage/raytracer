@@ -3,6 +3,7 @@
 
 #include "core/constants.h"
 #include "core/vec3.h"
+#include "resource.h"
 
 
 namespace BASE
@@ -10,7 +11,7 @@ namespace BASE
     /*
         Camera base class.
      */
-    class Camera
+    class Camera    : public Resource
     {
      public:
         virtual ~Camera() = default;

@@ -44,32 +44,5 @@ inline float frac(float _a) {
 }
 
 
-constexpr uint32_t roundUpPow2(uint32_t _v) {
-    _v--;
-    _v |= _v >> 1;
-    _v |= _v >> 2;
-    _v |= _v >> 4;
-    _v |= _v >> 8;
-    _v |= _v >> 16;
-    _v++;
-    
-    return _v;
-}
-
-
-constexpr uint64_t roundUpPow2(uint64_t _v) {
-    _v--;
-    _v |= _v >> 1;
-    _v |= _v >> 2;
-    _v |= _v >> 4;
-    _v |= _v >> 8;
-    _v |= _v >> 16;
-    _v |= _v >> 32;
-    _v++;
-    
-    return _v;
-}
-
-
 
 #endif  // #ifndef CORE_CONSTANTS_H

@@ -11,14 +11,7 @@ namespace BASE
      public:
         virtual ~Resource() = default;
         
-        void *operator new(size_t _uSize) {
-            return CORE::MemoryManager::instance<1>().allocate(_uSize);
-        }
-        
-        void operator delete(void *_p) {
-            return CORE::MemoryManager::instance<1>().deallocate(_p);
-        }
- 
+        MANAGE_MEMORY(MEM_POOL::SCENE)
     };
 
 };  // namespace BASE

@@ -2,6 +2,7 @@
 #define SYSTEMS_JOBS_H
 
 #include "core/constants.h"
+#include "core/memory.h"
 #include "core/queue.h"
 
 #include <atomic>
@@ -18,6 +19,7 @@ namespace SYSTEMS
     class Job
     {
      public:
+        MANAGE_MEMORY(MEM_POOL::JOB_SYSTEM)
         virtual ~Job() = default;
         
         virtual void run() = 0;
@@ -32,6 +34,7 @@ namespace SYSTEMS
     class Worker
     {
      public:
+        MANAGE_MEMORY(MEM_POOL::JOB_SYSTEM)
         Worker(JobQueue *_pJobs, int _iJobChunkSize)
             :m_pJobs(_pJobs),
              m_iJobChunkSize(_iJobChunkSize),

@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(256),
+         m_iMaxSamplesPerPixel(2048),
          m_iMaxTraceDepth(64),
          m_fColorTollerance(0.0f),
          m_uRandSeed(1)
@@ -43,7 +43,6 @@ class MainWindow : public QMainWindow
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
         startTimer(200, Qt::PreciseTimer);
         
-        m_pViewport = std::make_unique<Viewport>(m_iWidth, m_iHeight);
         m_pCamera = _pLoader->loadCamera();
         m_pScene = _pLoader->loadScene();
     }
@@ -70,7 +69,7 @@ class MainWindow : public QMainWindow
         if (m_pSource == nullptr)
         {
             m_tpInit = clock_type::now();
-            m_pSource = std::make_unique<Frame>(m_pViewport.get(),
+            m_pSource = std::make_unique<Frame>(m_iWidth, m_iHeight,
                                                 m_pCamera.get(),
                                                 m_pScene.get(),
                                                 m_iNumWorkers,
@@ -104,7 +103,6 @@ class MainWindow : public QMainWindow
     
  private:
     std::unique_ptr<Scene>              m_pScene;
-    std::unique_ptr<Viewport>           m_pViewport;
     std::unique_ptr<Camera>             m_pCamera;
     std::unique_ptr<Frame>              m_pSource;
     int                                 m_iFrameCount;
@@ -120,8 +118,17 @@ class MainWindow : public QMainWindow
 };
 
 
+void testMemoryManager() {
+    auto p1 = std::make_unique<DETAIL::Box>();
+    auto p2 = std::make_unique<DETAIL::Box>();
+}
+
+
 int main(int argc, char *argv[])
 {
+    testMemoryManager();
+    testMemoryManager();
+    
     auto pLoader = std::make_unique<LoaderDefaultScene>();
     
     // start app
