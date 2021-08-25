@@ -69,7 +69,7 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
-            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 1.4, 180);
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 1.4, 120);
         }
     };
 
