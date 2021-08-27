@@ -41,11 +41,10 @@ using clock_type = std::chrono::high_resolution_clock;
 
 int runFrame(const std::shared_ptr<Loader> &_pLoader, const std::string &_strOutputPath)
 {
-    auto pViewport = std::make_unique<Viewport>(width, height);
     auto pCamera = _pLoader->loadCamera();
     auto pScene = _pLoader->loadScene();
     auto tpInit = clock_type::now();
-    auto pSource = std::make_unique<Frame>(pViewport.get(),
+    auto pSource = std::make_unique<Frame>(width, height,
                                            pCamera.get(),
                                            pScene.get(),
                                            numWorkers,

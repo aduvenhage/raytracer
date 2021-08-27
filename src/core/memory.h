@@ -3,6 +3,7 @@
 
 #include "constants.h"
 
+#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <mutex>

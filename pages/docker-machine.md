@@ -10,6 +10,8 @@ I'm using DigitalOcean for my raytracing cloud runner, since I really like their
 Now I can render a scene with 32 cores, which is much quicker than running on my laptop locally.  Though you have to be carefull
 of the pricing of the higher end VMs :-)
 
+As a side note: the raytracer is developed using OSX/XCode/Clang and running through docker provides a chance to test compiling and performance and various flavours of Linux as well.
+
 ## Installing docker-machine
 The install on my macbook was straightforward:
 - Docker: download docker desktop from <https://www.docker.com/products/docker-desktop>
@@ -90,10 +92,6 @@ The following table shows rendering results on my Macbook and on different Digit
 | DO gd-40vcpu-160gb | 32 |
 | DO g-32vcpu-128gb | 30 |
 
-NOTE: These results exclude the overhead of provisioning and deleting the remote VMs.
-
 It clearly shows how well raytracing can scale with more cores and the results on DigitalOcean match quite well with the results on my macbook.
 
-
-
-
+These results exclude the overhead of provisioning, compiling and deleting the remote VMs, which adds around 3 minutes to the total run time.  This is a fairly large overhead and probably makes running in the cloud worthwile only if the scene rendering time would have been an order of magnitude larger than this.  Some work has been done to make the docker image build faster (using a base image, etc.) but the VM provisioning just takes time.

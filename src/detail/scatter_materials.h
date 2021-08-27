@@ -61,10 +61,10 @@ namespace DETAIL
         virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
             if (_hit.m_bInside == true) {
                 std::uniform_real_distribution<float> uniform01(0, 1);
-        
-                if (uniform01(CORE::generator()) <= m_fDensity) {
-                    auto position = _hit.m_priRay.position(_hit.m_fPositionOnRay * uniform01(CORE::generator()));
-                    auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere() * 0.6).normalized();
+                float fFogHitDist = uniform01(CORE::generator()) * 60;
+                if (fFogHitDist <= _hit.m_fPositionOnRay) {
+                    auto position = _hit.m_priRay.position(fFogHitDist);
+                    auto scatteredDirection = (_hit.m_priRay.m_direction + CORE::randomUnitSphere() * 0.5).normalized();
                     
                     return CORE::ScatteredRay(CORE::Ray(position, scatteredDirection), m_color, CORE::Color());
                 }
