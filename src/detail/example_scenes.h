@@ -74,6 +74,39 @@ namespace DETAIL
     };
 
 
+    class LoaderGlassSphereScene  : public BASE::Loader
+    {
+     public:
+        virtual std::string &name() const override {
+            static std::string name = "glass_sphere";
+            return name;
+        }
+        
+        virtual std::string &description() const override {
+            static std::string desc = "One big glass sphere";
+            return desc;
+        }
+
+        virtual std::unique_ptr<BASE::Scene> loadScene() const override {
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.4, 0.4, 0.5));
+            auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.1), CORE::Color(0.8, 0.1, 0.1), 2);
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
+            auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01, 1.5);
+            
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 30, 0)), 30.0f, pGlass);
+
+            pScene->build();   // build BVH
+            return pScene;
+        }
+
+        virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 40, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 20, 0), deg2rad(60), 1.4, 120);
+        }
+    };
+
+
     class LoaderBulbFieldScene  : public BASE::Loader
     {
      public:
