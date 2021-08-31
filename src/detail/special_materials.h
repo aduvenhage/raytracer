@@ -56,6 +56,29 @@ namespace DETAIL
             return CORE::ScatteredRay(scatteredRay, CORE::Color(), color.clamp());
         }
     };
+    
+    
+    // environment map (scatters light in hit point surface normal direction)
+    class EnvironmentMap    : public BASE::Material
+    {
+     public:
+        EnvironmentMap(const CORE::Color &_color)
+            :m_color(_color)
+        {}
+        
+        /* Returns the scattered ray at the intersection point. */
+        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
+            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, _hit.m_normal), color(_hit), CORE::Color());
+        }
+        
+     protected:
+        /* Returns the diffuse color at the given surface position */
+        virtual CORE::Color color(const BASE::Intersect &_hit) const {return m_color;}
+        
+     private:
+        CORE::Color           m_color;
+    };
+
 
 };  // namespace DETAIL
 

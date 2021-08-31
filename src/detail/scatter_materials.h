@@ -47,39 +47,6 @@ namespace DETAIL
         float          m_fIndexOfRefraction;
     };
 
-
-    // fog material
-    class FogScatter : public BASE::Material
-    {
-     public:
-        FogScatter(const CORE::Color &_color, float _fDensity)
-            :m_color(_color),
-             m_fDensity(_fDensity)
-        {}
-        
-        /* Returns the scattered ray at the intersection point. */
-        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
-            if (_hit.m_bInside == true) {
-                std::uniform_real_distribution<float> uniform01(0, 1);
-                float fFogHitDist = uniform01(CORE::generator()) * 60;
-                if (fFogHitDist <= _hit.m_fPositionOnRay) {
-                    auto position = _hit.m_priRay.position(fFogHitDist);
-                    auto scatteredDirection = (_hit.m_priRay.m_direction + CORE::randomUnitSphere() * 0.5).normalized();
-                    
-                    return CORE::ScatteredRay(CORE::Ray(position, scatteredDirection), m_color, CORE::Color());
-                }
-            }
-
-            auto passThroughRay = CORE::Ray(_hit.m_position, _hit.m_priRay.m_direction);
-            return CORE::ScatteredRay(passThroughRay, CORE::Color(1, 1, 1), CORE::Color());
-        }
-
-     private:
-        CORE::Color    m_color;
-        float          m_fDensity;
-    };
-
-
 };  // namespace DETAIL
 
 

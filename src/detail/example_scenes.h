@@ -17,6 +17,7 @@
 #include "marched_torus.h"
 #include "special_materials.h"
 #include "simple_scene.h"
+#include "smoke_box.h"
 #include "sphere.h"
 #include "mesh.h"
 #include "plane.h"
@@ -50,7 +51,6 @@ namespace DETAIL
             auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01);
             auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.1);
             auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01, 1.8);
-            auto pMeshUv = BASE::createMaterial<TriangleRGB>(pScene);
             
             auto pMeshSphere = BASE::createPrimitive<SphereMesh>(pScene, 16, 16, 10, pDiffuseWhite);
 
@@ -510,27 +510,24 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Scene> loadScene() const override {
-            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.2, 0.2, 0.25));
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.3, 0.3, 0.35));
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.8), CORE::Color(0.4, 0.4, 0.4), 2);
-            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(60.0, 60.0, 60.0));
-            auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.8, 0.8, 0.8), 0.01, 1);
+            auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.8), CORE::Color(0.4, 0.4, 0.4), 8);
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(60.0, 60.0, 40.0));
             auto pRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.95, 0.0, 0.0));
             auto pGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.95, 0.0));
             auto pBlue = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.0, 0.95));
-            auto pFog = BASE::createMaterial<FogScatter>(pScene, CORE::Color(1.0, 1.0, 1.0), 1.0);
+            auto pFog = BASE::createMaterial<EnvironmentMap>(pScene, CORE::Color(0.9, 0.7, 0.6));
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 80, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 75, 0)), 15.0f, 7.0f, pDiffuseCheck);
+            BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 85, 0)), 15.0f, 7.0f, pDiffuseCheck);
+
+            BASE::createPrimitiveInstance<SmokeBox>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 50, 0)), CORE::Vec(400, 100, 400), pFog, 400);
             
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(-70, 80, 0)), 5, pLight);
-            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-70, 15, 0)), 60.0f, pGlass);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-70, 15, 0)), 15.0f, pRed);
-
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 80, 0)), 5, pLight);
-            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 0)), 60.0f, pFog);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 0)), 15.0f, pGreen);
-
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(70, 80, 0)), 5, pLight);
-            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(70, 15, 0)), 60.0f, pFog);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(70, 15, 0)), 15.0f, pBlue);
 
             pScene->build();   // build BVH
@@ -538,7 +535,7 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
-            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 150), CORE::Vec(0, 1, 0), CORE::Vec(0, 20, 0), deg2rad(60), 0.1, 160);
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 150), CORE::Vec(0, 1, 0), CORE::Vec(0, 40, 0), deg2rad(60), 0.1, 180);
         }
     };
 
