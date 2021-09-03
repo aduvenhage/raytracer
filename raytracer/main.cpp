@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(64),
+         m_iMaxSamplesPerPixel(256),
          m_iMaxTraceDepth(64),
          m_fColorTollerance(0.0f),
          m_uRandSeed(1)

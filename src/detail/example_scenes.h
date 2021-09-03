@@ -91,7 +91,7 @@ namespace DETAIL
             auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.4, 0.4, 0.5));
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.1), CORE::Color(0.8, 0.1, 0.1), 2);
             auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
-            auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01, 1.5);
+            auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01, 1.8);
             auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.5, 0.5, 0.5), 0.05);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisTranslation(CORE::Vec(0, 0, 0)), 500, pDiffuseFloor);

@@ -96,7 +96,7 @@ namespace CORE
         float cosi = -_vec * _normal;
         float k = sqr(_fEtaiOverEtat) * (1 - sqr(cosi));
         std::uniform_real_distribution<float> uniform01(0, 1);
-        
+
         // k > 1 ==> total internal reflection
         if ( (k > 1) ||
              (uniform01(generator()) < schlick(cosi, _fEtaiOverEtat)) )

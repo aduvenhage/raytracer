@@ -116,8 +116,10 @@ namespace DETAIL
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
             return CORE::ScatteredRay(CORE::Ray(_hit.m_position,
-                                                CORE::refract(_hit.m_priRay.m_direction.normalized(), _hit.m_normal, m_fIndexOfRefraction, _hit.m_bInside) +
-                                                CORE::randomInUnitSphere() * m_fScatter),
+                                                CORE::refract(_hit.m_priRay.m_direction.normalized(),
+                                                              (_hit.m_normal + CORE::randomInUnitSphere() * m_fScatter).normalized(),
+                                                              m_fIndexOfRefraction,
+                                                              _hit.m_bInside)),
                                                 m_color, CORE::Color());
         }
 
