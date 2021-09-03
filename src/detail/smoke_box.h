@@ -60,7 +60,7 @@ namespace DETAIL
         /* Completes the node intersect properties. */
         virtual BASE::Intersect &intersect(BASE::Intersect &_hit) const override {
             _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
-            _hit.m_normal = CORE::randomUnitSphere();
+            _hit.m_normal = CORE::randomOnUnitSphere();
 
             return _hit;
         }

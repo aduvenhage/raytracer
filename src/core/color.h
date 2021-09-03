@@ -135,6 +135,13 @@ namespace CORE
             return m_c[0] + m_c[1] + m_c[2] < 0.0001f;
         }
         
+        Color &gammaCorrect2() {
+            m_c[0] = sqrt(m_c[0]);
+            m_c[1] = sqrt(m_c[1]);
+            m_c[2] = sqrt(m_c[2]);
+            return *this;
+        }
+        
         float      m_c[3];
     };
     
@@ -143,6 +150,8 @@ namespace CORE
     Color operator*(float _fScale, const Color &_color) {
         return _color * _fScale;
     }
+    
+    
     
     
     // preset colors

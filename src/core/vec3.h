@@ -136,6 +136,10 @@ namespace CORE
             return Vec(m_v[0] * _dX, m_v[1] * _dY, m_v[2] * _dZ);
         }
         
+        bool isNearZero() const {
+            return sizeSqr() < 0.0001f;
+        }
+        
         float m_v[3];
     };
     
@@ -444,7 +448,7 @@ namespace CORE
 
 
     // returns a vector within the unit cube (-1..1, -1..1, -1..1)
-    inline Vec randomUnitCube() {
+    inline Vec randomInUnitCube() {
         std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
         auto &rgen = generator();
         return Vec(dist(rgen), dist(rgen), dist(rgen));
@@ -452,7 +456,7 @@ namespace CORE
 
     
     // returns a vector within the unit disc (-1..1, -1..1, 0)
-    inline Vec randomUnitSquare() {
+    inline Vec randomInUnitSquare() {
         std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
         auto &rgen = generator();
         return Vec(dist(rgen), dist(rgen), 0);
@@ -460,24 +464,41 @@ namespace CORE
 
     
     // returns a vector within the unit sphere (radius of 1)
-    inline Vec randomUnitSphere() {
-        Vec ret = randomUnitCube();
-        while (ret.sizeSqr() > 1) {
-            ret = randomUnitCube();
+    inline Vec randomInUnitSphere() {
+        for (;;){
+            auto v = randomInUnitCube();
+            auto r = v.sizeSqr();
+            if ( (r > 1) || (r < 0.00001) ) {
+                continue;
+            }
+            return v;
         }
-        
-        return ret;
     }
 
 
     // returns a vector within the unit disc (y/x plane, radius of 1)
-    inline Vec randomUnitDisc() {
-        Vec ret = randomUnitSquare();        
-        while (ret.sizeSqr() > 1) {
-            ret = randomUnitSquare();
+    inline Vec randomInUnitDisc() {
+        for (;;){
+            auto v = randomInUnitSquare();
+            auto r = v.sizeSqr();
+            if ( (r > 1) || (r < 0.00001) ) {
+                continue;
+            }
+            return v;
         }
-        
-        return ret;
+    }
+
+
+    // returns a vector within the unit sphere (radius of 1)
+    inline Vec randomOnUnitSphere() {
+        return randomInUnitSphere().normalized();
+    }
+    
+    
+    // returns a vector on the unit sphere around normal
+    inline Vec randomUnitSphereOnNormal(const Vec &_normal) {
+        auto ret = 0.5 * (_normal + randomOnUnitSphere());
+        return ret.isNearZero() ? _normal : ret;
     }
 
 

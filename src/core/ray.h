@@ -112,12 +112,11 @@ namespace CORE
 
 
     /* glass like reflection/refraction (includes surface scatter and inside/outside checks) */
-    inline Vec refract(const Vec &_vec, const Vec &_normal, float _fIndexOfRefraction, bool _bInside, float _fScatter) {
+    inline Vec refract(const Vec &_vec, const Vec &_normal, float _fIndexOfRefraction, bool _bInside) {
         float dEtaiOverEtat = _bInside ? _fIndexOfRefraction : (1.0f/_fIndexOfRefraction);
-        auto normal = (_normal + randomUnitSphere() * _fScatter).normalized();
-        normal *= _bInside ? -1.0f : 1.0f;
-        
-        return refract(_vec, normal, dEtaiOverEtat);
+        return refract(_vec,
+                       _bInside ? -_normal : _normal,
+                       dEtaiOverEtat);
     }
 
 

@@ -182,8 +182,8 @@ namespace SYSTEMS
                 for (int k = 0; k < iMaxSamplesPerPixel; k++)
                 {
                     // set ray depth of field and focus aliasing
-                    auto rayOrigin = CORE::randomUnitDisc() * fCameraAperature * 0.5;
-                    auto rayFocus = (CORE::randomUnitSquare() * fSubPixelScale + CORE::Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
+                    auto rayOrigin = CORE::randomInUnitDisc() * fCameraAperature * 0.5;
+                    auto rayFocus = (CORE::randomInUnitSquare() * fSubPixelScale + CORE::Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
                     
                     // transform from camera to world
                     rayOrigin = axisCameraView.transformFrom(rayOrigin);
@@ -205,10 +205,11 @@ namespace SYSTEMS
                     }
                 }
                                 
-                // write averaged color to output image
+                // get pixel color
                 auto color = stats.mean();
-                color.clamp();
+                color.clamp().gammaCorrect2();
 
+                // write to output image
                 *(pPixel++) = (int)(255 * color.red() + 0.5);
                 *(pPixel++) = (int)(255 * color.green() + 0.5);
                 *(pPixel++) = (int)(255 * color.blue() + 0.5);

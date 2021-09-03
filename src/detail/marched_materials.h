@@ -25,8 +25,8 @@ namespace DETAIL
                                      _hit.m_uMarchDepth*0.005f,
                                      CORE::Color::OPERATION::CLAMP);
             
-            auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere()).normalized();
-            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, scatteredDirection), color, CORE::Color());
+            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal)),
+                                      color, CORE::Color());
         }
 
      private:
@@ -47,11 +47,9 @@ namespace DETAIL
                                      _hit.m_uMarchDepth*0.13f*scale,
                                      _hit.m_uMarchDepth*0.07f*scale,
                                      CORE::Color::OPERATION::WRAP);
-            
-            auto normal = (_hit.m_normal + CORE::randomUnitSphere() * 0.05f).normalized();
-            auto reflectedRay = CORE::Ray(_hit.m_position, reflect(_hit.m_priRay.m_direction, normal));
-        
-            return CORE::ScatteredRay(reflectedRay, color, CORE::Color());
+
+            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal)),
+                                      color, CORE::Color());
         }
 
      private:
@@ -70,8 +68,8 @@ namespace DETAIL
             auto color = (CORE::Color(0.0f, 0.21f, 0.11f) * _hit.m_uIterations).wrap();
             auto glow = (CORE::Color(1.0f, 0.0f, 0.0f) - CORE::Color(0.01f, 0.0f, 0.0f) * _hit.m_uMarchDepth).clamp() * 10;
             
-            auto scatteredDirection = (_hit.m_normal + CORE::randomUnitSphere()).normalized();
-            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, scatteredDirection), color, glow);
+            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal)),
+                                      color, glow);
         }
 
      private:

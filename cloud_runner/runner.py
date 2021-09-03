@@ -4,19 +4,18 @@ import click
 
 # https://github.com/aduvenhage/docker-machine-api
 from docker_machine_api.cl_api import DockerMachine
+from docker_machine_api.machine_config import DigitalOceanConfig
+from docker_machine_api.machine_config import AwsConfig
 
 
 def start_render_machine(token, scenario):
     # create new docker machine
+    #config = DigitalOceanConfig(token=token, size='g-32vcpu-128gb').config()
+    config = AwsConfig(access_key='AKIA3RK52MA4FRQA6RNT', secret_key='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',
+                       type='m6i.32xlarge', region='us-east-2', image='ami-0b9064170e32bde34')
     dm = DockerMachine(name='raytracer',
                        cwd='../',
-                       config={
-                            'driver': 'digitalocean',
-                            'digitalocean-size': 'g-32vcpu-128gb',
-                            'digitalocean-image': 'ubuntu-18-04-x64', 
-                            'digitalocean-access-token': token,
-                            'engine-install-url': 'https://releases.rancher.com/install-docker/19.03.9.sh'
-                       },
+                       config=config.config(),
                        user_env={
                            'SCENARIO': scenario,
                            'OUTPUT': 'raytraced_frame.jpeg',
