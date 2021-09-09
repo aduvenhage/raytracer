@@ -10,7 +10,11 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["e98b76291e0a41b0eac68ada31222690e3b7f12e6964be6e542076479980088f"]
+            "args": [""],
+            "env": { 
+                "AWS_ACCESS_KEY": "AKIA3RK52MA4G36YKYWN",
+                "AWS_SECRET_KEY": "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"
+            }
         }
     ]
 }
