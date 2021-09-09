@@ -1,3 +1,7 @@
+## Fixes and optimisations
+### Fixing Shadow Acne
+
+
 ## Advanced Primitives
 - Volumes
 - Raymarching

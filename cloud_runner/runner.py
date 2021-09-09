@@ -10,9 +10,9 @@ from docker_machine_api.machine_config import AwsConfig
 
 def start_render_machine(token, scenario):
     # create new docker machine
-    #config = DigitalOceanConfig(token=token, size='g-32vcpu-128gb').config()
-    config = AwsConfig(access_key='AKIA3RK52MA4FRQA6RNT', secret_key='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',
-                       type='m6i.32xlarge', region='us-east-2', image='ami-0b9064170e32bde34')
+    config = DigitalOceanConfig(token=token, type='g-32vcpu-128gb')    
+    #config = AwsConfig(type='m6i.32xlarge', region='us-east-2', image='ami-0b9064170e32bde34')
+
     dm = DockerMachine(name='raytracer',
                        cwd='../',
                        config=config.config(),

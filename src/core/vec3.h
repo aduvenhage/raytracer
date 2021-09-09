@@ -62,7 +62,7 @@ namespace CORE
         }
         
         Vec operator-() const {
-            return inverse();
+            return scaled(-1, -1, -1);
         }
         
         Vec &operator-=(const Vec &_vec) {
@@ -119,10 +119,6 @@ namespace CORE
                        m_v[2] / r);
         }
         
-        Vec inverse() const {
-            return Vec(-m_v[0], -m_v[1], -m_v[2]);
-        }
-        
         // per element abs() -- not the same as size
         Vec abs() const {
             return Vec(fabs(m_v[0]), fabs(m_v[1]), fabs(m_v[2]));
@@ -132,7 +128,7 @@ namespace CORE
         Vec xz() const {return Vec(m_v[0], 0, m_v[2]);}
         Vec yz() const {return Vec(0, m_v[1], m_v[2]);}
         
-        Vec scale(float _dX, float _dY, float _dZ) {
+        Vec scaled(float _dX, float _dY, float _dZ) const {
             return Vec(m_v[0] * _dX, m_v[1] * _dY, m_v[2] * _dZ);
         }
         
@@ -497,6 +493,7 @@ namespace CORE
     
     // returns a vector on the unit sphere around normal
     inline Vec randomUnitSphereOnNormal(const Vec &_normal) {
+        // TODO: check why 0.5 here?
         auto ret = 0.5 * (_normal + randomOnUnitSphere());
         return ret.isNearZero() ? _normal : ret;
     }

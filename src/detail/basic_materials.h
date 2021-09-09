@@ -61,22 +61,29 @@ namespace DETAIL
     };
 
 
-    // light emitting material
+    /*
+     Light emitting material
+     */
     class Light : public BASE::Material
     {
      public:
-       Light(const CORE::Color &_color)
-            :m_color(_color)
+       Light(const CORE::Color &_color, bool _bShowPrimary=true)
+            :m_color(_color),
+             m_bShowPrimary(_bShowPrimary)
        {}
        
        /* Returns the scattered ray at the intersection point. */
        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
+            const bool light = !_hit.m_priRay.m_bPrimary || m_bShowPrimary;
+            
             return CORE::ScatteredRay(CORE::Ray(_hit.m_position, _hit.m_priRay.m_direction),
-                                      CORE::Color(), m_color);
+                                      light ? CORE::COLOR::Black : CORE::COLOR::White,
+                                      light ? m_color : CORE::COLOR::Black);
        }
        
      private:
         CORE::Color            m_color;
+        bool                   m_bShowPrimary;
     };
 
 
@@ -92,7 +99,7 @@ namespace DETAIL
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
             return CORE::ScatteredRay(CORE::Ray(_hit.m_position,
-                                                reflect(_hit.m_priRay.m_direction.normalized(), _hit.m_normal) +
+                                                reflect(_hit.m_priRay.m_direction, _hit.m_normal) +
                                                 CORE::randomInUnitSphere() * m_fScatter),
                                       m_color, CORE::Color());
         }
@@ -116,7 +123,7 @@ namespace DETAIL
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
             return CORE::ScatteredRay(CORE::Ray(_hit.m_position,
-                                                CORE::refract(_hit.m_priRay.m_direction.normalized(),
+                                                CORE::refract(_hit.m_priRay.m_direction,
                                                               (_hit.m_normal + CORE::randomInUnitSphere() * m_fScatter).normalized(),
                                                               m_fIndexOfRefraction,
                                                               _hit.m_bInside)),

@@ -29,8 +29,9 @@ namespace DETAIL
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(BASE::Intersect &_hit) const override {
+            // NOTE: only hit if ray is pointing down at plane
             const float denom = _hit.m_priRay.m_direction.y();
-            if (denom < -0.0000001f) {
+            if (denom < -0.00001f) {
                 const auto vecRayPlane = -_hit.m_priRay.m_origin;
                 const float t = vecRayPlane.y() / denom;
                 if (_hit.m_priRay.inside(t) == true) {
@@ -70,7 +71,7 @@ namespace DETAIL
         
         Disc(float _fRadius, const BASE::Material *_pMaterial, float _fUvScale=0.02f)
             :Plane(_pMaterial, _fUvScale),
-             m_bounds(CORE::Vec(-_fRadius, -1, -_fRadius), CORE::Vec(_fRadius, 1, _fRadius)),
+             m_bounds(CORE::Vec(-_fRadius, -0.5, -_fRadius), CORE::Vec(_fRadius, 0.5, _fRadius)),
              m_fRadiusSqr(_fRadius * _fRadius)
         {}
         
@@ -104,7 +105,9 @@ namespace DETAIL
     };
 
 
-    /* Rectangle (plane within a certain width and length; fixed ZX plane with normal [0, 1, 0] and origin [0, 0, 0]) shape class */
+    /*
+     Rectangle (plane within a certain width and length; fixed ZX plane with normal [0, 1, 0] and origin [0, 0, 0]) shape class
+     */
     class Rectangle        : public Plane
     {
      public:
@@ -113,7 +116,7 @@ namespace DETAIL
         
         Rectangle(float _fWidth, float _fLength, const BASE::Material *_pMaterial, float _fUvScale=0.02f)
             :Plane(_pMaterial, _fUvScale),
-             m_bounds(CORE::Vec(-_fWidth/2, -1, -_fLength/2), CORE::Vec(_fWidth/2, 1, _fLength/2)),
+             m_bounds(CORE::Vec(-_fWidth/2, -0.5, -_fLength/2), CORE::Vec(_fWidth/2, 0.5, _fLength/2)),
              m_fWidth(_fWidth),
              m_fLength(_fLength)
         {}

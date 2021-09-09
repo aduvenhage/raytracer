@@ -181,6 +181,8 @@ namespace SYSTEMS
                 auto stats = CORE::ColorStat();
                 for (int k = 0; k < iMaxSamplesPerPixel; k++)
                 {
+                    // TODO: check if we can avoid normalisations here
+
                     // set ray depth of field and focus aliasing
                     auto rayOrigin = CORE::randomInUnitDisc() * fCameraAperature * 0.5;
                     auto rayFocus = (CORE::randomInUnitSquare() * fSubPixelScale + CORE::Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
@@ -190,7 +192,7 @@ namespace SYSTEMS
                     rayFocus = axisCameraView.transformFrom(rayFocus);
                     
                     // create ray
-                    auto ray = CORE::Ray(rayOrigin, (rayFocus - rayOrigin).normalized());
+                    auto ray = CORE::Ray(rayOrigin, (rayFocus - rayOrigin).normalized(), true);
                     
                     // trace ray
                     auto color = tracer.trace(ray);

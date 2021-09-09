@@ -160,6 +160,8 @@ namespace CORE
         static const Color  Red(1, 0, 0);
         static const Color  Green(0, 1, 0);
         static const Color  Blue(0, 0, 1);
+        static const Color  White(1, 1, 1);
+        static const Color  Black(0, 0, 0);
     }
     
     

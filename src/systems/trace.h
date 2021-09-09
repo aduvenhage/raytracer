@@ -61,9 +61,8 @@ namespace SYSTEMS
                         break;  // stop -- attenuation down to zero
                     }
 
-                    // transform ray back to world space, and move slightly to avoid self intersection
+                    // transform ray back to world space
                     ray = hit.m_pPrimitive->transformRayFrom(scatteredRay.m_ray);
-                    ray.m_origin = ray.position(T_MIN);
                 }
                 else {
                     tracedColor += attColor * m_pScene->backgroundColor();

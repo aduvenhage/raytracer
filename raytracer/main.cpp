@@ -35,7 +35,7 @@ class MainWindow : public QMainWindow
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
          m_iMaxSamplesPerPixel(256),
-         m_iMaxTraceDepth(64),
+         m_iMaxTraceDepth(32),
          m_fColorTollerance(0.0f),
          m_uRandSeed(1)
     {
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
     testMemoryManager();
     testMemoryManager();
     
-    auto pLoader = std::make_unique<LoaderGlassSphereScene>();
+    auto pLoader = std::make_unique<LoaderCornellBox>();
     
     // start app
     QApplication app(argc, argv);

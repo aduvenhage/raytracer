@@ -26,12 +26,13 @@ namespace CORE
         //Ray(Ray &) noexcept = default;
 
         template <typename U, typename V>
-        Ray(U &&_origin, V &&_direction) noexcept
+        Ray(U &&_origin, V &&_direction, bool _bPrimary=false) noexcept
             :m_origin(std::forward<U>(_origin)),
              m_direction(std::forward<V>(_direction)),
-             m_invDirection(1/_direction),
+             m_invDirection(1.0f/_direction),
              m_fMinDist(MIN_DIST),
-             m_fMaxDist(MAX_DIST)
+             m_fMaxDist(MAX_DIST),
+             m_bPrimary(_bPrimary)
         {}
 
         Ray &operator=(const Ray &) noexcept = default;
@@ -50,6 +51,8 @@ namespace CORE
         Vec     m_invDirection;
         float   m_fMinDist;
         float   m_fMaxDist;
+        char    m_iRayType;
+        bool    m_bPrimary;
     };
 
 
@@ -134,13 +137,13 @@ namespace CORE
 
     /* transform ray to space */
     inline Ray transformRayTo(const Ray &_ray, const Axis &_axis) {
-        return Ray(_axis.transformTo(_ray.m_origin), _axis.rotateTo(_ray.m_direction));
+        return Ray(_axis.transformTo(_ray.m_origin), _axis.rotateTo(_ray.m_direction), _ray.m_bPrimary);
     }
 
 
     /* transform ray from space */
     inline Ray transformRayFrom(const Ray &_ray, const Axis &_axis) {
-        return Ray(_axis.transformFrom(_ray.m_origin), _axis.rotateFrom(_ray.m_direction));
+        return Ray(_axis.transformFrom(_ray.m_origin), _axis.rotateFrom(_ray.m_direction), _ray.m_bPrimary);
     }
 
 

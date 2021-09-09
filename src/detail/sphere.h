@@ -36,27 +36,26 @@ namespace DETAIL
             const float dIntersectRadiusSqr = _hit.m_priRay.m_origin.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr <= m_fRadiusSqr) {
                 const float dt = sqrt(m_fRadiusSqr - dIntersectRadiusSqr);
-                if (dt <= dRayLength) {
+                const float t0 = dRayLength - dt;
+                if (_hit.m_priRay.inside(t0) == true) {
                     // we are outside of sphere
-                    dRayLength -= dt;
                     _hit.m_bInside = false;
-                }
-                else {
-                    // we are inside of sphere
-                    dRayLength += dt;
-                    _hit.m_bInside = true;
+                    _hit.m_fPositionOnRay = t0;
+                    return true;
                 }
 
-                // check ray limits
-                if (_hit.m_priRay.inside(dRayLength) == true) {
-                    _hit.m_fPositionOnRay = dRayLength;
+                const float t1 = dRayLength + dt;
+                if (_hit.m_priRay.inside(t1) == true) {
+                    // we are inside of sphere
+                    _hit.m_bInside = true;
+                    _hit.m_fPositionOnRay = t1;
                     return true;
                 }
             }
-                    
+
             return false;
         }
-        
+
         /* Completes the node intersect properties. */
         virtual BASE::Intersect &intersect(BASE::Intersect &_hit) const override {
             _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
@@ -77,7 +76,6 @@ namespace DETAIL
         float                   m_fRadius;
         float                   m_fRadiusSqr;
     };
-
 
 };  // namespace DETAIL
 
