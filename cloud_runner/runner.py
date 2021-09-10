@@ -9,10 +9,15 @@ from docker_machine_api.machine_config import AwsConfig
 
 
 def start_render_machine(scenario):
-    # create new docker machine
-    config = DigitalOceanConfig(type='g-32vcpu-128gb')    
-    config = AwsConfig(type='c4.8xlarge', region='us-east-2', image='ami-0b9064170e32bde34')
+    # try to create a config
+    config = DigitalOceanConfig(type='g-32vcpu-128gb')
+    if not config.is_valid():
+        config = AwsConfig(type='c4.8xlarge', region='us-east-2', image='ami-0b9064170e32bde34')
 
+    if not config.is_valid():
+        raise RuntimeError("No valid docker-machine config found!")
+
+    # create new docker machine
     dm = DockerMachine(name='raytracer',
                        cwd='../',
                        config=config.config(),
