@@ -8,10 +8,10 @@ from docker_machine_api.machine_config import DigitalOceanConfig
 from docker_machine_api.machine_config import AwsConfig
 
 
-def start_render_machine(token, scenario):
+def start_render_machine(scenario):
     # create new docker machine
-    #config = DigitalOceanConfig(token=token, type='g-32vcpu-128gb')    
-    config = AwsConfig(type='m6i.32xlarge', region='us-east-2', image='ami-0b9064170e32bde34')
+    config = DigitalOceanConfig(type='g-32vcpu-128gb')    
+    config = AwsConfig(type='c4.8xlarge', region='us-east-2', image='ami-0b9064170e32bde34')
 
     dm = DockerMachine(name='raytracer',
                        cwd='../',
@@ -31,12 +31,12 @@ def start_render_machine(token, scenario):
 
 
 @click.command('runner')
-@click.argument('token')
-def runner(token):
+@click.argument('scenario')
+def runner(scenario):
     logging.basicConfig(level=20)
     logger = logging.getLogger(__name__)
 
-    dm = start_render_machine(token, 'cornell_box')
+    dm = start_render_machine(scenario)
 
     # wait for rendering to complete
     idle = False
