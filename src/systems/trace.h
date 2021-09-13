@@ -38,10 +38,11 @@ namespace SYSTEMS
              m_uRayCount(0)
         {}
         
-        CORE::Color trace(const CORE::Ray &_ray) {
+        template <typename R>
+        CORE::Color trace(R &&_ray) {
             CORE::Color tracedColor(0, 0, 0);
             CORE::Color attColor(1, 1, 1);
-            CORE::Ray ray(_ray);
+            CORE::Ray ray(std::forward<R>(_ray));
             
             for (uint16_t i = 0; i < m_uTraceLimit; i++) {
                 m_uRayCount++;

@@ -23,10 +23,25 @@ namespace DETAIL
         {}
         
         // returns the camera position
-        virtual CORE::Vec origin() const override {
+        virtual const CORE::Vec &origin() const override {
             return m_axis.m_origin;
         }
         
+        // returns the camera forward (z) axis
+        virtual const CORE::Vec &z() const override {
+            return m_axis.m_z;
+        }
+        
+        // returns the camera up (y) axis
+        virtual const CORE::Vec &y() const override {
+            return m_axis.m_y;
+        }
+        
+        // returns the camera left (x) axis
+        virtual const CORE::Vec &x() const override {
+            return m_axis.m_x;
+        }
+
         // returns camera view axis
         virtual const CORE::Axis &axis() const override {
             return m_axis;

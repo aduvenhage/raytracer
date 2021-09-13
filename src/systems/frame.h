@@ -160,38 +160,28 @@ namespace SYSTEMS
         void run()
         {
             RayTracer tracer(m_pScene, m_iMaxDepth);
+            const float fFovScale = tan(m_pCamera->fov() * 0.5f);
             unsigned char *pPixel = (unsigned char *)m_pImage->row(m_iLine);
-            const int iViewWidth = m_pViewport->width();
-            const int iViewHeight = m_pViewport->height();
-            const int iMaxSamplesPerPixel = m_iMaxSamplesPerPixel;
-            const float fViewAspect = m_pViewport->viewAspect();
-            const float fFov = m_pCamera->fov();
-            const float fFovScale = tan(fFov * 0.5f);
-            const float fCameraAperature = m_pCamera->aperture();
-            const float fCameraFocusDistance = m_pCamera->focusDistance();
-            const float fSubPixelScale = 0.5f / iViewWidth;
-            const float y = (1 - 2 * m_iLine / (float)iViewHeight) * fFovScale;
-            const float fColorTollerance = m_fColorTollerance;
-            const CORE::Axis &axisCameraView = m_pCamera->axis();
+            
+            // run through one line in output image
+            const float y = (1.0f - 2.0f * m_iLine / m_pViewport->height()) * fFovScale;
 
-            for (auto i = 0; i < iViewWidth; i++)
+            for (auto i = 0; i < m_pViewport->width(); i++)
             {
-                const float x = (2 * i / (float)iViewWidth - 1) * fViewAspect * fFovScale;
+                const float x = (1.0f - 2.0f * i / m_pViewport->width()) * fFovScale * m_pViewport->viewAspect();
                 
                 auto stats = CORE::ColorStat();
-                for (int k = 0; k < iMaxSamplesPerPixel; k++)
+                for (int k = 0; k < m_iMaxSamplesPerPixel; k++)
                 {
-                    // TODO: check if we can avoid normalisations here
-
-                    // set ray depth of field and focus aliasing
-                    auto rayOrigin = CORE::randomInUnitDisc() * fCameraAperature * 0.5;
-                    auto rayFocus = (CORE::randomInUnitSquare() * fSubPixelScale + CORE::Vec(-x, y, 1)).normalized() * fCameraFocusDistance;
+                    // calc origin in camera
+                    auto rayOrigin = CORE::randomInUnitDisc() * m_pCamera->aperture() * 0.5;
                     
-                    // transform from camera to world
-                    rayOrigin = axisCameraView.transformFrom(rayOrigin);
-                    rayFocus = axisCameraView.transformFrom(rayFocus);
+                    // calc lookat point on focus plane
+                    auto rayFocus = (CORE::Vec(x, y, 1) + randomInPixel()) * m_pCamera->focusDistance();
                     
-                    // create ray
+                    // create ray (transform from camera to world)
+                    rayOrigin = m_pCamera->axis().transformFrom(rayOrigin);
+                    rayFocus = m_pCamera->axis().transformFrom(rayFocus);
                     auto ray = CORE::Ray(rayOrigin, (rayFocus - rayOrigin).normalized(), true);
                     
                     // trace ray
@@ -199,9 +189,9 @@ namespace SYSTEMS
                     stats.push(color);
                     
                     // check color stats for a quick exit
-                    if ( (fColorTollerance > 0.0f) &&
+                    if ( (m_fColorTollerance > 0.0f) &&
                          (k >= 16) &&
-                         (stats.standardDeviation() < fColorTollerance) )
+                         (stats.standardDeviation() < m_fColorTollerance) )
                     {
                         break;
                     }
@@ -220,6 +210,14 @@ namespace SYSTEMS
             // update frame stats
             m_pFrameStats->updateRayCount(tracer.rayCount());
         }
+        
+     private:
+        CORE::Vec randomInPixel() const {
+            CORE::Vec ret = CORE::randomInUnitSquare();
+            ret.x() *= 0.5 / m_pViewport->width();
+            ret.y() *= 0.5 / m_pViewport->height();
+            return ret;
+        }
 
      private:
         const CORE::OutputImageBuffer  *m_pImage;
@@ -227,10 +225,10 @@ namespace SYSTEMS
         const BASE::Camera             *m_pCamera;
         const BASE::Scene              *m_pScene;
         FrameStats                     *m_pFrameStats;
-        int                            m_iLine;
-        int                            m_iMaxSamplesPerPixel;
-        int                            m_iMaxDepth;
-        float                          m_fColorTollerance;
+        const int                      m_iLine;
+        const int                      m_iMaxSamplesPerPixel;
+        const int                      m_iMaxDepth;
+        const float                    m_fColorTollerance;
     };
 
 

@@ -17,10 +17,19 @@ namespace BASE
         virtual ~Camera() = default;
 
         // returns the camera position
-        virtual CORE::Vec origin() const = 0;
+        virtual const CORE::Vec &origin() const = 0;
 
         // returns camera view axis
         virtual const CORE::Axis &axis() const = 0;
+        
+        // returns the camera forward (z) axis
+        virtual const CORE::Vec &z() const = 0;
+        
+        // returns the camera up (y) axis
+        virtual const CORE::Vec &y() const = 0;
+        
+        // returns the camera left (x) axis
+        virtual const CORE::Vec &x() const = 0;
         
         // returns FOV
         virtual float fov() const = 0;

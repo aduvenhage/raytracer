@@ -22,6 +22,7 @@ namespace DETAIL
         
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
+            // TODO: seeing weird shadows on sphere
             return CORE::ScatteredRay(CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal)),
                                       color(_hit), CORE::Color());
         }

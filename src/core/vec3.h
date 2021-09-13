@@ -493,9 +493,19 @@ namespace CORE
     
     // returns a vector on the unit sphere around normal
     inline Vec randomUnitSphereOnNormal(const Vec &_normal) {
-        // TODO: check why 0.5 here?
-        auto ret = 0.5 * (_normal + randomOnUnitSphere());
+        auto ret = _normal + randomOnUnitSphere();
         return ret.isNearZero() ? _normal : ret;
+    }
+
+
+    // returns a vector on hemisphere around normal
+    inline Vec randomUnitHemisphereOnNormal(const Vec &_normal) {
+        auto ret = randomOnUnitSphere();
+        if (ret * _normal < 0) {
+            ret *= -1;
+        }
+        
+        return ret;
     }
 
 

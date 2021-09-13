@@ -32,7 +32,7 @@ namespace DETAIL
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(BASE::Intersect &_hit) const override {
-            float dRayLength = -_hit.m_priRay.m_origin * _hit.m_priRay.m_direction;
+            float dRayLength = -_hit.m_priRay.m_origin * _hit.m_priRay.m_direction.normalized();
             const float dIntersectRadiusSqr = _hit.m_priRay.m_origin.sizeSqr() - dRayLength*dRayLength;
             if (dIntersectRadiusSqr <= m_fRadiusSqr) {
                 const float dt = sqrt(m_fRadiusSqr - dIntersectRadiusSqr);
