@@ -44,5 +44,4 @@ inline float frac(float _a) {
 }
 
 
-
 #endif  // #ifndef CORE_CONSTANTS_H

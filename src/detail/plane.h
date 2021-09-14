@@ -53,7 +53,7 @@ namespace DETAIL
         }
         
         virtual CORE::Uv uv(const CORE::Vec &_p) const {
-            return CORE::Uv(_p.x() * m_fUvScale, _p.z() * m_fUvScale).wrap();
+            return CORE::Uv(_p.x() * m_fUvScale - 0.5, _p.z() * m_fUvScale - 0.5).wrap();
         }
         
      private:

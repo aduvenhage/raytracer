@@ -113,10 +113,7 @@ namespace CORE
         }
 
         Vec normalized() const {
-            float r = size();
-            return Vec(m_v[0] / r,
-                       m_v[1] / r,
-                       m_v[2] / r);
+            return scaled(1.0f/size());
         }
         
         // per element abs() -- not the same as size
@@ -130,6 +127,10 @@ namespace CORE
         
         Vec scaled(float _dX, float _dY, float _dZ) const {
             return Vec(m_v[0] * _dX, m_v[1] * _dY, m_v[2] * _dZ);
+        }
+        
+        Vec scaled(float _dScale) const {
+            return Vec(m_v[0] * _dScale, m_v[1] * _dScale, m_v[2] * _dScale);
         }
         
         bool isNearZero() const {

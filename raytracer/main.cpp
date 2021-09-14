@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
     testMemoryManager();
     testMemoryManager();
     
-    auto pLoader = std::make_unique<LoaderDefaultScene>();
+    auto pLoader = std::make_unique<LoaderCornellBox>();
     
     // start app
     QApplication app(argc, argv);

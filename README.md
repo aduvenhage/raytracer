@@ -77,6 +77,7 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Random number generation](pages/random.md) [WIP]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
 - [Coordinates, Axis & Matrices](pages/axis.md) [WIP]
+- [Camera Model](pages/camera.md) [WIP]
 
 ## Resources
 - <https://www.realtimerendering.com/intersections.html>

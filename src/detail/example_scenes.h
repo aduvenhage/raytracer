@@ -8,6 +8,7 @@
 #include "base/scene.h"
 #include "simple_camera.h"
 #include "basic_materials.h"
+#include "fractal_materials.h"
 #include "scatter_materials.h"
 #include "marched_bubbles.h"
 #include "marched_mandle.h"
@@ -388,7 +389,7 @@ namespace DETAIL
             auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
 
             auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(20.0f, 20.0f, 20.0f));
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 50, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 30, pLightWhite);
             
             int n = 200;
             for (int i = 0; i < n; i++) {
@@ -564,16 +565,17 @@ namespace DETAIL
             auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.0, 0.0));
             auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.7, 0.0));
             auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(30.0, 30.0, 30.0));
+            auto pFractalLight = BASE::createMaterial<LightMandlebrot>(pScene);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0)), 100, pDiffuseGrey);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi/2, CORE::Vec(0, 50, -50)), 100, pDiffuseGrey);
-            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi, CORE::Vec(0, 100, 0)), 100, pDiffuseGrey);
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi, CORE::Vec(0, 100, 0)), 100, pFractalLight);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(-pi/2, 0, 0, CORE::Vec(-50, 50, 0)), 100, pDiffuseGreen);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(50, 50, 0)), 100, pDiffuseRed);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.5, 0, CORE::Vec(-15, 25, -15)), CORE::Vec(25, 50, 25), pDiffuseGrey);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.5, 0, CORE::Vec(15, 12.5, 10)), CORE::Vec(25, 25, 25), pDiffuseGrey);
             //BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 15, pLight);
-            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 15, 15, pLight);
+            //BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 15, 15, pLight);
             
 
             pScene->build();   // build BVH
