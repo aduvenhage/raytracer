@@ -603,9 +603,9 @@ namespace DETAIL
 
             auto pDiffuseGrey = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.7, 0.7));
             auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.3, 0.3, 0.3), CORE::Color(0.9, 0.9, 0.9), 4);
-            auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.0, 0.0));
-            auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.7, 0.0));
-            auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.05);
+            auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.8, 0.1, 0.1));
+            auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.1, 0.8, 0.1));
+            auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.07);
             auto pFractalLight = BASE::createMaterial<LightMandlebrot>(pScene);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0)), 100, pDiffuseCheck);
@@ -615,7 +615,9 @@ namespace DETAIL
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(50, 50, 0)), 100, pDiffuseRed);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.5, 0, CORE::Vec(18, 32, -15)), CORE::Vec(25, 60, 25), pMetal);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.5, 0, CORE::Vec(-20, 32, 10)), CORE::Vec(25, 60, 25), pMetal);
-            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(49.99, 50, 0)), 80, 80, pFractalLight);
+
+            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(-pi/2, 0, 0, CORE::Vec(49.1, 50, 0)), 80, 80, pDiffuseGrey);
+            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(49, 50, 0)), 80, 80, pFractalLight);
             
 
             pScene->build();   // build BVH
