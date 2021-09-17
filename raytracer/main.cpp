@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(32),
+         m_iMaxSamplesPerPixel(1024),
          m_iMaxTraceDepth(32),
          m_fColorTollerance(0.0f),
          m_uRandSeed(1)
@@ -118,18 +118,9 @@ class MainWindow : public QMainWindow
 };
 
 
-void testMemoryManager() {
-    auto p1 = std::make_unique<DETAIL::Box>();
-    auto p2 = std::make_unique<DETAIL::Box>();
-}
-
-
 int main(int argc, char *argv[])
 {
-    testMemoryManager();
-    testMemoryManager();
-    
-    auto pLoader = std::make_unique<LoaderCornellBox>();
+    auto pLoader = std::make_unique<LoaderFractalBox>();
     
     // start app
     QApplication app(argc, argv);

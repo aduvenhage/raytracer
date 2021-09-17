@@ -20,6 +20,7 @@ Some images I have made so far:<br>
   <img src="gallery/raytracing/raytraced_default.jpeg" alt="Just some shapes" width="300"/>
   <img src="gallery/raytracing/raytraced_fog3.jpeg" alt="More fog" width="300"/>
   <img src="gallery/raytracing/raytraced_cornell.jpeg" alt="Cornell box" width="300"/>
+  <img src="gallery/raytracing/raytraced_fractalbox.jpeg" alt="Cornell box" width="300"/>
 </p>
 
 ## Features

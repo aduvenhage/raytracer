@@ -75,8 +75,8 @@ namespace UTILS
                 m_fScale = 1.0 / m_iHeight / m_fZoom;
             }
             
-            m_fPosX = _fCx - m_fScale*m_iWidth*0.5;
-            m_fPosY = _fCy - m_fScale*m_iHeight*0.5;
+            m_fPosX = _fCx;// - m_fScale*m_iWidth*0.5;
+            m_fPosY = _fCy;// - m_fScale*m_iHeight*0.5;
             m_iMaxIterations = _iMaxIterations;
         }
         

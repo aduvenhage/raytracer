@@ -69,7 +69,7 @@ namespace DETAIL
             auto e2 = crossProduct(_hit.m_normal, e1);
 
             const auto p2 = _hit.m_position - m_bounds.m_min;
-            _hit.m_uv = CORE::Uv(e1 * p2 * m_fUvScale, e2 * p2 * m_fUvScale).wrap();
+            _hit.m_uv = CORE::Uv(e1 * p2 * m_fUvScale, e2 * p2 * m_fUvScale);
             
             return _hit;
         }

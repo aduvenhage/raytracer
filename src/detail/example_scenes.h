@@ -565,17 +565,57 @@ namespace DETAIL
             auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.0, 0.0));
             auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.7, 0.0));
             auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(30.0, 30.0, 30.0));
-            auto pFractalLight = BASE::createMaterial<LightMandlebrot>(pScene);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0)), 100, pDiffuseGrey);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi/2, CORE::Vec(0, 50, -50)), 100, pDiffuseGrey);
-            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi, CORE::Vec(0, 100, 0)), 100, pFractalLight);
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi, CORE::Vec(0, 100, 0)), 100, pDiffuseGrey);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(-pi/2, 0, 0, CORE::Vec(-50, 50, 0)), 100, pDiffuseGreen);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(50, 50, 0)), 100, pDiffuseRed);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.5, 0, CORE::Vec(-15, 25, -15)), CORE::Vec(25, 50, 25), pDiffuseGrey);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.5, 0, CORE::Vec(15, 12.5, 10)), CORE::Vec(25, 25, 25), pDiffuseGrey);
-            //BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 15, pLight);
-            //BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 15, 15, pLight);
+            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 15, 15, pLight);
+
+            pScene->build();   // build BVH
+            return pScene;
+        }
+
+        virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 50, 120), CORE::Vec(0, 1, 0), CORE::Vec(0, 50, 0), deg2rad(60), 0.1, 120);
+        }
+    };
+
+
+    class LoaderFractalBox  : public BASE::Loader
+    {
+     public:
+        virtual std::string &name() const override {
+            static std::string name = "fractal_box";
+            return name;
+        }
+        
+        virtual std::string &description() const override {
+            static std::string desc = "Standard cornell box scene";
+            return desc;
+        }
+
+        virtual std::unique_ptr<BASE::Scene> loadScene() const override {
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.0, 0.0, 0.0));
+
+            auto pDiffuseGrey = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.7, 0.7));
+            auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.3, 0.3, 0.3), CORE::Color(0.9, 0.9, 0.9), 4);
+            auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.0, 0.0));
+            auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.7, 0.0));
+            auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.05);
+            auto pFractalLight = BASE::createMaterial<LightMandlebrot>(pScene);
+            
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0)), 100, pDiffuseCheck);
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi/2, CORE::Vec(0, 50, -50)), 100, pDiffuseGrey);
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi, CORE::Vec(0, 100, 0)), 100, pDiffuseGrey);
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(-pi/2, 0, 0, CORE::Vec(-50, 50, 0)), 100, pDiffuseGreen);
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(50, 50, 0)), 100, pDiffuseRed);
+            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.5, 0, CORE::Vec(18, 32, -15)), CORE::Vec(25, 60, 25), pMetal);
+            BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.5, 0, CORE::Vec(-20, 32, 10)), CORE::Vec(25, 60, 25), pMetal);
+            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(49.99, 50, 0)), 80, 80, pFractalLight);
             
 
             pScene->build();   // build BVH

@@ -41,12 +41,15 @@ namespace DETAIL
         LightMandlebrot()
             :Light(CORE::Color()),
              m_mandlebrot(1, 1),
-             m_baseColor(0.04f, 0.10f, 0.12f)
-        {}
+             m_baseColor(0.002f, 0.0024f, 0.0006f)
+        {
+            m_mandlebrot.setView(-0.7453, 0.1127, 180.0f, 5000.0f);
+        }
         
         /* Returns the diffuse color at the given surface position */
         virtual CORE::Color color(const BASE::Intersect &_hit) const override {
-            return m_baseColor * m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v());
+            auto color = m_baseColor * m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v());
+            return color.wrap() + CORE::Color(0.1, 0.1, 0.1);
         }
         
      private:
