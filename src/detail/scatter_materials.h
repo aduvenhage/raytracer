@@ -28,9 +28,9 @@ namespace DETAIL
             if (_hit.m_bInside == true) {
                 std::uniform_real_distribution<float> uniform01(0, 1);
         
-                if (uniform01(CORE::generator()) <= 0.6) {
-                    return CORE::ScatteredRay(CORE::Ray(_hit.m_priRay.position(_hit.m_fPositionOnRay * 0.95),
-                                                        _hit.m_normal + CORE::randomInUnitSphere() * 0.6),
+                if (uniform01(CORE::generator()) <= 0.8) {
+                    return CORE::ScatteredRay(CORE::Ray(_hit.m_priRay.position(_hit.m_fPositionOnRay * 0.1),
+                                                        CORE::randomOnUnitSphere()),
                                               m_color, CORE::Color());
                 }
             }

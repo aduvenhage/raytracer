@@ -5,6 +5,7 @@
 #include "core/color.h"
 #include "core/constants.h"
 #include "core/outputimage.h"
+#include "core/random.h"
 #include "core/ray.h"
 #include "core/uv.h"
 #include "core/vec3.h"
@@ -21,10 +22,6 @@
 
 namespace SYSTEMS
 {
-    // constants
-    const float T_MIN = 1e-4f;
-
-
     /*
         Ray tracing functions and stats.
         Works on a pre-constructed scene.
@@ -40,9 +37,11 @@ namespace SYSTEMS
         
         template <typename R>
         CORE::Color trace(R &&_ray) {
+            const uint16_t bounceMin = 3;
             CORE::Color tracedColor(0, 0, 0);
             CORE::Color attColor(1, 1, 1);
             CORE::Ray ray(std::forward<R>(_ray));
+            std::uniform_real_distribution<float> uniform01(0, 1.0);
             
             for (uint16_t i = 0; i < m_uTraceLimit; i++) {
                 m_uRayCount++;
@@ -58,8 +57,15 @@ namespace SYSTEMS
                     auto scatteredRay = hit.m_pPrimitive->material()->scatter(hit);
                     tracedColor += attColor * scatteredRay.m_emitted;
                     attColor *= scatteredRay.m_color;
-                    if (attColor.isBlack() == true) {
-                        break;  // stop -- attenuation down to zero
+                    
+                    // stop on long paths
+                    if (i > bounceMin) {
+                        float p = attColor.max();
+                        if (p < uniform01(CORE::generator())) {
+                            break;  // stop -- attenuation very low
+                        }
+                        
+                        attColor *= 1.0f/p;
                     }
 
                     // transform ray back to world space

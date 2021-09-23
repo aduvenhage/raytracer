@@ -7,5 +7,6 @@
 - Raymarching
 
 ## Advanced Materials
+## Procedural Lights
 ## Subsurface scattering
 ## Caustics

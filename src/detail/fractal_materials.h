@@ -35,6 +35,7 @@ namespace DETAIL
 
 
     // mandlebrot light
+    // TODO: add coordinates and zoom as parameters
     class LightMandlebrot : public Light
     {
      public:

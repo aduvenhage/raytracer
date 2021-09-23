@@ -44,8 +44,8 @@ namespace CORE
         }
 
      private:
-        const int                   m_iWidth;
-        const int                   m_iHeight;
+        int                         m_iWidth;
+        int                         m_iHeight;
         std::vector<unsigned char>  m_image;
     };
 

@@ -29,9 +29,9 @@ namespace CORE
         }
         
      private:
-        const int                   m_iWidth;
-        const int                   m_iHeight;
-        const float                 m_fViewAspect;
+        int                   m_iWidth;
+        int                   m_iHeight;
+        float                 m_fViewAspect;
     };
 
     

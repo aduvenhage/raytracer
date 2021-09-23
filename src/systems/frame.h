@@ -225,10 +225,10 @@ namespace SYSTEMS
         const BASE::Camera             *m_pCamera;
         const BASE::Scene              *m_pScene;
         FrameStats                     *m_pFrameStats;
-        const int                      m_iLine;
-        const int                      m_iMaxSamplesPerPixel;
-        const int                      m_iMaxDepth;
-        const float                    m_fColorTollerance;
+        int                            m_iLine;
+        int                            m_iMaxSamplesPerPixel;
+        int                            m_iMaxDepth;
+        float                          m_fColorTollerance;
     };
 
 

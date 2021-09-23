@@ -135,6 +135,10 @@ namespace CORE
             return m_c[0] + m_c[1] + m_c[2] < 0.0001f;
         }
         
+        float max() const {
+            return std::max(m_c[0], std::max(m_c[1], m_c[2]));
+        }
+        
         Color &gammaCorrect2() {
             m_c[0] = sqrt(m_c[0]);
             m_c[1] = sqrt(m_c[1]);
