@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(64),
+         m_iMaxSamplesPerPixel(256),
          m_iMaxTraceDepth(32),
          m_fColorTollerance(0.0f),
          m_uRandSeed(1)
@@ -120,7 +120,7 @@ class MainWindow : public QMainWindow
 
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_unique<LoaderCornellBox>();
+    auto pLoader = std::make_unique<LoaderRaymarchingBlobs>();
     
     // start app
     QApplication app(argc, argv);

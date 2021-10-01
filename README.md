@@ -24,11 +24,12 @@ Some images I have made so far:<br>
 </p>
 
 ## Features
-List of implemented features:
+List of implemented features:s
 * Basic Features
   * rays and viewport
   * camera position and orientation
   * depth-of-field
+  * gamma correction (fixed 2.0 correction)
 
 * Primitives and Meshes
   * spheres, boxes, planes
@@ -41,30 +42,30 @@ List of implemented features:
 
 * Rendering and optimisations
   * monte-carlo based sampling and materials
+  * russian roulette early exit
   * multi-threaded rendering
   * color variance based per pixel rays (quick exit) 
   * rotated and translated objects, and re-used objects (instancing)
   * axis aligned box intersections
   * bounding volume hyrarchy hit optimisations for scene objects
   * bounding volume hyrarchy hit optimisations for triangles within a mesh
+  * memory manager to ensure objects are located close together in main memory
 
 * Advanced Features
-  * cloud runner
+  * cloud runner (tested on AWS and DigitalOcean)
+  * procedural/textured lights
+
 
 Todo:
-* overloaded memory operations to allocate BVH nodes from a single piece of memory.
-* gamma correction
 * triangle mesh loading (see https://github.com/assimp/assimp)
 * textured objects (texture images)
-* textured area lights
 * replace axis-math with matrix math
 * optisation through importance sampling (for lights)
 * data based optimisations
 * de-noising
 * z-buffer and rasterised debug views (like viewing BVH volumes)
-* support AWS and GCP (generic configs) for cloud runner
 * support larger scenarios rendering multiple frames or multiple scenes per cloud VM (specific to cloud runner)
-* optimize cloud VM promisioning (cloud-local images, smaller images, etc.)
+* optimize cloud VM promisioning (cloud-local images, smaller images, faster building, etc.)
 
 
 ## Feature blog
@@ -73,9 +74,11 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Rendering with Qt](pages/qt.md)
 - [Running in the cloud with docker-machine](pages/docker-machine.md)
 - [Raytracing basics](pages/raytracing.md)
-- [Advanced Raytracing](pages/raytracing_advanced.md) [WIP]
+- [Random number generation](pages/random.md)
+
 - [Job system](pages/jobs.md) [WIP]
-- [Random number generation](pages/random.md) [WIP]
+
+- [Advanced Raytracing](pages/raytracing_advanced.md) [WIP]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
 - [Coordinates, Axis & Matrices](pages/axis.md) [WIP]
 - [Camera Model](pages/camera.md) [WIP]
@@ -86,6 +89,7 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - <https://raytracing.github.io/>
 - <https://www.scratchapixel.com/>
 - <https://github.com/aras-p/ToyPathTracer>
+
 
 
 

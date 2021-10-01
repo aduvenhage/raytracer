@@ -64,7 +64,7 @@ namespace UTILS
         }
         
         _iterations = i;        
-        return 0.1f * log(r) * r/dr;
+        return 0.5f * log(r) * r/dr;
     }
 
 

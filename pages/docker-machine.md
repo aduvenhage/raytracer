@@ -2,7 +2,7 @@
 With docker we can containarise our software, which helps with deployability of software.
 Check out docker <https://www.docker.com/> and docker-machine <https://docs.docker.com/machine/> for background.
 
-With docker you can run and mangage containers locally as well as remotely.  In the remote case the docker CLI essentailly points to the remote docker-engine.
+With docker you can run and manage containers locally as well as remotely.  In the remote case the docker CLI essentailly points to the remote docker-engine.
 Additionally docker-machine helps provision new instances of machines on cloud services, like DigitalOcean, and AWS and helps maintain some local config (in the environment)
 to easily switch between different remote connections.
 
@@ -72,7 +72,7 @@ For testing I used a scene of stacked glass balls.<br>
 
 I experimented with various droplet types:
 - Basic Shared (s): not dedicated, but better hardware than other types
-- CPU-Optimized (c): dedicted, but older generation hardware
+- CPU-Optimized (c): dedicated, but older generation hardware
 - General Purpose (g): general purpose (somewhere in the middle) droplets
 - General Purpose Dedicated (gd): general purpose droplets
 
@@ -95,3 +95,7 @@ The following table shows rendering results on my Macbook and on different Digit
 It clearly shows how well raytracing can scale with more cores and the results on DigitalOcean match quite well with the results on my macbook.
 
 These results exclude the overhead of provisioning, compiling and deleting the remote VMs, which adds around 3 minutes to the total run time.  This is a fairly large overhead and probably makes running in the cloud worthwile only if the scene rendering time would have been an order of magnitude larger than this.  Some work has been done to make the docker image build faster (using a base image, etc.) but the VM provisioning just takes time.
+
+# Final Thoughts
+I could get the cloud runner to work on AWS as well, and AWS has some very capable VM options.  Unfortunately I found working with AWS web interface extremely painful.  On top of that, the fact that you can get locked out of an old account (and never be able to re-use that email address again for an AWS account) is just, well, horrible.
+

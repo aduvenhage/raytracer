@@ -1,7 +1,6 @@
 #ifndef UTILS_MANDLEBROT_H
 #define UTILS_MANDLEBROT_H
 
-#include "jpeg.h"
 #include <vector>
 
 
@@ -48,7 +47,6 @@ namespace UTILS
             :m_iWidth(_iWidth),
              m_iHeight(_iHeight),
              m_iMaxIterations(0),
-             m_image(m_iWidth * m_iHeight * 3, 0),
              m_fPosX(0),
              m_fPosY(0),
              m_fZoom(0),
@@ -62,7 +60,6 @@ namespace UTILS
         int height() const {return m_iHeight;}
         int bytesPerPixel() const {return 3;}
         int max_iterations() const {return m_iMaxIterations;}
-        const unsigned char *image() const {return m_image.data();}
 
         /* Set position and zoom level, using Mandlebrot values. */
         void setView(double _fCx, double _fCy, double _fZoom, int _iMaxIterations)
@@ -75,9 +72,9 @@ namespace UTILS
                 m_fScale = 1.0 / m_iHeight / m_fZoom;
             }
             
-            m_fPosX = _fCx;// - m_fScale*m_iWidth*0.5;
-            m_fPosY = _fCy;// - m_fScale*m_iHeight*0.5;
             m_iMaxIterations = _iMaxIterations;
+            m_fPosX = _fCx;
+            m_fPosY = _fCy;
         }
         
         /* Returns mandlebrot escape iteration count or 0 if it reached max iterations.
@@ -90,38 +87,11 @@ namespace UTILS
                               _fPixelY * m_fScale + m_fPosY,
                               m_iMaxIterations);
         }
-        
-        /* Render fractal to internal buffer. */
-        void render()
-        {
-            int ipx = 0;
-            unsigned char *pImage = m_image.data();
-            
-            for (int y = 0; y < m_iHeight; y++)
-            {
-                for (int x = 0; x < m_iWidth; x++)
-                {
-                    int color = value((int)x, (int)y);
-                    
-                    // TODO: use proper palette (also scale according to zoom value)
-                    pImage[ipx++] = color << 4;
-                    pImage[ipx++] = color << 5;
-                    pImage[ipx++] = color << 6;
-                }
-            }
-        }
-        
-        /* Write last render to disk */
-        void writeToJpeg(const char *_pszFilename) const
-        {
-            writeJpegFile(_pszFilename, m_iWidth, m_iHeight, m_image.data(), 100);
-        }
          
      private:
         int                         m_iWidth;
         int                         m_iHeight;
         int                         m_iMaxIterations;
-        std::vector<unsigned char>  m_image;
         double                      m_fPosX;
         double                      m_fPosY;
         double                      m_fZoom;

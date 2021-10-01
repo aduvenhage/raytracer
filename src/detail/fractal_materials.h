@@ -17,11 +17,14 @@ namespace DETAIL
     class DiffuseMandlebrot : public Diffuse
     {
      public:
-        DiffuseMandlebrot()
+        DiffuseMandlebrot(const CORE::Color &_baseColor, double _fCx, double _fCy, double _fZoom, int _iMaxIterations = 0)
             :Diffuse(CORE::Color()),
              m_mandlebrot(1, 1),
-             m_baseColor(0.02f, 0.05f, 0.06f)
-        {}
+             m_baseColor(_baseColor)
+        {
+            int maxIterations = _iMaxIterations > 0 ? _iMaxIterations : (int)(_fZoom * 50 + 5);
+            m_mandlebrot.setView(_fCx, _fCy, _fZoom, maxIterations);
+        }
         
         /* Returns the diffuse color at the given surface position */
         virtual CORE::Color color(const BASE::Intersect &_hit) const override {
@@ -35,16 +38,16 @@ namespace DETAIL
 
 
     // mandlebrot light
-    // TODO: add coordinates and zoom as parameters
     class LightMandlebrot : public Light
     {
      public:
-        LightMandlebrot()
+        LightMandlebrot(const CORE::Color &_baseColor, double _fCx, double _fCy, double _fZoom, int _iMaxIterations = 0)
             :Light(CORE::Color()),
              m_mandlebrot(1, 1),
-             m_baseColor(0.002f, 0.0024f, 0.0006f)
+             m_baseColor(_baseColor)
         {
-            m_mandlebrot.setView(-0.7453, 0.1127, 180.0f, 5000.0f);
+            int maxIterations = _iMaxIterations > 0 ? _iMaxIterations : (int)(_fZoom * 50 + 5);
+            m_mandlebrot.setView(_fCx, _fCy, _fZoom, maxIterations);
         }
         
         /* Returns the diffuse color at the given surface position */

@@ -100,17 +100,12 @@ namespace SYSTEMS
     template <typename sdf_func>
     bool check_marched_hit(BASE::Intersect &_hit, float _fMaxDist, const sdf_func &_sdf)
     {
-        // TODO: play with these values and maybe adjust dynamically for best performance
-        // TODO: exit criteria could include min stepScale
         const int maxSamples = 100000;
         const float e = 0.00001f;
-        float stepScale = 1.0f;
-        float distance = 0.0f;
+        float stepScale = 1.0f/_hit.m_priRay.m_direction.size();
         
-        // first step (check inside/outside)
-        _hit.m_position = _hit.m_priRay.position(0);
-        float dT = _sdf(_hit.m_position);
-        
+        // check inside/outside
+        float dT = _sdf(_hit.m_priRay.m_origin) * stepScale;
         if (dT < 0) {
             _hit.m_bInside = true;
             stepScale *= -1;
@@ -118,35 +113,46 @@ namespace SYSTEMS
         else {
             _hit.m_bInside = false;
         }
+
+        float distance = dT * stepScale;
         
         // iterate until we hit or miss
-        for (int i = 0; i < maxSamples; i++) {
+        bool bHit = false;
+        int i = 0;
+
+        while (i < maxSamples) {
             // check hit or miss
-            float absd = fabs(dT);
-            if (absd > _fMaxDist) {
-                _hit.m_uMarchDepth = (uint16_t)i;
-                return false;  // missed
+            if (fabs(dT) <= e) {
+                bHit = true;
+                break;
             }
-            else if (absd <= e) {
-                _hit.m_fPositionOnRay = distance + dT * stepScale;
-                _hit.m_uMarchDepth = (uint16_t)i;
-                return true;    // hit
+            else if (dT > _fMaxDist) {
+                break;
             }
-            
-            // move forward
-            distance += dT * stepScale;
-            
-            // check for surface crossing
-            _hit.m_position = _hit.m_priRay.position(distance);
-            auto dM = _sdf(_hit.m_position);
-            if (dT * dM < -e) {
-                stepScale *= 0.8;
+
+            // check progress
+            const float dM = _sdf(_hit.m_priRay.position(distance)) * stepScale;
+            if (dT * dM < 0.0f) {
+                stepScale *= 0.5f;
             }
             
+            // continue
+            distance += dM;
             dT = dM;
+            i++;
         }
         
-        return false;       // missed
+        
+        if (bHit == true) {
+            _hit.m_fPositionOnRay = distance;
+            _hit.m_position = _hit.m_priRay.position(distance);
+            _hit.m_uMarchDepth = (uint16_t)i;
+            return true;
+        }
+        else {
+            _hit.m_uMarchDepth = (uint16_t)i;
+            return false;
+        }
     }
     
 
