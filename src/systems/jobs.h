@@ -10,7 +10,7 @@
 #include <thread>
 #include <queue>
 #include <vector>
-
+#include <mutex>
 
 
 namespace SYSTEMS
@@ -22,7 +22,11 @@ namespace SYSTEMS
         MANAGE_MEMORY(MEM_POOL::JOB_SYSTEM)
         virtual ~Job() = default;
         
+        // do the work -- blocks until completed
         virtual void run() = 0;
+        
+        // returns progress [0..1] while the job is running
+        virtual float progress() const = 0;
     };
 
 
@@ -75,6 +79,17 @@ namespace SYSTEMS
             return m_iCompletedJobs;
         }
         
+        /* returns sum of progress of all jobs */
+        virtual float totalProgress() const {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            if (m_pCurrentJob != nullptr) {
+                return (float)m_iCompletedJobs + m_pCurrentJob->progress();
+            }
+            else {
+                return (float)m_iCompletedJobs;
+            }
+        }
+        
      private:
         virtual void onStart() {}
         virtual void onFinished() {}
@@ -93,12 +108,19 @@ namespace SYSTEMS
 
                 // work on first job in local list
                 if (m_localJobs.empty() == false) {
-                    auto pJobPtr = std::move(m_localJobs.back());
+                    // find next job
+                    m_iActiveJobs = (int)m_localJobs.size();
+                    m_pCurrentJob = std::move(m_localJobs.back());
                     m_localJobs.pop_back();
-                    m_iActiveJobs = (int)m_localJobs.size() + 1;
 
-                    pJobPtr->run();
+                    // run job
+                    m_pCurrentJob->run();
+
+                    // cleanup (sync changes for correct progress reporting)
+                    std::lock_guard<std::mutex> lock(m_mutex);
+                    m_pCurrentJob = nullptr;
                     m_iCompletedJobs++;
+                    m_iActiveJobs--;
                 }
                 else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -113,6 +135,8 @@ namespace SYSTEMS
         JobQueue                                    *m_pJobs;
         int                                         m_iJobChunkSize;
         std::vector<std::unique_ptr<Job>>           m_localJobs;
+        mutable std::mutex                          m_mutex;
+        std::unique_ptr<Job>                        m_pCurrentJob;
         std::atomic<int>                            m_iActiveJobs;
         std::atomic<int>                            m_iCompletedJobs;
         std::atomic<bool>                           m_bRunning;

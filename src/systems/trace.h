@@ -54,7 +54,8 @@ namespace SYSTEMS
                     hit.m_uTraceDepth = i + 1;
 
                     // calculate hit on material
-                    auto scatteredRay = hit.m_pPrimitive->material()->scatter(hit);
+                    auto scatteredRay = CORE::ScatteredRay();
+                    hit.m_pPrimitive->material()->scatter(scatteredRay, hit);
                     tracedColor += attColor * scatteredRay.m_emitted;
                     attColor *= scatteredRay.m_color;
                     

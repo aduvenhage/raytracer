@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(256),
+         m_iMaxSamplesPerPixel(64),
          m_iMaxTraceDepth(32),
          m_fColorTollerance(0.0f),
          m_uRandSeed(1)
@@ -79,10 +79,9 @@ class MainWindow : public QMainWindow
                                                 m_uRandSeed);
         }
         else {
-            if (m_pSource->updateFrameProgress() == true) {
-                printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
-                        (int)m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
-            }
+            m_pSource->updateFrameProgress();
+            printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
+                   (int)m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
 
             if (m_pSource->isFinished() == true) {
                 if (m_bFrameDone == false) {
@@ -120,7 +119,7 @@ class MainWindow : public QMainWindow
 
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_unique<LoaderRaymarchingBlobs>();
+    auto pLoader = std::make_unique<LoaderDefaultScene>();
     
     // start app
     QApplication app(argc, argv);

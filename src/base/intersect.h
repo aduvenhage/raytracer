@@ -39,13 +39,6 @@ namespace BASE
              m_bInside(false)
         {}
 
-        Intersect(const Intersect &) noexcept = default;
-        Intersect(Intersect &&) noexcept = default;
-        //Intersect(Intersect &) noexcept = default;
-        
-        Intersect &operator=(const Intersect &) noexcept = default;
-        Intersect &operator=(Intersect &&) noexcept = default;
-
         operator bool () const {
             return m_fPositionOnRay >= 0;
         }

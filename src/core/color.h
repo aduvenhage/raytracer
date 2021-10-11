@@ -33,10 +33,6 @@ namespace CORE
             else if (_op == OPERATION::WRAP) wrap();
         }
 
-        Color(const Color &) noexcept = default;
-        Color(Color &&) noexcept = default;
-        //Color(Color &) noexcept = default;
-        
         float red() const {return m_c[0];}
         float &red() {return m_c[0];}
         float green() const {return m_c[1];}
@@ -44,9 +40,6 @@ namespace CORE
         float blue() const {return m_c[2];}
         float &blue() {return m_c[2];}
 
-        Color &operator=(const Color &) noexcept = default;
-        Color &operator=(Color &&) = default;
-        
         Color operator+(const Color &_color) const {
             return Color(m_c[0] + _color.m_c[0],
                          m_c[1] + _color.m_c[1],

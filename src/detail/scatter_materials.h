@@ -24,22 +24,9 @@ namespace DETAIL
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
-            if (_hit.m_bInside == true) {
-                std::uniform_real_distribution<float> uniform01(0, 1);
-        
-                if (uniform01(CORE::generator()) <= 0.8) {
-                    return CORE::ScatteredRay(CORE::Ray(_hit.m_priRay.position(_hit.m_fPositionOnRay * 0.1),
-                                                        CORE::randomOnUnitSphere()),
-                                              m_color, CORE::Color());
-                }
-            }
-
-            return CORE::ScatteredRay(CORE::Ray(_hit.m_position,
-                                                CORE::refract(_hit.m_priRay.m_direction,
-                                                              (_hit.m_normal + CORE::randomInUnitSphere() * m_fScatter).normalized(),
-                                                              m_fIndexOfRefraction, _hit.m_bInside)),
-                                                m_color, CORE::Color());
+        virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
+            // TODO: implement fog
+            return _sc;
         }
 
      private:

@@ -4,15 +4,14 @@ SET(INCL_SRC
     box.h
     basic_materials.h
     example_scenes.h
-    fractal_materials.h
     marched_blob.h
     marched_bubbles.h
     marched_mandle.h
-    marched_materials.h
     marched_sphere.h
     marched_torus.h
     mesh.h
     plane.h
+    tex_materials.h
     scatter_materials.h
     simple_camera.h
     simple_scene.h

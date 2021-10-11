@@ -7,7 +7,6 @@
 #include "core/ray.h"
 #include "base/material.h"
 #include "base/intersect.h"
-#include "utils/mandlebrot.h"
 
 
 namespace DETAIL
@@ -21,16 +20,19 @@ namespace DETAIL
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
+        virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
             if (_hit.m_bInside == m_bInside) {
-                auto color = CORE::Color((_hit.m_normal.x() + 1)/2, (_hit.m_normal.y() + 1)/2, (_hit.m_normal.z() + 1)/2);
-                return CORE::ScatteredRay(CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal)),
-                                          CORE::Color(), color);
+                _sc.m_ray = CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal));
+                _sc.m_color = CORE::COLOR::Black;
+                _sc.m_emitted = CORE::Color((_hit.m_normal.x() + 1)/2, (_hit.m_normal.y() + 1)/2, (_hit.m_normal.z() + 1)/2);
             }
             else {
-                return CORE::ScatteredRay(CORE::Ray(_hit.m_position, _hit.m_priRay.m_direction),
-                                          CORE::Color(1, 1, 1), CORE::Color());
+                _sc.m_ray = CORE::Ray(_hit.m_position, _hit.m_priRay.m_direction);
+                _sc.m_color = CORE::COLOR::White;
+                _sc.m_emitted = CORE::COLOR::Black;
             }
+
+            return _sc;
         }
 
      private:
@@ -46,10 +48,11 @@ namespace DETAIL
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
-            auto color = CORE::COLOR::Red * _hit.m_uv.u() + CORE::COLOR::Green * _hit.m_uv.v() + CORE::COLOR::Blue * (1 - _hit.m_uv.u() - _hit.m_uv.v());
-            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal)),
-                                      CORE::Color(), color);
+        virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
+            _sc.m_ray = CORE::Ray(_hit.m_position, randomUnitSphereOnNormal(_hit.m_normal));
+            _sc.m_color = CORE::COLOR::Black;
+            _sc.m_emitted = CORE::COLOR::Red * _hit.m_uv.u() + CORE::COLOR::Green * _hit.m_uv.v() + CORE::COLOR::Blue * (1 - _hit.m_uv.u() - _hit.m_uv.v());
+            return _sc;
         }
     };
     
@@ -63,13 +66,12 @@ namespace DETAIL
         {}
         
         /* Returns the scattered ray at the intersection point. */
-        virtual CORE::ScatteredRay scatter(const BASE::Intersect &_hit) const override {
-            return CORE::ScatteredRay(CORE::Ray(_hit.m_position, _hit.m_normal), color(_hit), CORE::Color());
+        virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
+            _sc.m_ray = CORE::Ray(_hit.m_position, _hit.m_normal);
+            _sc.m_color = m_color;
+            _sc.m_emitted = CORE::COLOR::Black;
+            return _sc;
         }
-        
-     protected:
-        /* Returns the diffuse color at the given surface position */
-        virtual CORE::Color color(const BASE::Intersect &_hit) const {return m_color;}
         
      private:
         CORE::Color           m_color;

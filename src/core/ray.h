@@ -2,9 +2,7 @@
 #define CORE_RAY_H
 
 #include "constants.h"
-#include "color.h"
 #include "vec3.h"
-#include "uv.h"
 #include "random.h"
 
 #include <algorithm>
@@ -21,9 +19,6 @@ namespace CORE
         static constexpr float MAX_DIST = std::numeric_limits<float>::max();
         
         Ray() noexcept = default;
-        Ray(const Ray &) noexcept = default;
-        Ray(Ray &&) noexcept = default;
-        //Ray(Ray &) noexcept = default;
 
         template <typename U, typename V>
         Ray(U &&_origin, V &&_direction, bool _bPrimary=false) noexcept
@@ -35,9 +30,6 @@ namespace CORE
              m_bPrimary(_bPrimary)
         {}
 
-        Ray &operator=(const Ray &) noexcept = default;
-        Ray &operator=(Ray &&) noexcept = default;
-        
         Vec position(float _ft) const {
             return m_origin + m_direction * _ft;
         }
@@ -53,27 +45,6 @@ namespace CORE
         float   m_fMaxDist;
         char    m_iRayType;
         bool    m_bPrimary;
-    };
-
-
-    /* ray with origin, direction and color */
-    struct ScatteredRay
-    {
-        ScatteredRay() = default;
-        ScatteredRay(const ScatteredRay &) = default;
-        ScatteredRay(ScatteredRay &&) = default;
-        //ScatteredRay(ScatteredRay &) = default;
-        
-        template <typename R, typename CC, typename CE>
-        ScatteredRay(R &&_ray, CC &&_color, CE &&_emitted)
-            :m_ray(std::forward<R>(_ray)),
-             m_color(std::forward<CC>(_color)),
-             m_emitted(std::forward<CE>(_emitted))
-        {}
-            
-        Ray     m_ray;
-        Color   m_color;
-        Color   m_emitted;
     };
 
 

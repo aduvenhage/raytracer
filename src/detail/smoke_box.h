@@ -12,6 +12,9 @@ namespace DETAIL
 {
     /*
         Axis aligned box shape class -- fixed at origin [0, 0, 0] (with random intersection for smoke, fog, etc.)
+        
+        TODO: use exponential distance probability
+
     */
     class SmokeBox        : public BASE::Primitive
     {

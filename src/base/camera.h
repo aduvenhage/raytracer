@@ -14,8 +14,6 @@ namespace BASE
     class Camera    : public Resource
     {
      public:
-        virtual ~Camera() = default;
-
         // returns the camera position
         virtual const CORE::Vec &origin() const = 0;
 

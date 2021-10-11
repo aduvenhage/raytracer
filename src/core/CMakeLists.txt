@@ -10,6 +10,7 @@ SET(INCL_SRC
     queue.h
     random.h
     ray.h
+    scattered_ray.h
     stats.h
     strutil.h
     uv.h

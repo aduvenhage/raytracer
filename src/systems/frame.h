@@ -32,15 +32,15 @@ namespace SYSTEMS
 
      public:
         FrameStats()
-            :m_uActiveJobs(0),
-             m_uJobCount(0),
+            :m_uJobCount(0),
+             m_fTotalJobProgress(0),
+             m_uCompletedJobs(0),
              m_uRayCount(0),
-             m_fFrameProgress(0),
              m_fTimeSpentS(0),
              m_fTimeToFinishS(0),
+             m_fFrameProgress(0),
              m_fRaysPerSecond(0),
-             m_bFinished(false),
-             m_bUpdates(false)
+             m_bFinished(false)
         {
             m_tpStart = m_clock.now();
         }
@@ -49,50 +49,41 @@ namespace SYSTEMS
             m_uJobCount = _uJobCount;
         }
         
-        void setActiveJobs(size_t _uActiveJobs) {
-            if (m_uActiveJobs != _uActiveJobs) {
-                m_uActiveJobs = _uActiveJobs;
-                m_bUpdates = true;
-            }
+        void setCompletedJobs(size_t _uCompletedJobs) {
+            m_uCompletedJobs = _uCompletedJobs;
+        }
+        
+        void setJobProgress(float _fTotalProgress) {
+            m_fTotalJobProgress = _fTotalProgress;
         }
         
         void updateRayCount(uint64_t _uRayCountDelta) {
-            if (_uRayCountDelta > 0) {
-                m_uRayCount += _uRayCountDelta;
-                m_bUpdates = true;
-            }
+            m_uRayCount += _uRayCountDelta;
         }
 
         // recalculate frame stats
-        bool update() {
-            if (m_bUpdates == true) {
-                // calc time spent
+        void update() {
+            if (m_bFinished == false) {
                 auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(m_clock.now() - m_tpStart).count();
                 m_fTimeSpentS = ns * 1e-9f;
-
-                // calc perf, progress and time to go
-                m_fFrameProgress = (float)(m_uJobCount - m_uActiveJobs) / m_uJobCount;
-                m_bFinished = m_uActiveJobs == 0;
-                
-                if (m_fFrameProgress > 0.0001) {
-                    m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress - m_fTimeSpentS;
-                }
-
-                if ( (m_fTimeSpentS > 1.0f) ||
-                     (m_bFinished == true) )
-                {
-                    m_fRaysPerSecond = m_uRayCount / m_fTimeSpentS;
-                }
-                
-                m_bUpdates = false;
-                return true;
             }
-            
-            return false;
+
+            m_fFrameProgress = m_fTotalJobProgress / m_uJobCount;
+            if (m_fFrameProgress > 0.0001) {
+                m_fTimeToFinishS = m_fTimeSpentS / m_fFrameProgress - m_fTimeSpentS;
+            }
+
+            if ( (m_fTimeSpentS > 1.0f) ||
+                 (m_bFinished == true) )
+            {
+                m_fRaysPerSecond = m_uRayCount / m_fTimeSpentS;
+            }
+
+            m_bFinished = activeJobs() == 0;
         }
         
         size_t activeJobs() const {
-            return m_uActiveJobs;
+            return m_uJobCount - m_uCompletedJobs;
         }
         
         float progress() const {
@@ -120,17 +111,17 @@ namespace SYSTEMS
         clock_type::time_point                  m_tpStart;
         clock_type::time_point                  m_tpEnd;
         clock_type::time_point                  m_tpPerfCalc;
-        
-        size_t                                  m_uActiveJobs;
         size_t                                  m_uJobCount;
+        
+        std::atomic<float>                      m_fTotalJobProgress;
+        std::atomic<size_t>                     m_uCompletedJobs;
         std::atomic<uint64_t>                   m_uRayCount;
 
-        float                                   m_fFrameProgress;
         float                                   m_fTimeSpentS;
         float                                   m_fTimeToFinishS;
+        float                                   m_fFrameProgress;
         float                                   m_fRaysPerSecond;
         bool                                    m_bFinished;
-        bool                                    m_bUpdates;
     };
 
 
@@ -154,10 +145,12 @@ namespace SYSTEMS
              m_iLine(_iLine),
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iMaxDepth(_iMaxDepth),
-             m_fColorTollerance(_fColorTollerance)
+             m_fColorTollerance(_fColorTollerance),
+             m_fProgress(0)
         {}
         
-        void run()
+        // do the work -- blocks until completed
+        virtual void run() override
         {
             RayTracer tracer(m_pScene, m_iMaxDepth);
             const float fFovScale = tan(m_pCamera->fov() * 0.5f);
@@ -205,12 +198,19 @@ namespace SYSTEMS
                 *(pPixel++) = (int)(255 * color.red() + 0.5);
                 *(pPixel++) = (int)(255 * color.green() + 0.5);
                 *(pPixel++) = (int)(255 * color.blue() + 0.5);
+                
+                m_fProgress =  (float)i / m_pViewport->width();
             }
 
             // update frame stats
             m_pFrameStats->updateRayCount(tracer.rayCount());
         }
-        
+
+        // returns progress [0..1] while the job is running
+        virtual float progress() const override {
+            return m_fProgress;
+        }
+
      private:
         CORE::Vec randomInPixel() const {
             CORE::Vec ret = CORE::randomInUnitSquare();
@@ -229,6 +229,7 @@ namespace SYSTEMS
         int                            m_iMaxSamplesPerPixel;
         int                            m_iMaxDepth;
         float                          m_fColorTollerance;
+        std::atomic<float>             m_fProgress;
     };
 
 
@@ -253,7 +254,6 @@ namespace SYSTEMS
     
     /*
      Container for output image and job system for a single frame
-     
      */
     class Frame
     {
@@ -272,7 +272,6 @@ namespace SYSTEMS
             :m_viewport(_iWidth, _iHeight),
              m_pCamera(_pCamera),
              m_pScene(_pScene),
-             m_uJobCount(0),
              m_image(_iWidth, _iHeight),
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
@@ -295,21 +294,19 @@ namespace SYSTEMS
             m_workers.clear();
         }
         
-        bool updateFrameProgress() {
-            // calc active jobs
-            auto completedJobs = 0;
+        void updateFrameProgress() {
+            // calc active jobs and progress
+            int completedJobs = 0;
+            float totalProgress = 0.0f;
             for (const auto &pWorker : m_workers) {
                 completedJobs += pWorker->completedJobs();
-            }
-            
-            int activeJobs = (int)m_uJobCount - completedJobs;
-            if (activeJobs < 0) {
-                activeJobs = 0;
+                totalProgress += pWorker->totalProgress();
             }
 
             // update stats
-            m_frameStats.setActiveJobs(activeJobs);
-            return m_frameStats.update();
+            m_frameStats.setJobProgress(totalProgress);
+            m_frameStats.setCompletedJobs(completedJobs);
+            m_frameStats.update();
         }
         
         size_t activeJobs() const {
@@ -360,10 +357,9 @@ namespace SYSTEMS
                                                           m_iMaxSamplesPerPixel,
                                                           m_iMaxTraceDepth,
                                                           m_fColorTollerance));
-                m_uJobCount++;
             }
             
-            m_frameStats.setJobCount(m_uJobCount);
+            m_frameStats.setJobCount(jobs.size());
             
             // shuffle jobs a little
             m_jobQueue.push_shuffle(jobs, CORE::generator());
@@ -381,7 +377,6 @@ namespace SYSTEMS
         const CORE::Viewport                       m_viewport;
         const BASE::Camera                         *m_pCamera;
         const BASE::Scene                          *m_pScene;
-        size_t                                     m_uJobCount;
         JobQueue                                   m_jobQueue;
         std::vector<std::unique_ptr<Worker>>       m_workers;
         CORE::OutputImageBuffer                    m_image;

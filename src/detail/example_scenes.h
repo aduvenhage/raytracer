@@ -8,11 +8,10 @@
 #include "base/scene.h"
 #include "simple_camera.h"
 #include "basic_materials.h"
-#include "fractal_materials.h"
+#include "tex_materials.h"
 #include "scatter_materials.h"
 #include "marched_bubbles.h"
 #include "marched_mandle.h"
-#include "marched_materials.h"
 #include "marched_sphere.h"
 #include "marched_blob.h"
 #include "marched_torus.h"
@@ -29,6 +28,29 @@
 
 namespace DETAIL
 {
+    class DiffuseCheckered  : public BASE::MultiMaterial
+    {
+     public:
+        DiffuseCheckered(CORE::Color &_c1, CORE::Color &_c2, int _iBlockSize)
+        {
+            addMaterial(std::make_unique<Checkered>(_c1, _c2, _iBlockSize));
+            addMaterial(std::make_unique<Diffuse>(CORE::COLOR::White));
+        }
+    };
+    
+    
+    class LightMandlebrot : public BASE::MultiMaterial
+    {
+     public:
+        LightMandlebrot(const CORE::Color &_baseColor, double _fCx, double _fCy, double _fZoom, int _iMaxIterations = 0)
+        {
+            addMaterial(std::make_unique<Light>(CORE::COLOR::White));
+            addMaterial(std::make_unique<Mandlebrot>(_baseColor, _fCx, _fCy, _fZoom, _iMaxIterations));
+        }
+    };
+
+
+
     class LoaderDefaultScene  : public BASE::Loader
     {
      public:
@@ -128,15 +150,13 @@ namespace DETAIL
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.1), CORE::Color(0.8, 0.1, 0.1), 2);
             auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
             auto pDiffuseWhite = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.9, 0.9, 0.9));
-            auto pAO = BASE::createMaterial<FakeAmbientOcclusion>(pScene);
-            auto pIterations = BASE::createMaterial<MetalIterations>(pScene);
-            auto pGlow = BASE::createMaterial<Glow>(pScene);
+            auto pAO = BASE::createMaterial<MarchDepth>(pScene);
+            auto pGlow = BASE::createMaterial<Iterations>(pScene);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 0), 15.0), pDiffuseWhite);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(-30, 15, 0), 15.0), pAO);
-            BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(30, 15, 0), 15.0), pIterations);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 40), 15.0), pGlow);
 
             pScene->build();   // build BVH
@@ -164,7 +184,7 @@ namespace DETAIL
 
         virtual std::unique_ptr<BASE::Scene> loadScene() const override {
             auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.5, 0.5, 0.5));
-            auto pGlow = BASE::createMaterial<Glow>(pScene);
+            auto pGlow = BASE::createMaterial<MarchDepth>(pScene);
             auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(20.0, 20.0, 20.0));
 
             BASE::createPrimitiveInstance<Sphere>(pScene, axisTranslation(CORE::Vec(0, 200, 200)), 30, pLightWhite);
@@ -198,7 +218,7 @@ namespace DETAIL
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(1.0, 1.0, 1.0), CORE::Color(1.0, 0.4, 0.2), 2);
             auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01, 1.8);
             auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.8, 0.8, 0.8), 0.02);
-            auto pGlow = BASE::createMaterial<Glow>(pScene);
+            auto pGlow = BASE::createMaterial<MarchDepth>(pScene);
             auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(60.0, 60.0, 60.0));
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
@@ -606,7 +626,7 @@ namespace DETAIL
             auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.8, 0.1, 0.1));
             auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.1, 0.8, 0.1));
             auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.07);            
-            auto pFractalLight = BASE::createMaterial<LightMandlebrot>(pScene, CORE::Color(0.002f, 0.0024f, 0.0006f), -0.7453, 0.1127, 180.0f);
+            auto pFractalLight = BASE::createMaterial<LightMandlebrot>(pScene, CORE::Color(0.003f, 0.002f, 0.0015f), -0.7453, 0.1127, 180.0f);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0)), 100, pDiffuseCheck);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi/2, CORE::Vec(0, 50, -50)), 100, pDiffuseGrey);

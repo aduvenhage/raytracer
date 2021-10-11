@@ -21,15 +21,9 @@ namespace CORE
             :m_v{}
         {}
         
-        Vec(const Vec &) noexcept = default;
-        Vec(Vec &&) noexcept = default;
-        //Vec(Vec &) noexcept = default;
-
         constexpr Vec(float _fX, float _fY, float _fZ) noexcept
             :m_v{_fX, _fY, _fZ}
         {}
-        
-        ~Vec() noexcept = default;
         
         float x() const {return m_v[0];}
         float &x() {return m_v[0];}
@@ -38,9 +32,6 @@ namespace CORE
         float z() const {return m_v[2];}
         float &z() {return m_v[2];}
         
-        Vec &operator=(const Vec &_vec) noexcept = default;
-        Vec &operator=(Vec &&_vec) noexcept = default;
-
         float sizeSqr() const {
             return m_v[0] * m_v[0] + m_v[1] * m_v[1] + m_v[2] * m_v[2];
         }
@@ -219,10 +210,6 @@ namespace CORE
             :m_fScale(1.0f)
         {}
 
-        Axis(const Axis &) noexcept = default;
-        Axis(Axis &&) noexcept = default;
-        //Axis(Axis &) noexcept = default;
-        
         template <typename VX, typename VY, typename VZ, typename P>
         Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin, float _fScale) noexcept
             :m_x(std::forward<VX>(_vx)),
@@ -232,9 +219,6 @@ namespace CORE
              m_fScale(_fScale)
         {}
 
-        Axis &operator=(const Axis &) noexcept = default;
-        Axis &operator=(Axis &&) noexcept = default;
-        
         Vec rotateTo(const Vec &_vec) const {
             return Vec(_vec * m_x, _vec * m_y, _vec * m_z);
         }
@@ -266,18 +250,12 @@ namespace CORE
     struct Bounds
     {
         Bounds() noexcept = default;
-        Bounds(const Bounds &) noexcept = default;
-        Bounds(Bounds &&) noexcept = default;
-        //Bounds(Bounds &) noexcept = default;
         
         template <typename VX, typename VY>
         Bounds(VX &&_min, VY &&_max) noexcept
             :m_min(std::forward<VX>(_min)),
              m_max(std::forward<VY>(_max))
         {}
-        
-        Bounds &operator=(const Bounds &) noexcept = default;
-        Bounds &operator=(Bounds &&) noexcept = default;
         
         double area() const {
             Vec dist = m_max - m_min;            
