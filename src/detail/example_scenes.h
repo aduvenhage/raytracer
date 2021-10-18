@@ -33,8 +33,8 @@ namespace DETAIL
      public:
         DiffuseCheckered(CORE::Color &_c1, CORE::Color &_c2, int _iBlockSize)
         {
-            addMaterial(std::make_unique<Checkered>(_c1, _c2, _iBlockSize));
             addMaterial(std::make_unique<Diffuse>(CORE::COLOR::White));
+            addMaterial(std::make_unique<Checkered>(_c1, _c2, _iBlockSize));
         }
     };
     
@@ -45,10 +45,21 @@ namespace DETAIL
         LightMandlebrot(const CORE::Color &_baseColor, double _fCx, double _fCy, double _fZoom, int _iMaxIterations = 0)
         {
             addMaterial(std::make_unique<Light>(CORE::COLOR::White));
-            addMaterial(std::make_unique<Mandlebrot>(_baseColor, _fCx, _fCy, _fZoom, _iMaxIterations));
+            addMaterial(std::make_unique<Mandlebrot>(_baseColor, CORE::Color(0.1f, 0.1f, 0.1f), 1.5f,
+                                                     _fCx, _fCy, _fZoom, _iMaxIterations));
         }
     };
 
+
+    class LightCheckered : public BASE::MultiMaterial
+    {
+     public:
+        LightCheckered(CORE::Color &_c1, CORE::Color &_c2, int _iBlockSize)
+        {
+            addMaterial(std::make_unique<Light>(CORE::Color(2.0f, 2.0f, 2.0f)));
+            addMaterial(std::make_unique<Checkered>(_c1, _c2, _iBlockSize));
+        }
+    };
 
 
     class LoaderDefaultScene  : public BASE::Loader
@@ -78,7 +89,7 @@ namespace DETAIL
             auto pMeshSphere = BASE::createPrimitive<SphereMesh>(pScene, 16, 16, 10, pDiffuseWhite);
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight, true);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.8, 0, CORE::Vec(20, 30, 0)), CORE::Vec(20, 40, 20), pMirror);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.8, 0, CORE::Vec(-35, 20, 30)), 15, pMetal);
             BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-20, 20, 0)), 15.0f, 7.0f, pDiffuseCheck);
@@ -118,7 +129,7 @@ namespace DETAIL
             auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.5, 0.5, 0.5), 0.05);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisTranslation(CORE::Vec(0, 0, 0)), 500, pDiffuseFloor);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 20, pLight);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 20, pLight, true);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(-30, 20, 0)), 20.0f, pGlass);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(30, 20, 0)), 20.0f, pMetal);
 
@@ -154,7 +165,7 @@ namespace DETAIL
             auto pGlow = BASE::createMaterial<Iterations>(pScene);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10, pLight, true);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 0), 15.0), pDiffuseWhite);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(-30, 15, 0), 15.0), pAO);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 40), 15.0), pGlow);
@@ -187,7 +198,7 @@ namespace DETAIL
             auto pGlow = BASE::createMaterial<MarchDepth>(pScene);
             auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(20.0, 20.0, 20.0));
 
-            BASE::createPrimitiveInstance<Sphere>(pScene, axisTranslation(CORE::Vec(0, 200, 200)), 30, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, axisTranslation(CORE::Vec(0, 200, 200)), 30, pLightWhite, true);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0), 40.0), pGlow);
             
             pScene->build();   // build BVH
@@ -223,7 +234,7 @@ namespace DETAIL
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
             BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisTranslation(CORE::Vec(0, 1, 0)), 200, 200, pMirror);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 20, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 20, pLightWhite, true);
             BASE::createPrimitiveInstance<MarchedMandle>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(-50, 45, 50), 40.0), pGlow);
             BASE::createPrimitiveInstance<MarchedSphere>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(50, 45, 50), 40.0), 2.0f, pGlass);
             BASE::createPrimitiveInstance<MarchedBubbles>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(0, 45, -50), 40.0), 2.0f, pGlass);
@@ -260,7 +271,7 @@ namespace DETAIL
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
             BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisTranslation(CORE::Vec(0, 1, 0)), 200, 200, pMirror);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 30, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 30, pLightWhite, true);
             BASE::createPrimitiveInstance<MarchedSphere>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(-50, 45, 50), 40.0), 2.0f, pGlass);
             BASE::createPrimitiveInstance<MarchedSphere>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(50, 45, 50), 40.0), 2.0f, pGlass);
             
@@ -296,7 +307,7 @@ namespace DETAIL
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisTranslation(CORE::Vec(0, 1, 0)), 80, pMirror);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(50, 100, 0)), 20, pLight);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(50, 100, 0)), 20, pLight, true);
             BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisTranslation(CORE::Vec(0, 20, 0)), 40.0f, 10.0f, pDiffuse);
             
             pScene->build();   // build BVH
@@ -332,7 +343,7 @@ namespace DETAIL
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
             BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisTranslation(CORE::Vec(0, 1, 0)), 200, 200, pMirror);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, -50)), 30, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, -50)), 30, pLightWhite, true);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(-45, 45, 50), 20.0), 2.0f, pGlassGreen);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(45, 45, 50), 20.0), 2.0f, pGlassGreenSs);
             
@@ -370,7 +381,7 @@ namespace DETAIL
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
             BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisTranslation(CORE::Vec(0, 1, 0)), 200, 200, pMirror);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, -50)), 30, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, -50)), 30, pLightWhite, true);
             BASE::createPrimitiveInstance<MarchedBlob>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(-45, 45, 50), 40.0), 2.0f, pGlassGreen, 0.08);
             BASE::createPrimitiveInstance<MarchedBlob>(pScene, CORE::axisEulerZYX(0, 1, 0, CORE::Vec(45, 45, 50), 40.0), 2.0f, pGlassGreenSs, 0.08);
             
@@ -409,7 +420,7 @@ namespace DETAIL
             auto shapes = std::vector{pSphere1, pSphere2, pSphere3};
 
             auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(20.0f, 20.0f, 20.0f));
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 30, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 30, pLightWhite, true);
             
             int n = 200;
             for (int i = 0; i < n; i++) {
@@ -456,7 +467,7 @@ namespace DETAIL
             auto shapes = std::vector{pMesh1, pMesh2, pMesh3};
 
             auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(10.0f, 10.0f, 10.0f));
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 30, pLightWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 200, 100)), 30, pLightWhite, true);
             
             int n = 200;
             for (int i = 0; i < n; i++) {
@@ -499,7 +510,7 @@ namespace DETAIL
 
             auto pSphere = BASE::createPrimitive<Sphere>(pScene, 10, pGlass);
 
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 500, 0)), 20, pLight);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 500, 0)), 20, pLight, true);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisTranslation(CORE::Vec(0, -100, 0)), 500, pDiffuseFloor);
 
             for (int x = -2; x <= 2; x++) {
@@ -534,21 +545,21 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Scene> loadScene() const override {
-            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.3, 0.3, 0.35));
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.1, 0.1, 0.15));
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.8), CORE::Color(0.4, 0.4, 0.4), 2);
             auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.8), CORE::Color(0.4, 0.4, 0.4), 8);
-            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(60.0, 60.0, 40.0));
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(100.0, 100.0, 100.0));
             auto pRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.95, 0.0, 0.0));
             auto pGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.95, 0.0));
             auto pBlue = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.0, 0.95));
-            auto pFog = BASE::createMaterial<EnvironmentMap>(pScene, CORE::Color(0.9, 0.7, 0.6));
+            auto pFog = BASE::createMaterial<EnvironmentMap>(pScene, CORE::Color(0.9, 0.7, 0.3));
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 80, 0)), 10, pLight);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 80, 0)), 10, pLight, true);
             BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 75, 0)), 15.0f, 7.0f, pDiffuseCheck);
             BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 85, 0)), 15.0f, 7.0f, pDiffuseCheck);
 
-            BASE::createPrimitiveInstance<SmokeBox>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 50, 0)), CORE::Vec(400, 100, 400), pFog, 400);
+            BASE::createPrimitiveInstance<SmokeBox>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 50, 0)), CORE::Vec(400, 100, 400), pFog, 0.003);
             
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-70, 15, 0)), 15.0f, pRed);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 15, 0)), 15.0f, pGreen);
@@ -584,7 +595,7 @@ namespace DETAIL
             auto pDiffuseGrey = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.7, 0.7));
             auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.7, 0.0, 0.0));
             auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.0, 0.7, 0.0));
-            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(30.0, 30.0, 30.0));
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(10.0, 10.0, 10.0));
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0)), 100, pDiffuseGrey);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi/2, CORE::Vec(0, 50, -50)), 100, pDiffuseGrey);
@@ -593,7 +604,7 @@ namespace DETAIL
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(50, 50, 0)), 100, pDiffuseRed);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.5, 0, CORE::Vec(-15, 25, -15)), CORE::Vec(25, 50, 25), pDiffuseGrey);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.5, 0, CORE::Vec(15, 12.5, 10)), CORE::Vec(25, 25, 25), pDiffuseGrey);
-            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 15, 15, pLight);
+            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi, 0, 0, CORE::Vec(0, 99.99, 0)), 30, 30, pLight);
 
             pScene->build();   // build BVH
             return pScene;
@@ -626,7 +637,8 @@ namespace DETAIL
             auto pDiffuseRed = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.8, 0.1, 0.1));
             auto pDiffuseGreen = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.1, 0.8, 0.1));
             auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.07);            
-            auto pFractalLight = BASE::createMaterial<LightMandlebrot>(pScene, CORE::Color(0.003f, 0.002f, 0.0015f), -0.7453, 0.1127, 180.0f);
+            auto pLightPanel = BASE::createMaterial<LightMandlebrot>(pScene, CORE::Color(0.003f, 0.002f, 0.0015f), -0.7453, 0.1127, 180.0f);
+            // auto pLightPanel = BASE::createMaterial<LightCheckered>(pScene, CORE::Color(0.0, 0.0, 0.0), CORE::Color(1.0, 1.0, 1.0), 2.5);
             
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 0, 0)), 100, pDiffuseCheck);
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(0, 0, pi/2, CORE::Vec(0, 50, -50)), 100, pDiffuseGrey);
@@ -635,10 +647,8 @@ namespace DETAIL
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(50, 50, 0)), 100, pDiffuseRed);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.5, 0, CORE::Vec(18, 32, -15)), CORE::Vec(25, 60, 25), pMetal);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.5, 0, CORE::Vec(-20, 32, 10)), CORE::Vec(25, 60, 25), pMetal);
-
             BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(-pi/2, 0, 0, CORE::Vec(49.1, 50, 0)), 80, 80, pDiffuseGrey);
-            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(49, 50, 0)), 80, 80, pFractalLight);
-            
+            BASE::createPrimitiveInstance<Rectangle>(pScene, CORE::axisEulerZYX(pi/2, 0, 0, CORE::Vec(49, 50, 0)), 80, 80, pLightPanel);
 
             pScene->build();   // build BVH
             return pScene;

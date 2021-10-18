@@ -15,14 +15,16 @@ namespace DETAIL
      public:
         Sphere()
             :m_fRadius(0),
-             m_fRadiusSqr(0)
+             m_fRadiusSqr(0),
+             m_bOnlyHitOutside(false)
         {}
         
-        Sphere(float _fRadius, const BASE::Material *_pMaterial)
+        Sphere(float _fRadius, const BASE::Material *_pMaterial, bool _bOnlyHitOutside = false)
             :m_pMaterial(_pMaterial),
              m_bounds(CORE::Vec(-_fRadius, -_fRadius, -_fRadius), CORE::Vec(_fRadius, _fRadius, _fRadius)),
              m_fRadius(_fRadius),
-             m_fRadiusSqr(_fRadius * _fRadius)
+             m_fRadiusSqr(_fRadius * _fRadius),
+             m_bOnlyHitOutside(_bOnlyHitOutside)
         {}
         
         /* Returns the material used for rendering, etc. */
@@ -44,12 +46,14 @@ namespace DETAIL
                     return true;
                 }
 
-                const float t1 = dRayLength + dt;
-                if (_hit.m_priRay.inside(t1) == true) {
-                    // we are inside of sphere
-                    _hit.m_bInside = true;
-                    _hit.m_fPositionOnRay = t1;
-                    return true;
+                if (m_bOnlyHitOutside == false) {
+                    const float t1 = dRayLength + dt;
+                    if (_hit.m_priRay.inside(t1) == true) {
+                        // we are inside of sphere
+                        _hit.m_bInside = true;
+                        _hit.m_fPositionOnRay = t1;
+                        return true;
+                    }
                 }
             }
 
@@ -75,6 +79,7 @@ namespace DETAIL
         CORE::Bounds            m_bounds;
         float                   m_fRadius;
         float                   m_fRadiusSqr;
+        bool                    m_bOnlyHitOutside;
     };
 
 };  // namespace DETAIL

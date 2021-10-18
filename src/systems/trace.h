@@ -41,7 +41,7 @@ namespace SYSTEMS
             CORE::Color tracedColor(0, 0, 0);
             CORE::Color attColor(1, 1, 1);
             CORE::Ray ray(std::forward<R>(_ray));
-            std::uniform_real_distribution<float> uniform01(0, 1.0);
+            std::uniform_real_distribution<float> uniform01(0, 1.0f);
             
             for (uint16_t i = 0; i < m_uTraceLimit; i++) {
                 m_uRayCount++;
@@ -52,7 +52,7 @@ namespace SYSTEMS
                     // complete hit
                     hit.m_pPrimitive->intersect(hit);
                     hit.m_uTraceDepth = i + 1;
-
+                    
                     // calculate hit on material
                     auto scatteredRay = CORE::ScatteredRay();
                     hit.m_pPrimitive->material()->scatter(scatteredRay, hit);

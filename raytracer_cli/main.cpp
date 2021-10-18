@@ -33,7 +33,6 @@ const int height = 1200;
 const int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 2u);
 const int maxSamplesPerPixel = 4000;
 const int maxTraceDepth = 64;
-const float colorTollerance = 0.0f;
 const uint32_t randSeed = 1;
 
 using clock_type = std::chrono::high_resolution_clock;
@@ -50,15 +49,13 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader, const std::string &_strOut
                                            numWorkers,
                                            maxSamplesPerPixel,
                                            maxTraceDepth,
-                                           colorTollerance,
                                            randSeed);
 
     printf("Starting with scene ...\n");
     while (pSource->isFinished() == false) {
-        if (pSource->updateFrameProgress() == true) {
-            printf("update: active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
-                    (int)pSource->activeJobs(), pSource->progress(), pSource->timeToFinish(), pSource->timeTotal(), pSource->raysPerSecond());
-        }
+        pSource->updateFrameProgress();
+        printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
+               (int)pSource->activeJobs(), pSource->progress(), pSource->timeToFinish(), pSource->timeTotal(), pSource->raysPerSecond());
         
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }

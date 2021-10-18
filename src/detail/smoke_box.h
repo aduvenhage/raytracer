@@ -19,16 +19,16 @@ namespace DETAIL
     class SmokeBox        : public BASE::Primitive
     {
      public:
-        SmokeBox(const CORE::Vec &_size, const BASE::Material *_pMaterial, float _fVisibility)
+        SmokeBox(const CORE::Vec &_size, const BASE::Material *_pMaterial, float _fDensity)
             :m_bounds(-_size * 0.5f, _size * 0.5f),
              m_pMaterial(_pMaterial),
-             m_fVisibility(_fVisibility)
+             m_fNegInvDensity(-1.0f/_fDensity)
         {}
         
-        SmokeBox(float _fSize, const BASE::Material *_pMaterial, float _fVisibility)
+        SmokeBox(float _fSize, const BASE::Material *_pMaterial, float _fDensity)
             :m_bounds(CORE::boxVec(-_fSize*0.5f), CORE::boxVec(_fSize*0.5f)),
              m_pMaterial(_pMaterial),
-             m_fVisibility(_fVisibility)
+             m_fNegInvDensity(-1.0f/_fDensity)
         {}
         
         /* Returns the material used for rendering, etc. */
@@ -43,11 +43,9 @@ namespace DETAIL
                 if ( (bi.m_inside == true) ||                    
                      (_hit.m_priRay.inside(bi.m_tmin) == true) )
                 {
-                    std::uniform_real_distribution<float> dist(0, m_fVisibility);
-
                     // calculate random hit point on ray inside volume
                     auto tdist = bi.m_inside ? bi.m_tmax : (bi.m_tmax - bi.m_tmin);
-                    auto rdist = dist(CORE::generator());
+                    auto rdist = distance();
 
                     if (rdist < tdist) {
                         _hit.m_bInside = true;
@@ -74,10 +72,16 @@ namespace DETAIL
         }
         
      private:
+        float distance() const {
+            std::uniform_real_distribution<float>  dist(0, 1);
+            return m_fNegInvDensity * log(dist(CORE::generator()));
+        }
+        
+     private:
         CORE::Axis                             m_axis;
         CORE::Bounds                           m_bounds;
         const BASE::Material                   *m_pMaterial;
-        float                                  m_fVisibility;
+        float                                  m_fNegInvDensity;
     };
 
 

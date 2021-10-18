@@ -24,7 +24,7 @@ namespace CORE
         Ray(U &&_origin, V &&_direction, bool _bPrimary=false) noexcept
             :m_origin(std::forward<U>(_origin)),
              m_direction(std::forward<V>(_direction)),
-             m_invDirection(1.0f/_direction),
+             m_invDirection(1.0f/m_direction),
              m_fMinDist(MIN_DIST),
              m_fMaxDist(MAX_DIST),
              m_bPrimary(_bPrimary)

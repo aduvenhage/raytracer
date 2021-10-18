@@ -22,9 +22,10 @@ namespace DETAIL
         
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
-            _sc.m_ray.m_origin += _hit.m_position;
-            _sc.m_ray.m_direction += randomUnitSphereOnNormal(_hit.m_normal);
+            _sc.m_ray = CORE::Ray(_hit.m_position, CORE::randomUnitSphereOnNormal(_hit.m_normal));
+            //_sc.m_ray = CORE::Ray(_hit.m_position, CORE::randomUnitHemisphereOnNormal(_hit.m_normal));
             _sc.m_color *= m_color;
+            _sc.m_emitted *= m_color;
             return _sc;
         }
         
@@ -43,10 +44,13 @@ namespace DETAIL
        
        /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
-            _sc.m_ray.m_origin += _hit.m_position;
-            _sc.m_ray.m_direction += _hit.m_priRay.m_direction;
-            _sc.m_color *= m_color;
-            _sc.m_emitted += m_color;
+            _sc.m_ray = CORE::Ray(_hit.m_position, _hit.m_priRay.m_direction);
+            if (_hit.m_bInside == false) {
+                _sc.m_emitted += m_color * _sc.m_color;
+            }
+            
+            _sc.m_color = CORE::COLOR::Black;
+
             return _sc;
        }
        
@@ -66,9 +70,10 @@ namespace DETAIL
         
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
-            _sc.m_ray.m_origin += _hit.m_position;
-            _sc.m_ray.m_direction += reflect(_hit.m_priRay.m_direction, _hit.m_normal) + CORE::randomInUnitSphere() * m_fScatter;
+            _sc.m_ray = CORE::Ray(_hit.m_position,
+                                  reflect(_hit.m_priRay.m_direction, _hit.m_normal) + CORE::randomInUnitSphere() * m_fScatter);
             _sc.m_color *= m_color;
+            _sc.m_emitted *= m_color;
             return _sc;
         }
 
@@ -90,12 +95,13 @@ namespace DETAIL
         
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
-            _sc.m_ray.m_origin += _hit.m_position;
-            _sc.m_ray.m_direction += refract(_hit.m_priRay.m_direction,
-                                             (_hit.m_normal + CORE::randomInUnitSphere() * m_fScatter).normalized(),
-                                             m_fIndexOfRefraction,
-                                             _hit.m_bInside);
+            _sc.m_ray = CORE::Ray(_hit.m_position,
+                                  refract(_hit.m_priRay.m_direction,
+                                          (_hit.m_normal + CORE::randomInUnitSphere() * m_fScatter).normalized(),
+                                          m_fIndexOfRefraction,
+                                          _hit.m_bInside));
             _sc.m_color *= m_color;
+            _sc.m_emitted *= m_color;
             return _sc;
         }
 
@@ -112,9 +118,9 @@ namespace DETAIL
      public:
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
-            _sc.m_ray = CORE::Ray();
-            _sc.m_color = CORE::Color(_hit.m_uMarchDepth, _hit.m_uMarchDepth, _hit.m_uMarchDepth);
-            _sc.m_emitted = CORE::COLOR::Black;
+            auto att = CORE::Color(_hit.m_uMarchDepth, _hit.m_uMarchDepth, _hit.m_uMarchDepth);
+            _sc.m_color *= att;
+            _sc.m_emitted *= att;
             return _sc;
         }
     };
@@ -126,9 +132,9 @@ namespace DETAIL
      public:
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
-            _sc.m_ray = CORE::Ray();
-            _sc.m_color = CORE::Color(_hit.m_uIterations, _hit.m_uIterations, _hit.m_uIterations);
-            _sc.m_emitted = CORE::COLOR::Black;
+            auto att = CORE::Color(_hit.m_uIterations, _hit.m_uIterations, _hit.m_uIterations);
+            _sc.m_color *= att;
+            _sc.m_emitted *= att;
             return _sc;
         }
     };

@@ -34,9 +34,8 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(64),
+         m_iMaxSamplesPerPixel(4096),
          m_iMaxTraceDepth(32),
-         m_fColorTollerance(0.0f),
          m_uRandSeed(1)
     {
         resize(m_iWidth, m_iHeight);
@@ -75,7 +74,6 @@ class MainWindow : public QMainWindow
                                                 m_iNumWorkers,
                                                 m_iMaxSamplesPerPixel,
                                                 m_iMaxTraceDepth,
-                                                m_fColorTollerance,
                                                 m_uRandSeed);
         }
         else {
@@ -112,14 +110,13 @@ class MainWindow : public QMainWindow
     int                                 m_iNumWorkers;
     int                                 m_iMaxSamplesPerPixel;
     int                                 m_iMaxTraceDepth;
-    float                               m_fColorTollerance;
     uint32_t                            m_uRandSeed;
 };
 
 
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_unique<LoaderDefaultScene>();
+    auto pLoader = std::make_unique<LoaderFogScene>();
     
     // start app
     QApplication app(argc, argv);

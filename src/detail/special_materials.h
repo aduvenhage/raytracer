@@ -68,8 +68,7 @@ namespace DETAIL
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
             _sc.m_ray = CORE::Ray(_hit.m_position, _hit.m_normal);
-            _sc.m_color = m_color;
-            _sc.m_emitted = CORE::COLOR::Black;
+            _sc.m_color *= m_color;
             return _sc;
         }
         

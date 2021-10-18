@@ -135,8 +135,7 @@ namespace SYSTEMS
                  const BASE::Scene *_pScene,
                  FrameStats *_pFrameStats,
                  int _iMaxSamplesPerPixel,
-                 int _iMaxDepth,
-                 float _fColorTollerance)
+                 int _iMaxDepth)
             :m_pImage(_pImage),
              m_pViewport(_pViewport),
              m_pCamera(_pCamera),
@@ -145,7 +144,6 @@ namespace SYSTEMS
              m_iLine(_iLine),
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iMaxDepth(_iMaxDepth),
-             m_fColorTollerance(_fColorTollerance),
              m_fProgress(0)
         {}
         
@@ -162,6 +160,8 @@ namespace SYSTEMS
             for (auto i = 0; i < m_pViewport->width(); i++)
             {
                 const float x = (1.0f - 2.0f * i / m_pViewport->width()) * fFovScale * m_pViewport->viewAspect();
+                CORE::Color color;
+                int n = 0;
                 
                 auto stats = CORE::ColorStat();
                 for (int k = 0; k < m_iMaxSamplesPerPixel; k++)
@@ -178,21 +178,12 @@ namespace SYSTEMS
                     auto ray = CORE::Ray(rayOrigin, (rayFocus - rayOrigin).normalized(), true);
                     
                     // trace ray
-                    auto color = tracer.trace(ray);
-                    stats.push(color);
-                    
-                    // check color stats for a quick exit
-                    if ( (m_fColorTollerance > 0.0f) &&
-                         (k >= 16) &&
-                         (stats.standardDeviation() < m_fColorTollerance) )
-                    {
-                        break;
-                    }
+                    color += tracer.trace(ray);
+                    n++;
                 }
                                 
                 // get pixel color
-                auto color = stats.mean();
-                color.clamp().gammaCorrect2();
+                color = (color/n).clamp().gammaCorrect2();
 
                 // write to output image
                 *(pPixel++) = (int)(255 * color.red() + 0.5);
@@ -228,7 +219,6 @@ namespace SYSTEMS
         int                            m_iLine;
         int                            m_iMaxSamplesPerPixel;
         int                            m_iMaxDepth;
-        float                          m_fColorTollerance;
         std::atomic<float>             m_fProgress;
     };
 
@@ -267,7 +257,6 @@ namespace SYSTEMS
               int _iNumWorkers,
               int _iMaxSamplesPerPixel,
               int _iMaxTraceDepth,
-              float _fColorTollerance,
               uint32_t _uRandSeed)
             :m_viewport(_iWidth, _iHeight),
              m_pCamera(_pCamera),
@@ -276,7 +265,6 @@ namespace SYSTEMS
              m_iMaxSamplesPerPixel(_iMaxSamplesPerPixel),
              m_iNumWorkers(_iNumWorkers),
              m_iMaxTraceDepth(_iMaxTraceDepth),
-             m_fColorTollerance(_fColorTollerance),
              m_uRandomSeed(_uRandSeed)
         {
             CORE::generator().seed(m_uRandomSeed);
@@ -355,8 +343,7 @@ namespace SYSTEMS
                                                           m_pScene,
                                                           &m_frameStats,
                                                           m_iMaxSamplesPerPixel,
-                                                          m_iMaxTraceDepth,
-                                                          m_fColorTollerance));
+                                                          m_iMaxTraceDepth));
             }
             
             m_frameStats.setJobCount(jobs.size());
@@ -384,7 +371,6 @@ namespace SYSTEMS
         int                                        m_iMaxSamplesPerPixel;
         int                                        m_iNumWorkers;
         int                                        m_iMaxTraceDepth;
-        float                                      m_fColorTollerance;
         uint32_t                                   m_uRandomSeed;
     };
     
