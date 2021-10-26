@@ -1,7 +1,7 @@
 # Random Number Generation
 It is important to have fast and reliable random number generation for the type of monte-carlo raytacing I'm doing in this project.
 
-C++11 gave us a new flavour of random number generation and also split the concept of the 'random number generation' from the 'shape of the distribution' or output.  The C++11 mersenne twister generator (see <random>) is pretty good and fast enough for my purposes.  The distributions (for example `std::uniform_real_distribution<float>`) are very lightweight and in most cases can be created as local variables in the calling code: all state is kept in the generator; the distributions do not keep any state, and can be created and destroyed as required.
+C++11 gave us a new flavour of random number generation and also split the concept of the 'random number generation' from the 'shape of the distribution' or output.  The C++11 mersenne twister generator (see `<random>`) is pretty good and fast enough for my purposes.  The distributions (for example `std::uniform_real_distribution<float>`) are very lightweight and in most cases can be created as local variables in the calling code: all state is kept in the generator; the distributions do not keep any state, and can be created and destroyed as required.
 
 
 ## Some Code

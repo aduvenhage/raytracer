@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "args": ["something_in_fog"],
             "env": { 
-                "DO_API_TOKEN": "e98b76291e0a41b0eac68ada31222690e3b7f12e6964be6e542076479980088f",
+                "DO_API_TOKEN": "1a669e2f540975a94d58b630f93717339e16ee756fdeed1cc41f8b18ce5c020f",
                 "AWS_ACCESS_KEY": "AKIA3RK52MA4NWUIWBEB",
                 "AWS_SECRET_KEY": "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"
             }

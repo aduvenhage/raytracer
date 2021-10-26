@@ -75,8 +75,7 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Running in the cloud with docker-machine](pages/docker-machine.md)
 - [Raytracing basics](pages/raytracing.md)
 - [Random number generation](pages/random.md)
-
-- [Job system](pages/jobs.md) [WIP]
+- [Job system](pages/jobs.md)
 
 - [Advanced Raytracing](pages/raytracing_advanced.md) [WIP]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
