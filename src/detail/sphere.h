@@ -64,7 +64,7 @@ namespace DETAIL
         virtual BASE::Intersect &intersect(BASE::Intersect &_hit) const override {
             _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
             _hit.m_normal = _hit.m_position / m_fRadius;
-            _hit.m_uv = getSphericalUv(_hit.m_position, m_fRadius);
+            _hit.m_uv = getSphericalUv(_hit.m_normal);
 
             return _hit;
         }

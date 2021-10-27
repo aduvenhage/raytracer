@@ -313,7 +313,7 @@ namespace DETAIL
                     
                     auto v = Mesh::Vertex();
                     v.m_v = CORE::Vec(x, y, z);
-                    v.m_uv = getSphericalUv(v.m_v, _fRadius);
+                    v.m_uv = getSphericalUv(v.m_v.normalized());
                     vertices.push_back(v);
                 }
             }

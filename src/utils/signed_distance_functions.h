@@ -50,6 +50,10 @@ namespace UTILS
             
             // convert to polar coordinates
             float theta = acos(z.z()/r);
+            if (theta != theta) {
+                theta = 0;  // NaN check
+            }
+
             float phi = atan2(z.y(), z.x()) + PHASE;
             dr =  pow(r, POWER - 1.0f) * POWER * dr + 1.0f;
             

@@ -39,6 +39,17 @@ namespace DETAIL
     };
     
     
+    class DiffuseImage  : public BASE::MultiMaterial
+    {
+     public:
+        DiffuseImage(const char *_pszImagePath)
+        {
+            addMaterial(std::make_unique<Diffuse>(CORE::COLOR::White));
+            addMaterial(std::make_unique<Image>(_pszImagePath));
+        }
+    };
+    
+    
     class LightMandlebrot : public BASE::MultiMaterial
     {
      public:
@@ -76,15 +87,16 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Scene> loadScene() const override {
-            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.1, 0.1, 0.2));
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.2, 0.2, 0.2));
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8, 0.8, 0.1), CORE::Color(0.8, 0.1, 0.1), 2);
-            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(40.0, 40.0, 40.0));
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0, 50.0, 50.0));
             auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.1, 0.1, 0.8), CORE::Color(0.1, 0.8, 0.8), 8);
             auto pDiffuseBlue = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.2, 0.2, 0.6));
             auto pDiffuseWhite = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.3, 0.3, 0.3), CORE::Color(0.9, 0.9, 0.9), 8);
             auto pMirror = BASE::createMaterial<Metal>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01);
             auto pMetal = BASE::createMaterial<Metal>(pScene, CORE::Color(0.90, 0.90, 0.90), 0.1);
             auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95, 0.95, 0.95), 0.01, 1.8);
+            auto pImage = BASE::createMaterial<DiffuseImage>(pScene, "images/earth.jpg");
             
             auto pMeshSphere = BASE::createPrimitive<SphereMesh>(pScene, 16, 16, 10, pDiffuseWhite);
 
@@ -97,6 +109,7 @@ namespace DETAIL
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 17, 25)), 15.0f, pGlass);
             BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 1.4, 0, CORE::Vec(-20, 7, 40)), pMeshSphere);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1.4, 0, CORE::Vec(20, 7, 40)), 10.0f, pDiffuseWhite);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1.4, 0, CORE::Vec(60, 20, 0)), 20.0f, pImage);
 
             pScene->build();   // build BVH
             return pScene;
@@ -337,8 +350,8 @@ namespace DETAIL
         virtual std::unique_ptr<BASE::Scene> loadScene() const override {
             auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.1, 0.1, 0.2));
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(1.0, 1.0, 1.0), CORE::Color(1.0, 0.4, 0.2), 2);
-            auto pGlassGreen = BASE::createMaterial<Glass>(pScene, CORE::Color(0.2f, 0.9f, 0.2f), 0.02, 1.5);
-            auto pGreenScatter = BASE::createMaterial<Scatter>(pScene, CORE::Color(0.2f, 0.9f, 0.2f));
+            auto pGlassGreen = BASE::createMaterial<Glass>(pScene, CORE::Color(0.5f, 0.9f, 0.5f), 0.02, 1.5);
+            auto pGreenScatter = BASE::createMaterial<Scatter>(pScene, CORE::Color(0.5f, 0.9f, 0.5f));
             auto pLightWhite = BASE::createMaterial<Light>(pScene, CORE::Color(300.0, 300.0, 300.0));
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500, pDiffuseFloor);
@@ -351,7 +364,7 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
-            return std::make_unique<SimpleCamera>(CORE::Vec(0, 50, 220), CORE::Vec(0, 1, 0), CORE::Vec(0, 5, 0), deg2rad(60), 0.01, 120);
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 100, 220), CORE::Vec(0, 1, 0), CORE::Vec(0, 5, 0), deg2rad(60), 0.01, 120);
         }
     };
 

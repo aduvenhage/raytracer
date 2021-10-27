@@ -10,6 +10,9 @@
 #include "utils/mandlebrot.h"
 #include "core/constants.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 namespace DETAIL
 {
@@ -68,6 +71,59 @@ namespace DETAIL
         CORE::Color           m_offsetColor;
         float                 m_fBrightness;
     };
+
+
+    // texture
+    class Image : public BASE::Material
+    {
+     public:
+        Image(const char *_pszImagePath)
+            :m_pData(nullptr),
+             m_iWidth(0),
+             m_iHeight(0),
+             m_iBytesPerPixel(3),
+             m_iBytesPerLine(0)
+        {
+            m_pData = stbi_load(_pszImagePath, &m_iWidth, &m_iHeight, &m_iBytesPerPixel, m_iBytesPerPixel);
+            m_iBytesPerLine = m_iBytesPerPixel * m_iWidth;
+        }
+        
+        ~Image() {
+           delete m_pData;
+        }
+
+        /* Returns the scattered ray at the intersection point. */
+        virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
+            if (m_pData != nullptr) {
+                const auto uv = CORE::Uv(_hit.m_uv).wrap();
+                const unsigned char *pPixel = m_pData +
+                                             (int)(m_iWidth * uv.u() + 0.5) * m_iBytesPerPixel +
+                                             (int)(m_iHeight * uv.v() + 0.5) * m_iBytesPerLine;
+
+                const auto att = CORE::Color(pPixel[0]/255.0f, pPixel[1]/255.0f, pPixel[2]/255.0f);
+                
+                _sc.m_color *= att;
+                _sc.m_emitted *= att;
+                return _sc;
+            }
+            else {
+                const float scale = 32.0f;
+                const float v = sin(_hit.m_uv.u() * scale) * sin(_hit.m_uv.v() * scale);
+                const auto att = v > 0 ? CORE::COLOR::White : CORE::COLOR::Black;
+                _sc.m_color *= att;
+                _sc.m_emitted *= att;
+                return _sc;
+            }
+        }
+        
+     private:
+        unsigned char       *m_pData;
+        int                 m_iWidth, m_iHeight;
+        int                 m_iBytesPerPixel;
+        int                 m_iBytesPerLine;
+    };
+
+
 };  // namespace DETAIL
 
 

@@ -464,20 +464,19 @@ namespace CORE
     }
 
 
-    // returns a vector within the unit sphere (radius of 1)
+    // returns a vector within the unit sphere (unit length)
     inline Vec randomOnUnitSphere() {
         return randomInUnitSphere().normalized();
     }
     
     
-    // returns a vector on the unit sphere around normal
+    // returns a vector (unit length) on the unit sphere around normal
     inline Vec randomUnitSphereOnNormal(const Vec &_normal) {
-        auto ret = _normal + randomOnUnitSphere();
-        return ret.isNearZero() ? _normal : ret;
+        return (_normal + randomOnUnitSphere()).normalized();
     }
 
 
-    // returns a vector on hemisphere around normal
+    // returns a vector (unit length) on hemisphere around normal
     inline Vec randomUnitHemisphereOnNormal(const Vec &_normal) {
         auto ret = randomOnUnitSphere();
         if (ret * _normal < 0) {

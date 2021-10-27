@@ -29,13 +29,13 @@ namespace DETAIL
             if (_hit.m_bInside == false) {
                 if (dist01(CORE::generator()) < 0.2) {
                     _sc.m_ray = CORE::Ray(_hit.m_position,
-                                          reflect(_hit.m_priRay.m_direction, _hit.m_normal) + CORE::randomInUnitSphere() * 0.4);
+                                          (reflect(_hit.m_priRay.m_direction, _hit.m_normal) + CORE::randomInUnitSphere() * 0.4).normalized());
                     _sc.m_color *= m_color;
                     _sc.m_emitted *= m_color;
                     return _sc;
                 }
                 else {
-                    _sc.m_ray = CORE::Ray(_hit.m_position, CORE::randomOnUnitSphere());
+                    _sc.m_ray = CORE::Ray(_hit.m_position, (_hit.m_priRay.m_direction + CORE::randomInUnitSphere() * 0.4).normalized());
                     _sc.m_color *= m_color;
                     _sc.m_emitted *= m_color;
                     return _sc;

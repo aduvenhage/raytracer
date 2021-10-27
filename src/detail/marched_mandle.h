@@ -54,7 +54,7 @@ namespace DETAIL
         /* Completes the node intersect properties. */
         virtual BASE::Intersect &intersect(BASE::Intersect &_hit) const override {
             _hit.m_normal = surfaceNormal(_hit.m_position);
-            _hit.m_uv = surfaceUv(_hit.m_position);
+            _hit.m_uv = surfaceUv(_hit.m_normal);
             return _hit;
         }
  
@@ -73,8 +73,8 @@ namespace DETAIL
         }
 
         // calc surface UV
-        CORE::Uv surfaceUv(const CORE::Vec &_p) const {
-            return getSphericalUv(_p, _p.size());
+        CORE::Uv surfaceUv(const CORE::Vec &_n) const {
+            return getSphericalUv(_n);
         }
 
      private:
