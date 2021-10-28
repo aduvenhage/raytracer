@@ -128,7 +128,7 @@ namespace CORE
             return sizeSqr() < 0.0001f;
         }
         
-        float m_v[3];
+        float m_v[3] = {};
     };
     
     

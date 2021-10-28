@@ -3,15 +3,13 @@
 #define DETAIL_TEX_MATERIALS_H
 
 
+#include "core/constants.h"
 #include "core/color.h"
 #include "core/ray.h"
+#include "core/image.h"
 #include "base/material.h"
 #include "base/intersect.h"
-#include "utils/mandlebrot.h"
-#include "core/constants.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "mandlebrot.h"
 
 
 namespace DETAIL
@@ -84,7 +82,11 @@ namespace DETAIL
              m_iBytesPerPixel(3),
              m_iBytesPerLine(0)
         {
-            m_pData = stbi_load(_pszImagePath, &m_iWidth, &m_iHeight, &m_iBytesPerPixel, m_iBytesPerPixel);
+            auto image = CORE::loadImageFile(_pszImagePath);
+            m_pData = image.m_pData;
+            m_iWidth = image.m_iWidth;
+            m_iHeight = image.m_iHeight;
+            m_iBytesPerPixel = image.m_iBytesPerPixel;
             m_iBytesPerLine = m_iBytesPerPixel * m_iWidth;
         }
         

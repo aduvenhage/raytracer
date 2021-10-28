@@ -67,7 +67,6 @@ add_subdirectory("src/core")
 add_subdirectory("src/base")
 add_subdirectory("src/detail")
 add_subdirectory("src/systems")
-add_subdirectory("src/utils")
 
 # targets
 IF(MAC)

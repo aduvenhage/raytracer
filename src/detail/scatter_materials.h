@@ -8,7 +8,6 @@
 #include "core/random.h"
 #include "base/material.h"
 #include "base/intersect.h"
-#include "utils/mandlebrot.h"
 
 
 namespace DETAIL

@@ -7,7 +7,7 @@
 #include "core/constants.h"
 #include "base/primitive.h"
 #include "systems/trace.h"
-#include "utils/signed_distance_functions.h"
+#include "signed_distance_functions.h"
 
 
 namespace DETAIL

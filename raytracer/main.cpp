@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
          m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(500),
+         m_iMaxSamplesPerPixel(2),
          m_iMaxTraceDepth(32),
          m_uRandSeed(1)
     {
@@ -83,7 +83,7 @@ class MainWindow : public QMainWindow
 
             if (m_pSource->isFinished() == true) {
                 if (m_bFrameDone == false) {
-                    m_pSource->writeJpegFile("raytraced.jpeg", 100);
+                    m_pSource->writeToFile("raytraced.jpeg");
                     m_bFrameDone = true;
                     
                     auto td = clock_type::now() - m_tpInit;
@@ -116,7 +116,7 @@ class MainWindow : public QMainWindow
 
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_unique<LoaderSubsurfaceBlobs>();
+    auto pLoader = std::make_unique<LoaderDefaultScene>();
     
     // start app
     QApplication app(argc, argv);

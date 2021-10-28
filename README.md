@@ -39,6 +39,7 @@ List of implemented features:s
   * raymarched objects
   * generic materials: diffuse, metal, glass, checkered diffuse
   * procedural materials: fractals, etc.
+  * textured objects (texture images)
 
 * Rendering and optimisations
   * monte-carlo based sampling and materials
@@ -58,7 +59,6 @@ List of implemented features:s
 
 Todo:
 * triangle mesh loading (see https://github.com/assimp/assimp)
-* textured objects (texture images)
 * replace axis-math with matrix math
 * optisation through importance sampling (for lights)
 * data based optimisations

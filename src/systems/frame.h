@@ -5,13 +5,13 @@
 
 
 #include "core/constants.h"
+#include "core/image.h"
 #include "core/outputimage.h"
 #include "core/viewport.h"
 #include "core/ray.h"
 #include "core/random.h"
 #include "base/camera.h"
 #include "base/scene.h"
-#include "utils/jpeg.h"
 #include "jobs.h"
 #include "trace.h"
 
@@ -322,9 +322,16 @@ namespace SYSTEMS
         }
         
         // write current image to file
-        int writeJpegFile(const std::string &_strPath, int _iQuality)
+        void writeToFile(const std::string &_strPath)
         {
-            return UTILS::writeJpegFile(_strPath.c_str(), m_image.width(), m_image.height(), m_image.data(), _iQuality);
+            CORE::Image image;
+            image.m_iWidth = m_image.width();
+            image.m_iHeight = m_image.height();
+            image.m_iQuality = 100;
+            image.m_iBytesPerPixel = 3;
+            image.m_pData = m_image.data();
+            
+            CORE::saveImageFile(_strPath.c_str(), image);
         }
         
         CORE::OutputImageBuffer &image() {

@@ -4,6 +4,7 @@ SET(INCL_SRC
     box.h
     basic_materials.h
     example_scenes.h
+    mandlebrot.h
     marched_blob.h
     marched_bubbles.h
     marched_mandle.h
@@ -15,9 +16,11 @@ SET(INCL_SRC
     scatter_materials.h
     simple_camera.h
     simple_scene.h
+    signed_distance_functions.h
     smoke_box.h
     special_materials.h
     sphere.h
+    
 )
 
 SET(LIB_SRC
