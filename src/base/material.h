@@ -25,7 +25,7 @@ namespace BASE
     class MultiMaterial : public Material
     {
      public:
-        MultiMaterial() = default;
+        MultiMaterial() noexcept = default;
         MultiMaterial(std::unique_ptr<Material> &&_material) {
             m_materials.push_back(std::move(_material));
         }

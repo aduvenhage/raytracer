@@ -45,10 +45,7 @@ namespace BASE
     class PrimitiveInstance      : public Resource
     {
      public:
-        PrimitiveInstance()
-            :m_bOwner(false),
-             m_bDirtyBounds(true)
-        {}
+        PrimitiveInstance() noexcept = default;
         
         PrimitiveInstance(const Primitive *_pTarget, const CORE::Axis &_axis)
             :m_pTarget(_pTarget),
@@ -134,13 +131,13 @@ namespace BASE
         }
         
      private:
-        const Primitive             *m_pTarget;
+        const Primitive             *m_pTarget = nullptr;
         CORE::Axis                  m_axis;
-        bool                        m_bOwner;
+        bool                        m_bOwner = false;
         
         mutable std::mutex          m_mutex;
         mutable CORE::Bounds        m_bounds;
-        mutable std::atomic<bool>   m_bDirtyBounds;
+        mutable std::atomic<bool>   m_bDirtyBounds = true;
     };
     
 

@@ -17,11 +17,8 @@ namespace CORE
     struct Vec
     {
      public:
-        Vec() noexcept
-            :m_v{}
-        {}
-        
-        constexpr Vec(float _fX, float _fY, float _fZ) noexcept
+        Vec() noexcept = default;        
+        Vec(float _fX, float _fY, float _fZ) noexcept
             :m_v{_fX, _fY, _fZ}
         {}
         
@@ -206,9 +203,7 @@ namespace CORE
      */
     struct Axis
     {
-        Axis() noexcept
-            :m_fScale(1.0f)
-        {}
+        Axis() noexcept = default;
 
         template <typename VX, typename VY, typename VZ, typename P>
         Axis(VX &&_vx, VY &&_vy, VZ &&_vz, P &&_origin, float _fScale) noexcept
@@ -240,7 +235,7 @@ namespace CORE
         Vec     m_y;
         Vec     m_z;
         Vec     m_origin;
-        float   m_fScale;
+        float   m_fScale = 1.0f;
     };
     
     
@@ -382,17 +377,12 @@ namespace CORE
     // aaboxIntersect return
     struct AABoxItersect
     {
-        AABoxItersect() noexcept
-            :m_tmin(0),
-             m_tmax(0),
-             m_intersect(false),
-             m_inside(false)
-        {}
+        AABoxItersect() noexcept = default;
         
-        float   m_tmin;
-        float   m_tmax;
-        bool    m_intersect;
-        bool    m_inside;
+        float   m_tmin = 0;
+        float   m_tmax = 0;
+        bool    m_intersect = false;
+        bool    m_inside = false;
     };
 
 

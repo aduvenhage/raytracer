@@ -11,9 +11,7 @@ namespace CORE
     /* UV/Texture coordinates. [u, v] = [0..1, 0..1]*/
     struct Uv
     {
-        Uv() noexcept
-            :m_uv{}
-        {}
+        Uv() noexcept = default;
         
         Uv(float _fU, float _fV) noexcept
             :m_uv{_fU, _fV}
@@ -54,7 +52,7 @@ namespace CORE
             return *this;
         }
         
-        float m_uv[2];
+        float m_uv[2] = {};
     };
     
     

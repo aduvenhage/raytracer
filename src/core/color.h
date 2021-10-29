@@ -18,10 +18,7 @@ namespace CORE
             WRAP = 2
         };
 
-        Color() noexcept
-            :m_c{}
-        {}
-        
+        Color() noexcept = default;
         Color(float _fRed, float _fGreen, float _fBlue) noexcept
             :m_c{_fRed, _fGreen, _fBlue}
         {}
@@ -139,7 +136,7 @@ namespace CORE
             return *this;
         }
         
-        float      m_c[3];
+        float      m_c[3] = {};
     };
     
     
