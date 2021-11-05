@@ -33,14 +33,14 @@ class MainWindow : public QMainWindow
          m_bFrameDone(false),
          m_iWidth(1024),
          m_iHeight(768),
-         m_iNumWorkers(std::max(std::thread::hardware_concurrency() * 2, 2u)),
-         m_iMaxSamplesPerPixel(256),
-         m_iMaxTraceDepth(32),
-         m_uRandSeed(1)
-    {
+		m_iNumWorkers(std::max(std::thread::hardware_concurrency(), 2u)),
+		m_iMaxSamplesPerPixel(256),
+		m_iMaxTraceDepth(32),
+		m_uRandSeed(1)
+	{
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
-        startTimer(200, Qt::PreciseTimer);
+        startTimer(0, Qt::CoarseTimer);
         
         m_pCamera = _pLoader->loadCamera();
         m_pScene = _pLoader->loadScene();
@@ -65,9 +65,11 @@ class MainWindow : public QMainWindow
     }
     
     virtual void timerEvent(QTimerEvent *_event) {
+		auto tp = clock_type::now();
+
         if (m_pSource == nullptr)
         {
-            m_tpInit = clock_type::now();
+            m_tpInit = tp;
             m_pSource = std::make_unique<Frame>(m_iWidth, m_iHeight,
                                                 m_pCamera.get(),
                                                 m_pScene.get(),
@@ -76,26 +78,26 @@ class MainWindow : public QMainWindow
                                                 m_iMaxTraceDepth,
                                                 m_uRandSeed);
         }
-        else {
-            m_pSource->updateFrameProgress();
-            printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
-                   (int)m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
-
-            if (m_pSource->isFinished() == true) {
-                if (m_bFrameDone == false) {
-                    m_pSource->writeToFile("raytraced.jpeg");
-                    m_bFrameDone = true;
-                    
-                    auto td = clock_type::now() - m_tpInit;
-                    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(td).count();
-                    
-                    std::string title = std::string("Done ") + std::to_string((float)ns/1e09) + "s";
-                    setWindowTitle(QString::fromStdString(title));
-                }
-            }
-        }
+        else if (tp - m_tpLastFrame > std::chrono::milliseconds(200)) {
+				m_pSource->updateFrameProgress();
+				printf("active jobs=%d, progress=%.2f, time_to_finish=%.2fs, total_time=%.2fs, rays_ps=%.2f\n",
+					   (int)m_pSource->activeJobs(), m_pSource->progress(), m_pSource->timeToFinish(), m_pSource->timeTotal(), m_pSource->raysPerSecond());
+				this->update(this->rect());
+				m_tpLastFrame = tp;
+		}
         
-        this->update(this->rect());
+		if (m_pSource->isFinished() == true) {
+			if (m_bFrameDone == false) {
+				m_pSource->writeToFile("raytraced.jpeg");
+				m_bFrameDone = true;
+
+				auto td = tp - m_tpInit;
+				auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(td).count();
+
+				std::string title = std::string("Done ") + std::to_string((float)ns / 1e09) + "s";
+				setWindowTitle(QString::fromStdString(title));
+			}
+		}
     }
     
  private:
@@ -104,8 +106,9 @@ class MainWindow : public QMainWindow
     std::unique_ptr<Frame>              m_pSource;
     int                                 m_iFrameCount;
     bool                                m_bFrameDone;
-    clock_type::time_point              m_tpInit;
-    int                                 m_iWidth;
+	clock_type::time_point              m_tpInit;
+	clock_type::time_point              m_tpLastFrame;
+	int                                 m_iWidth;
     int                                 m_iHeight;
     int                                 m_iNumWorkers;
     int                                 m_iMaxSamplesPerPixel;

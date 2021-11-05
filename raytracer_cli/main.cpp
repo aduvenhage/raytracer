@@ -60,7 +60,7 @@ int runFrame(const std::shared_ptr<Loader> &_pLoader, const std::string &_strOut
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     
-    pSource->writeJpegFile(_strOutputPath, 100);
+    pSource->writeToFile(_strOutputPath);
     
     auto td = clock_type::now() - tpInit;
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(td).count();

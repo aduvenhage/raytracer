@@ -47,7 +47,7 @@ namespace SYSTEMS
              m_bRunning(true)
         {
             m_thread = std::thread(&Worker::run, this);
-        }
+		}
         
         virtual ~Worker() {
             stop();
