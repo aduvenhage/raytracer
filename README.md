@@ -45,7 +45,6 @@ List of implemented features:s
   * monte-carlo based sampling and materials
   * russian roulette early exit
   * multi-threaded rendering
-  * color variance based per pixel rays (quick exit) 
   * rotated and translated objects, and re-used objects (instancing)
   * axis aligned box intersections
   * bounding volume hyrarchy hit optimisations for scene objects
@@ -77,10 +76,13 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Random number generation](pages/random.md)
 - [Job system](pages/jobs.md)
 
+- [Debugging and compiler settings](pages/compiler_settings.md) [WIP]
+- [Profiling and optimisations](pages/profiling.md) [WIP]
 - [Advanced Raytracing](pages/raytracing_advanced.md) [WIP]
 - [Hit optimisations using a Bounding Volume Hyrarchy](pages/bvh.md) [WIP]
 - [Coordinates, Axis & Matrices](pages/axis.md) [WIP]
 - [Camera Model](pages/camera.md) [WIP]
+
 
 ## Resources
 - <https://www.realtimerendering.com/intersections.html>

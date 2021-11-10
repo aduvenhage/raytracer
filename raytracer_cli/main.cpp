@@ -30,8 +30,8 @@ using namespace SYSTEMS;
 
 const int width = 1600;
 const int height = 1200;
-const int numWorkers = std::max(std::thread::hardware_concurrency() * 2, 2u);
-const int maxSamplesPerPixel = 4000;
+const int numWorkers = std::max(std::thread::hardware_concurrency(), 2u);
+const int maxSamplesPerPixel = 16;
 const int maxTraceDepth = 64;
 const uint32_t randSeed = 1;
 
@@ -93,11 +93,15 @@ int main(int argc, char *argv[])
         scenario = argv[1];
         output = argv[2];
     }
-    else if (argc == 2){
-        scenario = argv[1];
-        output = "raytraced.jpeg";
-    }
-    
+	else if (argc == 2) {
+		scenario = argv[1];
+		output = "raytraced.jpeg";
+	}
+	else if (argc == 1) {
+		scenario = "default_scene";
+		output = "raytraced.jpeg";
+	}
+
     printf("Running frame '%s' saving to '%s'\n", scenario.c_str(), output.c_str());
     
     // load and run frame
