@@ -30,7 +30,7 @@ using namespace SYSTEMS;
 
 const int width = 1600;
 const int height = 1200;
-const int numWorkers = std::max(std::thread::hardware_concurrency(), 2u);
+const int numWorkers = 1;// std::max(std::thread::hardware_concurrency(), 2u);
 const int maxSamplesPerPixel = 16;
 const int maxTraceDepth = 64;
 const uint32_t randSeed = 1;

@@ -5,7 +5,7 @@ IF(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   MESSAGE("Using VCPKG Toolchain")
   SET(CMAKE_GENERATOR_PLATFORM "x64")
   SET(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
-  SET(VCPKG_TARGET_TRIPLET "x64-windows")
+  SET(VCPKG_TARGET_TRIPLET "x64-windows-static")
 ENDIF()
 
 # default project build type
