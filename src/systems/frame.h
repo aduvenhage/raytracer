@@ -205,8 +205,8 @@ namespace SYSTEMS
      private:
         CORE::Vec randomInPixel() const {
             CORE::Vec ret = CORE::randomInUnitSquare();
-            ret.x() *= 0.5 / m_pViewport->width();
-            ret.y() *= 0.5 / m_pViewport->height();
+            ret.x() *= 0.5f / m_pViewport->width();
+            ret.y() *= 0.5f / m_pViewport->height();
             return ret;
         }
 

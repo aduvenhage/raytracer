@@ -168,31 +168,31 @@ namespace CORE
     }
 
     inline Vec perElementMax(const Vec &_vec1, const Vec &_vec2) {
-        return Vec(fmax(_vec1.x(), _vec2.x()),
-                   fmax(_vec1.y(), _vec2.y()),
-                   fmax(_vec1.z(), _vec2.z()));
+        return Vec(maxf(_vec1.x(), _vec2.x()),
+                   maxf(_vec1.y(), _vec2.y()),
+                   maxf(_vec1.z(), _vec2.z()));
     }
 
 
     inline Vec perElementMin(const Vec &_vec1, const Vec &_vec2) {
-        return Vec(fmin(_vec1.x(), _vec2.x()),
-                   fmin(_vec1.y(), _vec2.y()),
-                   fmin(_vec1.z(), _vec2.z()));
+        return Vec(minf(_vec1.x(), _vec2.x()),
+                   minf(_vec1.y(), _vec2.y()),
+                   minf(_vec1.z(), _vec2.z()));
     }
 
     inline float minElement(const Vec &_vec) {
-        return fmin(fmin(_vec.x(), _vec.y()), _vec.z());
+        return minf(minf(_vec.x(), _vec.y()), _vec.z());
     }
 
     inline float maxElement(const Vec &_vec) {
-        return fmax(fmax(_vec.x(), _vec.y()), _vec.z());
+        return maxf(maxf(_vec.x(), _vec.y()), _vec.z());
     }
 
     inline Vec mod(const Vec &_p, float _d) {
         return Vec(
-            _p.x() - _d * floor(_p.x() / _d),
-            _p.y() - _d * floor(_p.y() / _d),
-            _p.z() - _d * floor(_p.z() / _d)
+            _p.x() - _d * myfloorf(_p.x() / _d),
+            _p.y() - _d * myfloorf(_p.y() / _d),
+            _p.z() - _d * myfloorf(_p.z() / _d)
         );
     }
 

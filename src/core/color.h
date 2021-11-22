@@ -115,9 +115,9 @@ namespace CORE
         
         // wrap color values and keep range [0...1]
         Color &wrap() {
-            m_c[0] -= floor(m_c[0]);
-            m_c[1] -= floor(m_c[1]);
-            m_c[2] -= floor(m_c[2]);
+            m_c[0] -= floorf(m_c[0]);
+            m_c[1] -= floorf(m_c[1]);
+            m_c[2] -= floorf(m_c[2]);
             return *this;
         }
         

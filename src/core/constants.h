@@ -18,7 +18,7 @@ constexpr float deg2rad(float _fDeg) {
 
 
 inline float angleWrap2Pi(float _a) {
-    return _a - pi2 * floor(_a/pi2);
+    return _a - pi2 * floorf(_a/pi2);
 }
 
 
@@ -42,6 +42,25 @@ inline auto clamp(const T &_value, const T &_min, const T &_max) {
 inline float frac(float _a) {
     return _a - std::trunc(_a);
 }
+
+
+inline float minf(float _a, float _b) {
+	return _a < _b ? _a : _b;
+}
+
+
+inline float maxf(float _a, float _b) {
+	return _a > _b ? _a : _b;
+}
+
+
+// NOTE: this will not work values > -32768
+inline float myfloorf(float _a) {
+	return (int)(_a + 32768.0f) - 32768.0f;
+}
+
+
+
 
 
 #endif  // #ifndef CORE_CONSTANTS_H

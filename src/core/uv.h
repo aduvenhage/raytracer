@@ -47,8 +47,8 @@ namespace CORE
         
         /// wrap color values and keep range [0...1]
         Uv &wrap() {
-            m_uv[0] -= floor(m_uv[0]);
-            m_uv[1] -= floor(m_uv[1]);
+            m_uv[0] -= floorf(m_uv[0]);
+            m_uv[1] -= floorf(m_uv[1]);
             return *this;
         }
         
