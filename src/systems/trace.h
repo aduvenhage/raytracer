@@ -1,7 +1,6 @@
 #ifndef SYSTEMS_TRACE_H
 #define SYSTEMS_TRACE_H
 
-
 #include "core/color.h"
 #include "core/constants.h"
 #include "core/outputimage.h"

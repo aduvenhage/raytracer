@@ -41,10 +41,9 @@ namespace CORE
         Vec     m_origin;
         Vec     m_direction;
         Vec     m_invDirection;
-        float   m_fMinDist;
-        float   m_fMaxDist;
-        char    m_iRayType;
-        bool    m_bPrimary;
+        float   m_fMinDist = 0.0f;
+        float   m_fMaxDist = 0.0f;
+        bool    m_bPrimary = false;
     };
 
 

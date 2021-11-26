@@ -14,8 +14,7 @@ namespace DETAIL
     class Plane        : public BASE::Primitive
     {
      public:
-        Plane()
-        {}
+        Plane() = default;
         
         Plane(const BASE::Material *_pMaterial, float _fUvScale=0.02f)
             :m_pMaterial(_pMaterial),
@@ -57,8 +56,8 @@ namespace DETAIL
         }
         
      private:
-        const BASE::Material    *m_pMaterial;
-        float                   m_fUvScale;
+        const BASE::Material    *m_pMaterial = nullptr;
+        float                   m_fUvScale = 0.0f;
     };
 
 
@@ -66,8 +65,7 @@ namespace DETAIL
     class Disc        : public Plane
     {
      public:
-        Disc()
-        {}
+        Disc() = default;
         
         Disc(float _fRadius, const BASE::Material *_pMaterial, float _fUvScale=0.02f)
             :Plane(_pMaterial, _fUvScale),
@@ -100,8 +98,8 @@ namespace DETAIL
         }
         
      private:
-        CORE::Bounds                m_bounds;
-        float                       m_fRadiusSqr;
+        CORE::Bounds            m_bounds;
+        float                   m_fRadiusSqr = 0.0f;
     };
 
 
@@ -111,8 +109,7 @@ namespace DETAIL
     class Rectangle        : public Plane
     {
      public:
-        Rectangle()
-        {}
+        Rectangle() = default;
         
         Rectangle(float _fWidth, float _fLength, const BASE::Material *_pMaterial, float _fUvScale=0.02f)
             :Plane(_pMaterial, _fUvScale),
@@ -148,10 +145,9 @@ namespace DETAIL
 
      private:
         CORE::Bounds                m_bounds;
-        float                       m_fWidth;
-        float                       m_fLength;
+        float                       m_fWidth = 0.0f;
+        float                       m_fLength = 0.0f;
     };
-
 
 };  // namespace DETAIL
 

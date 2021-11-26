@@ -83,7 +83,7 @@ namespace DETAIL
         float sdf(const CORE::Vec &_x) const {
             return _x.size() - m_fSize +
                    m_fRouhgness * sin(_x.x()/m_fSize*8) * sin(_x.y()/m_fSize*8) * sin(_x.z()/m_fSize*8) +
-                   0.2 * m_fRouhgness * sin(_x.x()/m_fSize*16) * sin(_x.y()/m_fSize*16) * sin(_x.z()/m_fSize*16);
+                   0.2f * m_fRouhgness * sin(_x.x()/m_fSize*16) * sin(_x.y()/m_fSize*16) * sin(_x.z()/m_fSize*16);
         }
 
      private:

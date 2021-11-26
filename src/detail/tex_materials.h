@@ -21,7 +21,7 @@ namespace DETAIL
         Checkered(CORE::Color &_c1, CORE::Color &_c2, int _iBlockSize)
             :m_color1(_c1),
              m_color2(_c2),
-             m_fScale(_iBlockSize * pi)
+             m_fScale(_iBlockSize * pif)
         {}
         
         /* Returns the scattered ray at the intersection point. */
@@ -57,7 +57,7 @@ namespace DETAIL
 
         /* Returns the scattered ray at the intersection point. */
         virtual CORE::ScatteredRay &scatter(CORE::ScatteredRay &_sc, const BASE::Intersect &_hit) const override {
-            auto att = (m_baseColor * m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v())).wrap() * m_fBrightness + m_offsetColor;
+            auto att = (m_baseColor * (float)m_mandlebrot.value(_hit.m_uv.u(), _hit.m_uv.v())).wrap() * m_fBrightness + m_offsetColor;
             _sc.m_color *= att.clamp();
             _sc.m_emitted *= att;
             return _sc;

@@ -53,7 +53,7 @@ namespace UTILS
              m_fScale(0)
         {
             // default view
-            setView(0.0f, 0.0f, 0.2f, 50.0f);
+            setView(0.0f, 0.0f, 0.2f, 50);
         }
         
         int width() const {return m_iWidth;}

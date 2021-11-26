@@ -14,7 +14,6 @@
 #include <QtWidgets>
 
 
-
 using namespace CORE;
 using namespace BASE;
 using namespace DETAIL;
@@ -47,7 +46,7 @@ class MainWindow : public QMainWindow
     }
     
  protected:
-    virtual void paintEvent(QPaintEvent *_event) {
+    virtual void paintEvent(QPaintEvent *) {
         QPainter painter(this);
         QImage image(m_iWidth, m_iHeight, QImage::Format_RGB888);
 
@@ -64,7 +63,7 @@ class MainWindow : public QMainWindow
         m_iFrameCount++;
     }
     
-    virtual void timerEvent(QTimerEvent *_event) {
+    virtual void timerEvent(QTimerEvent *) {
 		auto tp = clock_type::now();
 
         if (m_pSource == nullptr)

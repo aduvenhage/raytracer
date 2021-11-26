@@ -78,9 +78,9 @@ namespace UTILS
         int n = 16;
         for (int i = 0; i < n; i ++) {
             float t = (float)i/n;
-            CORE::Vec origin(0.45f*_fHeight*sin(t * pi * 4 + _fAngleY),
+            CORE::Vec origin(0.45f*_fHeight*sin(t * pif * 4 + _fAngleY),
                              (t - 0.5f)*_fHeight,
-                             0.45f*_fHeight*cos(t * pi * 4 + _fAngleY));
+                             0.45f*_fHeight*cos(t * pif * 4 + _fAngleY));
             
             sdf += exp(-k * sdfSphere(_p, origin, (frac(t/0.3f) + 0.1f)*_fHeight*0.1f));
         }

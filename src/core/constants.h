@@ -8,17 +8,27 @@
 #define ALIGN __attribute__((aligned(64)))
 
 
-constexpr float pi    = (float)M_PI;
-constexpr float pi2    = (float)(M_PI*2);
+constexpr float pif = (float)M_PI;
 
 
-constexpr float deg2rad(float _fDeg) {
-    return _fDeg / 180.0f * pi;
+// NOTE: this will not work values > -32768
+constexpr float myfloorf(float _a) {
+	return (int)(_a + 32768.0f) - 32768.0f;
 }
 
 
-inline float angleWrap2Pi(float _a) {
-    return _a - pi2 * floorf(_a/pi2);
+constexpr float mytruncf(float _a) {
+    return (float)((int)_a);
+}
+
+
+constexpr float deg2rad(float _fDeg) {
+    return _fDeg / 180.0f * pif;
+}
+
+
+constexpr float angleWrap2Pi(float _a) {
+    return _a - pif*2 * myfloorf(_a/(pif*2));
 }
 
 
@@ -33,34 +43,30 @@ constexpr bool isPowerOf2(int _n) {
 
 
 template <typename T>
-inline auto clamp(const T &_value, const T &_min, const T &_max) {
+constexpr auto clamp(const T &_value, const T &_min, const T &_max) {
     auto v = (_value < _min) ? _min : _value;
     return (v > _max) ? _max : v;
 }
 
 
-inline float frac(float _a) {
-    return _a - std::trunc(_a);
+constexpr float frac(float _a) {
+    return _a - mytruncf(_a);
 }
 
 
-inline float minf(float _a, float _b) {
+constexpr float minf(float _a, float _b) {
 	return _a < _b ? _a : _b;
 }
 
 
-inline float maxf(float _a, float _b) {
+constexpr float maxf(float _a, float _b) {
 	return _a > _b ? _a : _b;
 }
 
 
-// NOTE: this will not work values > -32768
-inline float myfloorf(float _a) {
-	return (int)(_a + 32768.0f) - 32768.0f;
+constexpr int signf(float value)
+{
+	return (value > 0) - (value < 0);
 }
-
-
-
-
 
 #endif  // #ifndef CORE_CONSTANTS_H

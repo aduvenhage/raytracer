@@ -14,8 +14,7 @@ namespace DETAIL
     class Box        : public BASE::Primitive
     {
      public:
-        Box()
-        {}
+        Box() = default;
         
         Box(const CORE::Vec &_size, const BASE::Material *_pMaterial, float _fUvScale = 0.2f)
             :m_bounds(-_size * 0.5f, _size * 0.5f),
@@ -83,8 +82,8 @@ namespace DETAIL
         CORE::Axis             m_axis;
         CORE::Bounds           m_bounds;
         CORE::Vec              m_vecDiv;
-        const BASE::Material   *m_pMaterial;
-        float                  m_fUvScale;
+        const BASE::Material   *m_pMaterial = nullptr;
+        float                  m_fUvScale = 0.0f;
     };
 
 

@@ -58,7 +58,7 @@ namespace DETAIL
             
             CORE::Vec         m_normal;
             CORE::Bounds      m_bounds;
-            uint32_t          m_v[3];
+            uint32_t          m_v[3] = {};
         };
         
         struct Vertex {
@@ -303,13 +303,13 @@ namespace DETAIL
             vertices.reserve(((size_t)_iSlices+1) * ((size_t)_iDivs+1));
             
             for (int d = 0; d <= _iDivs; d++) {
-                float angle = pi / _iDivs * d;
+                float angle = pif / _iDivs * d;
                 float r = _fRadius * sin(angle);
                 float y = _fRadius * cos(angle);
                 
                 for (int s = 0; s <= _iSlices; s++) {
-                    float x = r * cos(pi2 / _iSlices * s);
-                    float z = r * sin(pi2 / _iSlices * s);
+                    float x = r * cos(pif*2 / _iSlices * s);
+                    float z = r * sin(pif*2 / _iSlices * s);
                     
                     auto v = Mesh::Vertex();
                     v.m_v = CORE::Vec(x, y, z);

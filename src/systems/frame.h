@@ -150,7 +150,7 @@ namespace SYSTEMS
         // do the work -- blocks until completed
         virtual void run() override
         {
-            RayTracer tracer(m_pScene, m_iMaxDepth);
+            RayTracer tracer(m_pScene, (uint16_t)m_iMaxDepth);
             const float fFovScale = tan(m_pCamera->fov() * 0.5f);
             unsigned char *pPixel = (unsigned char *)m_pImage->row(m_iLine);
             
@@ -183,13 +183,12 @@ namespace SYSTEMS
                 }
                                 
                 // get pixel color
-                color = (color/n).clamp().gammaCorrect2();
+                color = (color/(float)n).clamp().gammaCorrect2();
 
                 // write to output image
-                *(pPixel++) = (int)(255 * color.red() + 0.5);
-                *(pPixel++) = (int)(255 * color.green() + 0.5);
-                *(pPixel++) = (int)(255 * color.blue() + 0.5);
-                
+                *(pPixel++) = (unsigned char)(255 * color.red() + 0.5f);
+                *(pPixel++) = (unsigned char)(255 * color.green() + 0.5f);
+                *(pPixel++) = (unsigned char)(255 * color.blue() + 0.5f);
                 m_fProgress =  (float)i / m_pViewport->width();
             }
 

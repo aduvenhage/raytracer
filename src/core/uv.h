@@ -65,7 +65,7 @@ namespace CORE
     Uv getSphericalUv(const Vec &_n) {
         float phi = angleWrap2Pi(atan2(_n.z(), _n.x()));
         float theta = acos(clamp(_n.y(), -1.0f, 1.0f));
-        return Uv(phi / pi * 0.5, theta / pi);
+        return Uv(phi / pif * 0.5f, theta / pif);
     }
 
 };  // namespace CORE
