@@ -44,4 +44,5 @@ This is how I use it:
 
 I'm using the generator as a singleton for easy access, but it wraps the C++11 generator in a thread local way, so that I get a unique generator per thread.   Another way of doing this would be to create a number generator object per worker thread and just pass it down into each call, but having the random number generator passed into each function/method that needs it becomes hard to manage.
 
-
+*More Notes*:
+I also tried the C++11 minstd_rand (std::linear_congruential_engine) generator and it seems to perform a little better.

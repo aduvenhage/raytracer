@@ -7,7 +7,7 @@
 
 namespace CORE
 {
-    using default_rand_type = std::mt19937;
+    using default_rand_type = std::minstd_rand;
 
     // global random number generator
     template <typename generator_type = default_rand_type>

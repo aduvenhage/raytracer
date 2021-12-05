@@ -49,7 +49,7 @@ List of implemented features:s
   * axis aligned box intersections
   * bounding volume hyrarchy hit optimisations for scene objects
   * bounding volume hyrarchy hit optimisations for triangles within a mesh
-  * memory manager to ensure objects are located close together in main memory
+  * optional memory manager (optimised small object allocations) to ensure objects are located close together in main memory
 
 * Advanced Features
   * cloud runner (tested on AWS and DigitalOcean)
@@ -59,6 +59,7 @@ List of implemented features:s
 Todo:
 * triangle mesh loading (see https://github.com/assimp/assimp)
 * replace axis-math with matrix math
+* add shadow rays
 * optisation through importance sampling (for lights)
 * data based optimisations
 * de-noising
