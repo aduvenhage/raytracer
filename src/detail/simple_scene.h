@@ -112,7 +112,7 @@ namespace DETAIL
                 // get last node
                 auto pNode = nodes.pop();
                 
-                // check node hits
+                // check node hits (finding closest hit)
                 for (const auto &pObj : pNode->m_primitives) {
                     BASE::Intersect nh(_hit);
                     if ( (pObj->hit(nh) == true) &&

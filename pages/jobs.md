@@ -25,7 +25,7 @@ The job interface is extended to implement pixel jobs, where each pixel job inst
 ## Running to Completion and Job Stats
 The job system (workers, queue & jobs) is integrated into the raytracer's frame class and all jobs in a specific system only contribute to a single frame.  
 The job base class is generic and does not support any rendering stats, like ray count. It only supports progress feedback.  
-To get the stats all pixel jobs reference a frame stats object and the jobs report on this frame stats object.
+To get the stats, all pixel jobs reference a frame stats object and the jobs report on this frame stats object.
 For example, each job would report the number of rays it created after it is done, which then contributes the the `total rays` and `rays per second` stats for the frame.
 
 The frame also keeps track of the number of completed jobs and job progress and can report on the overall frame progress.
