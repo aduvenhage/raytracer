@@ -129,29 +129,6 @@ namespace
 
 int main(int argc, char *argv[])
 {
-    char a = -1;
-    unsigned char b = (unsigned char)a;
-
-
-
-    double d = 0;
-	d = frac(100.1);
-	d = frac(-100.1);
-    d = lscale(0, 1, 0.4);
-    d = unwrap(360);
-    d = unwrap(180);
-    d = unwrap(-180);
-    d = unwrap(715);
-    d = unwrap(-715);
-	d = ascale(0, 10, 0.5);
-	d = ascale(0, -10, 0.5);
-	d = ascale(0, 270, 0.5);
-	d = ascale(0, -270, 0.5);
-
-
-
-
-
     auto pLoader = std::make_unique<LoaderDefaultScene>();
     
     // start app
