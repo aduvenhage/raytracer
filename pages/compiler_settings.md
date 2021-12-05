@@ -20,10 +20,11 @@ ENDIF()
 
 For now the config is very simple, tying the compilers to the system name, and we can only use the default compiler on each system. 
 These are the compiler settings we are aiming for:
-- switch on all warnings
-- use fast foating point math in release version
+- switch on all warnings: this is usefull to ensure code correctness and addressing warnings could also make code more correct and portable
+- use fast floating point math in release version: the compiler can squeese more performance out of the code if it is allowed to bend rules for correctness a little.
 - add debug info to release build for profiling
-- include SSE2 optimisations (SSE/SSE2 used by default in x64)
+- include SSE2 optimisations: SSE/SSE2 used by default in x64
+- include AVX instructions: expect slightly faster code with this enabled
 
 *NOTE*: Clang and GCC compiler options are generally the same
 
@@ -33,7 +34,7 @@ Cmake section to set options for GCC compiler:
 ```
 IF(WIN32)
     # assuming we are using MSVC
-    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 -DNDEBUG -D_CRT_SECURE_NO_WARNINGS /W4 /WX /MT /fp:fast")
+    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 -DNDEBUG -D_CRT_SECURE_NO_WARNINGS /W4 /WX /MT /fp:fast /GL")
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -D_CRT_SECURE_NO_WARNINGS /W4 /WX /MTd")
 ENDIF()
 ```
@@ -43,6 +44,7 @@ ENDIF()
 - `/MTd & /MT`: use multithreaded (non DLL) version of the runtime
 - `/fp:fast`: faster floating point (relaxed rule set)
 - `/O2`: maximise execution speed
+- `/GL`: enable link time optimisations
 
 On MSVC I also had to enable compiling for x64 with `SET(CMAKE_GENERATOR_PLATFORM "x64")` during CMAKE toolchain selection:
 ```
@@ -55,6 +57,17 @@ ENDIF()
 ```
 
 The `x64-windows-static` option above was also required to select the specific VCPKG version of QT (with static linking) that I needed.
+
+LTO Linker Options (MSVC):
+```
+IF(WIN32)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd26451")
+    TARGET_LINK_LIBRARIES(${targetname} Qt5::Widgets)
+    TARGET_LINK_OPTIONS(${targetname} PUBLIC /DEBUG /LTCG)
+ENDIF()
+```
+
+- `LTCG`: enable link time optimisations (has to be used with the `/GL` compiler setting). 
 
 
 ## OSx (XCode/Clang)
