@@ -23,6 +23,6 @@ IF(WIN32)
 ENDIF()
 
 IF(LINUX)
-    TARGET_LINK_LIBRARIES(${targetname} pthread)
+    TARGET_LINK_LIBRARIES(${targetname} pthread stdc++fs)
 ENDIF()
 

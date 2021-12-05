@@ -163,7 +163,6 @@ namespace SYSTEMS
                 CORE::Color color;
                 int n = 0;
                 
-                auto stats = CORE::ColorStat();
                 for (int k = 0; k < m_iMaxSamplesPerPixel; k++)
                 {
                     // calc origin in camera
