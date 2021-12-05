@@ -76,8 +76,7 @@ Ramblings on cool features and implementation details.  And, actually trying to 
 - [Raytracing basics](pages/raytracing.md)
 - [Random number generation](pages/random.md)
 - [Job system](pages/jobs.md)
-
-- [Debugging and compiler settings](pages/compiler_settings.md) [WIP]
+- [Debugging and compiler settings](pages/compiler_settings.md)
 
 - [Profiling and optimisations](pages/profiling.md) [WIP]
 - [Advanced Raytracing](pages/raytracing_advanced.md) [WIP]

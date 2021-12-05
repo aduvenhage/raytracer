@@ -69,7 +69,7 @@ IF(MAC)
 ENDIF()
 ```
 
-- `-Ofast`: includes `-03` plus `-ffast-math` and more
+- `-Ofast`: includes `-O3` plus `-ffast-math` and more
 - `-Wall`: enables all warnings
 - `-flto`: enable link time optimisations
 - `-g`: include debug info
@@ -87,7 +87,7 @@ IF(LINUX)
 ENDIF()
 ```
 
-- `-Ofast`: includes `-03` plus `-ffast-math` and more
+- `-Ofast`: includes `-O3` plus `-ffast-math` and more
 - `-Wall`: enables all warnings
 - `-flto`: enable link time optimisations
 - `-g`: include debug info
