@@ -44,6 +44,18 @@ ENDIF()
 - `/fp:fast`: faster floating point (relaxed rule set)
 - `/O2`: maximise execution speed
 
+On MSVC I also had to enable compiling for x64 with `SET(CMAKE_GENERATOR_PLATFORM "x64")` during CMAKE toolchain selection:
+```
+IF(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  MESSAGE("Using VCPKG Toolchain")
+  SET(CMAKE_GENERATOR_PLATFORM "x64")
+  SET(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+  SET(VCPKG_TARGET_TRIPLET "x64-windows-static")
+ENDIF()
+```
+
+The `x64-windows-static` option above was also required to select the specific VCPKG version of QT (with static linking) that I needed.
+
 
 ## OSx (XCode/Clang)
 Cmake section to set options for XCode/Clang compiler:
