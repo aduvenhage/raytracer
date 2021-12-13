@@ -4,6 +4,7 @@ SET(INCL_SRC
     bvh.h
     color.h
     constants.h
+    image.h
     memory.h
     outputimage.h
     profile.h

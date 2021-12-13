@@ -24,6 +24,9 @@ MESSAGE("System name: " ${CMAKE_SYSTEM_NAME})
 MESSAGE("Build tool: " ${CMAKE_BUILD_TOOL})
 SET(CMAKE_CONFIGURATION_TYPES Debug Release CACHE STRING INTERNAL FORCE)
 
+# project dependencies
+find_package(assimp REQUIRED)
+
 # check system/compiler
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(MAC ON)

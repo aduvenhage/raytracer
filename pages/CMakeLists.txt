@@ -8,6 +8,7 @@ SET(PAGES_FILES
     ${CMAKE_SOURCE_DIR}/pages/docker-machine.md
     ${CMAKE_SOURCE_DIR}/pages/jobs.md
     ${CMAKE_SOURCE_DIR}/pages/qt.md
+    ${CMAKE_SOURCE_DIR}/pages/cmake.md
     ${CMAKE_SOURCE_DIR}/pages/random.md
     ${CMAKE_SOURCE_DIR}/pages/raytracing.md
     ${CMAKE_SOURCE_DIR}/pages/raytracing_advanced.md

@@ -130,7 +130,8 @@ namespace
 int main(int argc, char *argv[])
 {
     auto pLoader = std::make_unique<LoaderDefaultScene>();
-    
+
+
     // start app
     QApplication app(argc, argv);
     MainWindow window(std::move(pLoader));

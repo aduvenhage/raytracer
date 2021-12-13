@@ -56,7 +56,8 @@ IF(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 ENDIF()
 ```
 
-The `x64-windows-static` option above was also required to select the specific VCPKG version of QT (with static linking) that I needed.
+See [Building with CMAKE](pages/cmake.md) for more detail on CMAKE and VCPKG configuration.
+
 
 LTO Linker Options (MSVC):
 ```
@@ -67,7 +68,8 @@ IF(WIN32)
 ENDIF()
 ```
 
-- `LTCG`: enable link time optimisations (has to be used with the `/GL` compiler setting). 
+- `LTCG`: enable link time optimisations (has to be used with the `/GL` compiler setting).
+- `/DEBUG`: includes debug info in executable
 
 
 ## OSx (XCode/Clang)

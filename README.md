@@ -72,6 +72,7 @@ Todo:
 Ramblings on cool features and implementation details.  And, actually trying to write something down makes me think of improvements.
 
 - [Rendering with Qt](pages/qt.md)
+- [Building with CMAKE](pages/cmake.md)
 - [Running in the cloud with docker-machine](pages/docker-machine.md)
 - [Raytracing basics](pages/raytracing.md)
 - [Random number generation](pages/random.md)

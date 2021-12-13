@@ -111,7 +111,7 @@ namespace CORE
 };  // namespace CORE
 
 
-#define USE_MEMORY_POOLS    1
+#define USE_MEMORY_POOLS    0
 
 
 // add to a class to overload memory operators
