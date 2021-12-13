@@ -24,7 +24,7 @@ namespace DETAIL
         auto h = crossProduct(_ray.m_direction, edge2);
         float a = edge1 * h;
         
-        if (fabs(a) < EPSILON)
+        if (absf(a) < EPSILON)
             return false;   // ray parallel to plane
             
         float f = 1.0f/a;
@@ -85,8 +85,7 @@ namespace DETAIL
             int hitIndex = 0;
             CORE::Uv hitUv;
 
-            bool bHit = checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_priRay);
-            if (bHit == true) {
+            if (checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_priRay) == true) {
                 _hit.m_fPositionOnRay = fPositionOnRay;
                 _hit.m_uTriangleIndex = hitIndex;
                 _hit.m_uv = hitUv;

@@ -116,17 +116,6 @@ class MainWindow : public QMainWindow
 };
 
 
-namespace
-{
-    constexpr double frac(double a) { return a - (int)a; };
-    constexpr double unwrap(double a) { return frac(a / 360.0) * 360; };
-    constexpr double lscale(double a, double b, double coeff) { return a * (1 - coeff) + b * coeff; };
-    constexpr double ascale(double a, double b, double coeff) {
-        double d = unwrap(b - a);
-        return fabs(d) < 180 ? unwrap(a + lscale(0, d, coeff)) : unwrap(a - lscale(0, 360 - d, coeff));
-    };
-};
-
 int main(int argc, char *argv[])
 {
     auto pLoader = std::make_unique<LoaderDefaultScene>();

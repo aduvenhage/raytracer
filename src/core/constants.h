@@ -49,7 +49,7 @@ constexpr auto clamp(const T &_value, const T &_min, const T &_max) {
 }
 
 
-constexpr float frac(float _a) {
+constexpr float fracf(float _a) {
     return _a - mytruncf(_a);
 }
 
@@ -64,9 +64,15 @@ constexpr float maxf(float _a, float _b) {
 }
 
 
-constexpr int signf(float value)
+constexpr int signf(float _value)
 {
-	return (value > 0) - (value < 0);
+	return (_value > 0) - (_value < 0);
+}
+
+
+constexpr float absf(float _value)
+{
+    return _value * signf(_value);
 }
 
 #endif  // #ifndef CORE_CONSTANTS_H

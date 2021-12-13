@@ -81,8 +81,7 @@ namespace BASE
                 _hit.m_priRay = transformRayTo(_hit.m_viewRay, m_axis);
                 
                 // check hit
-                bool bHit = m_pTarget->hit(_hit);
-                if (bHit == true) {
+                if (m_pTarget->hit(_hit) == true) {
                     _hit.m_pPrimitive = this;
                     return true;
                 }

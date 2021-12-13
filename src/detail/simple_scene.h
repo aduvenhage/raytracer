@@ -32,9 +32,7 @@ namespace DETAIL
          */
         virtual bool hit(BASE::Intersect &_hit) const override {
             for (const auto &pObj : m_objects) {
-                BASE::Intersect nh(_hit);
-                if ( (pObj->hit(nh) == true) &&
-                     ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
                 {
                     _hit = nh;
                 }
@@ -114,9 +112,7 @@ namespace DETAIL
                 
                 // check node hits (finding closest hit)
                 for (const auto &pObj : pNode->m_primitives) {
-                    BASE::Intersect nh(_hit);
-                    if ( (pObj->hit(nh) == true) &&
-                         ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                    if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
                     {
                         _hit = nh;
                     }
@@ -142,9 +138,7 @@ namespace DETAIL
         {
             if (_pNode->empty() == false) {
                 for (const auto &pObj : _pNode->m_primitives) {
-                    BASE::Intersect nh(_hit);
-                    if ( (pObj->hit(nh) == true) &&
-                         ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                    if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
                     {
                         _hit = nh;
                     }

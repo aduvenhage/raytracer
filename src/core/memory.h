@@ -80,8 +80,7 @@ namespace CORE
         
         unsigned char *allocateFromDeleted(size_t _n) {
             std::lock_guard<std::mutex> lock(m_mutex);
-            auto &freeList = m_freeLists[_n];
-            if (freeList.empty() == false) {
+            if (auto &freeList = m_freeLists[_n]; freeList.empty() == false) {
                 unsigned char *p = freeList.back();
                 freeList.pop_back();
                 return p;

@@ -29,11 +29,9 @@ namespace DETAIL
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(BASE::Intersect &_hit) const override {
             // NOTE: only hit if ray is pointing down at plane
-            const float denom = _hit.m_priRay.m_direction.y();
-            if (denom < -0.00001f) {
+            if (const float denom = _hit.m_priRay.m_direction.y(); denom < -0.00001f) {
                 const auto vecRayPlane = -_hit.m_priRay.m_origin;
-                const float t = vecRayPlane.y() / denom;
-                if (_hit.m_priRay.inside(t) == true) {
+                if (const float t = vecRayPlane.y() / denom; _hit.m_priRay.inside(t) == true) {
                     _hit.m_fPositionOnRay = t;
                     return true;
                 }
@@ -123,8 +121,8 @@ namespace DETAIL
             if (Plane::hit(_hit) == true) {
                 // check rectangle bounds
                 _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
-                return (fabs(_hit.m_position.x()) <= m_fWidth) &&
-                       (fabs(_hit.m_position.z()) <= m_fLength);
+                return (absf(_hit.m_position.x()) <= m_fWidth) &&
+                       (absf(_hit.m_position.z()) <= m_fLength);
             }
             
             return false;

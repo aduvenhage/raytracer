@@ -40,12 +40,9 @@ namespace CORE
         if (_image.m_iQuality == 0) {
             _image.m_iQuality = 100;
         }
-        
-        
-        auto path = std::filesystem::path(_pszFilePath);
-        auto ext = path.extension();       // TODO: convert to lower case
-    
-        if ((ext == ".jpg") || (ext == ".jpeg")) {
+
+        auto path = std::filesystem::path(_pszFilePath);  // TODO: convert to lower case
+        if (auto ext = path.extension(); (ext == ".jpg") || (ext == ".jpeg")) {
             stbi_write_jpg(_pszFilePath, _image.m_iWidth, _image.m_iHeight, _image.m_iBytesPerPixel, _image.m_pData, _image.m_iQuality);
         }
         else if (ext == ".png") {

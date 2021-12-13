@@ -82,7 +82,7 @@ namespace UTILS
                              (t - 0.5f)*_fHeight,
                              0.45f*_fHeight*cos(t * pif * 4 + _fAngleY));
             
-            sdf += exp(-k * sdfSphere(_p, origin, (frac(t/0.3f) + 0.1f)*_fHeight*0.1f));
+            sdf += exp(-k * sdfSphere(_p, origin, (fracf(t/0.3f) + 0.1f)*_fHeight*0.1f));
         }
         
         return -log(sdf) * 0.1f;

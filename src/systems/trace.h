@@ -122,7 +122,7 @@ namespace SYSTEMS
 
         while (i < maxSamples) {
             // check hit or miss
-            if (fabs(dT) <= e) {
+            if (absf(dT) <= e) {
                 bHit = true;
                 break;
             }
@@ -141,7 +141,6 @@ namespace SYSTEMS
             dT = dM;
             i++;
         }
-        
         
         if (bHit == true) {
             _hit.m_fPositionOnRay = distance;

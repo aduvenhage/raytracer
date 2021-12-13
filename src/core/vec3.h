@@ -106,7 +106,7 @@ namespace CORE
         
         // per element abs() -- not the same as size
         Vec abs() const {
-            return Vec(fabs(m_v[0]), fabs(m_v[1]), fabs(m_v[2]));
+            return Vec(absf(m_v[0]), absf(m_v[1]), absf(m_v[2]));
         }
         
         Vec xy() const {return Vec(m_v[0], m_v[1], 0);}
@@ -302,7 +302,7 @@ namespace CORE
     // combine bounds into one
     Bounds combineBoxes(std::vector<Bounds> &_bounds) {
         Bounds bounds;
-        
+
         if (_bounds.empty() == false) {
             bounds = _bounds[0];
 
@@ -432,8 +432,7 @@ namespace CORE
     inline Vec randomInUnitSphere() {
         for (;;){
             auto v = randomInUnitCube();
-            auto r = v.sizeSqr();
-            if ( (r > 1) || (r < 0.00001) ) {
+            if (auto r = v.sizeSqr(); (r > 1) || (r < 0.00001) ) {
                 continue;
             }
             return v;
@@ -445,8 +444,7 @@ namespace CORE
     inline Vec randomInUnitDisc() {
         for (;;){
             auto v = randomInUnitSquare();
-            auto r = v.sizeSqr();
-            if ( (r > 1) || (r < 0.00001) ) {
+            if (auto r = v.sizeSqr(); (r > 1) || (r < 0.00001) ) {
                 continue;
             }
             return v;

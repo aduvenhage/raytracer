@@ -35,9 +35,7 @@ namespace CORE
                     const Bounds &_boundsLeft, const Bounds &_boundsRight)
     {
         for (auto &pNode : _nodes) {
-            const auto &nb = pNode->bounds();
-            
-            if (aaboxIntersectCheck(nb, _boundsLeft) == true) {
+            if (const auto &nb = pNode->bounds(); aaboxIntersectCheck(nb, _boundsLeft) == true) {
                 _nodesLeft.push_back(pNode);
             }
             else if (aaboxIntersectCheck(nb, _boundsRight) == true) {

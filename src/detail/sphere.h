@@ -35,11 +35,9 @@ namespace DETAIL
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(BASE::Intersect &_hit) const override {
             float dRayLength = -_hit.m_priRay.m_origin * _hit.m_priRay.m_direction.normalized();
-            const float dIntersectRadiusSqr = _hit.m_priRay.m_origin.sizeSqr() - dRayLength*dRayLength;
-            if (dIntersectRadiusSqr <= m_fRadiusSqr) {
+            if (const float dIntersectRadiusSqr = _hit.m_priRay.m_origin.sizeSqr() - dRayLength*dRayLength; dIntersectRadiusSqr <= m_fRadiusSqr) {
                 const float dt = sqrt(m_fRadiusSqr - dIntersectRadiusSqr);
-                const float t0 = dRayLength - dt;
-                if (_hit.m_priRay.inside(t0) == true) {
+                if (const float t0 = dRayLength - dt; _hit.m_priRay.inside(t0) == true) {
                     // we are outside of sphere
                     _hit.m_bInside = false;
                     _hit.m_fPositionOnRay = t0;
@@ -47,8 +45,7 @@ namespace DETAIL
                 }
 
                 if (m_bOnlyHitOutside == false) {
-                    const float t1 = dRayLength + dt;
-                    if (_hit.m_priRay.inside(t1) == true) {
+                    if (const float t1 = dRayLength + dt; _hit.m_priRay.inside(t1) == true) {
                         // we are inside of sphere
                         _hit.m_bInside = true;
                         _hit.m_fPositionOnRay = t1;
