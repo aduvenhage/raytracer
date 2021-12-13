@@ -93,7 +93,7 @@ ENDIF()
 
 
 ## Linux (GCC)
-Cmake section to set options for XCode/Clang compiler:
+Cmake section to set options for GCC compiler:
 ```
 IF(LINUX)
     # assuming we are using GCC
@@ -109,6 +109,11 @@ ENDIF()
 - `-march=native`: optimise for local machine/architecture
 - `-DDEBUG / -DNDEBUG`: set DEBUG and NDEBUG compiler defines
 
-
+Also, weirdly, using std::file_system with GCC required linking with `stdc++fs`:
+```
+IF(LINUX)
+    TARGET_LINK_LIBRARIES(${targetname} pthread stdc++fs)
+ENDIF()
+```
 
 
