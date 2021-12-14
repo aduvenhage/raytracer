@@ -116,10 +116,17 @@ class MainWindow : public QMainWindow
 };
 
 
+
+bool test(int i) { return false; }
+bool test(void* p) { return false; }
+bool test(nullptr_t) { return true;  }
+
+
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_unique<LoaderDefaultScene>();
+    test(nullptr);
 
+    auto pLoader = std::make_unique<LoaderDefaultScene>();
 
     // start app
     QApplication app(argc, argv);

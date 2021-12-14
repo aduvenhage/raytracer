@@ -106,7 +106,7 @@ namespace CORE
         
         // per element abs() -- not the same as size
         Vec abs() const {
-            return Vec(absf(m_v[0]), absf(m_v[1]), absf(m_v[2]));
+            return Vec(fabs(m_v[0]), fabs(m_v[1]), fabs(m_v[2]));
         }
         
         Vec xy() const {return Vec(m_v[0], m_v[1], 0);}

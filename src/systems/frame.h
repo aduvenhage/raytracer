@@ -3,7 +3,6 @@
 #define SYSTEMS_FRAME_H
 
 
-
 #include "core/constants.h"
 #include "core/image.h"
 #include "core/outputimage.h"

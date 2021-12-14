@@ -121,8 +121,8 @@ namespace DETAIL
             if (Plane::hit(_hit) == true) {
                 // check rectangle bounds
                 _hit.m_position = _hit.m_priRay.position(_hit.m_fPositionOnRay);
-                return (absf(_hit.m_position.x()) <= m_fWidth) &&
-                       (absf(_hit.m_position.z()) <= m_fLength);
+                return (fabs(_hit.m_position.x()) <= m_fWidth) &&
+                       (fabs(_hit.m_position.z()) <= m_fLength);
             }
             
             return false;

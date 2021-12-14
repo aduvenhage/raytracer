@@ -24,7 +24,7 @@ namespace DETAIL
         auto h = crossProduct(_ray.m_direction, edge2);
         float a = edge1 * h;
         
-        if (absf(a) < EPSILON)
+        if (fabs(a) < EPSILON)
             return false;   // ray parallel to plane
             
         float f = 1.0f/a;

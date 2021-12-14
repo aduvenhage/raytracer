@@ -11,7 +11,7 @@
 constexpr float pif = (float)M_PI;
 
 
-// NOTE: this will not work values > -32768
+// NOTE: this will not work values < -32768
 constexpr float myfloorf(float _a) {
 	return (int)(_a + 32768.0f) - 32768.0f;
 }
@@ -69,10 +69,5 @@ constexpr int signf(float _value)
 	return (_value > 0) - (_value < 0);
 }
 
-
-constexpr float absf(float _value)
-{
-    return _value * signf(_value);
-}
 
 #endif  // #ifndef CORE_CONSTANTS_H

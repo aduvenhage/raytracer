@@ -122,7 +122,7 @@ namespace SYSTEMS
 
         while (i < maxSamples) {
             // check hit or miss
-            if (absf(dT) <= e) {
+            if (fabs(dT) <= e) {
                 bHit = true;
                 break;
             }
