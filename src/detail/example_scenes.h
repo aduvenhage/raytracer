@@ -6,6 +6,7 @@
 #include "core/vec3.h"
 #include "base/loader.h"
 #include "base/scene.h"
+#include "assimp_mesh.h"
 #include "simple_camera.h"
 #include "basic_materials.h"
 #include "tex_materials.h"
@@ -87,7 +88,8 @@ namespace DETAIL
         }
 
         virtual std::unique_ptr<BASE::Scene> loadScene() const override {
-            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.2f, 0.2f, 0.2f));
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.1f, 0.1f, 0.1f));
+            auto pDiffuse = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.9f, 0.9f, 0.9f));
             auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8f, 0.8f, 0.1f), CORE::Color(0.8f, 0.1f, 0.1f), 2);
             auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0f, 50.0f, 50.0f));
             auto pDiffuseCheck = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.1f, 0.1f, 0.8f), CORE::Color(0.1f, 0.8f, 0.8f), 8);
@@ -98,25 +100,28 @@ namespace DETAIL
             auto pGlass = BASE::createMaterial<Glass>(pScene, CORE::Color(0.95f, 0.95f, 0.95f), 0.01f, 1.8f);
             auto pImage = BASE::createMaterial<DiffuseImage>(pScene, "images/earth.jpg");
             
-            auto pMeshSphere = BASE::createPrimitive<SphereMesh>(pScene, 16, 16, 10.0f, pDiffuseWhite);
+            auto pMeshSphere = BASE::createPrimitive<SphereMesh>(pScene, 16, 16, 100.0f, pDiffuseWhite);
+            auto pAssimpMesh = BASE::createPrimitive<AssimpMesh>(pScene, "models/dragon_1.obj", pDiffuse);
 
             BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500.0f, pDiffuseFloor);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 10.0f, pLight, true);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 8.0f, pLight, true);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, 0.8f, 0, CORE::Vec(20, 30, 0)), CORE::Vec(20, 40, 20), pMirror);
             BASE::createPrimitiveInstance<Box>(pScene, CORE::axisEulerZYX(0, -0.8f, 0, CORE::Vec(-35, 20, 30)), 15.0f, pMetal);
             BASE::createPrimitiveInstance<MarchedTorus>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-20, 20, 0)), 15.0f, 7.0f, pDiffuseCheck);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 20, -40)), 15.0f, pDiffuseBlue);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(0, 17, 25)), 15.0f, pGlass);
-            BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 1.4f, 0, CORE::Vec(-20, 7, 40)), pMeshSphere);
-            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1.4f, 0, CORE::Vec(20, 7, 40)), 10.0f, pDiffuseWhite);
+            BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(-20, 10, 40), 0.1f), pMeshSphere);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 0, 0, CORE::Vec(20, 10, 40)), 10.0f, pDiffuseWhite);
             BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisEulerZYX(0, 1.4f, 0, CORE::Vec(60, 20, 0)), 20.0f, pImage);
+            BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 0.7f, -pif/2, CORE::Vec(0, 8, 70), 0.15f), pAssimpMesh);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(30, 30, 100)), 2.0f, pLight, true);
 
             pScene->build();   // build BVH
             return pScene;
         }
 
         virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
-            return std::make_unique<SimpleCamera>(CORE::Vec(0, 60, 100), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 1.4f, 100.0f);
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 40, 120), CORE::Vec(0, 1, 0), CORE::Vec(0, 0, 0), deg2rad(60), 0.2f, 100.0f);
         }
     };
 

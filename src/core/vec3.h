@@ -215,7 +215,7 @@ namespace CORE
         {}
 
         Vec rotateTo(const Vec &_vec) const {
-            return Vec(_vec * m_x, _vec * m_y, _vec * m_z);
+            return Vec(_vec * m_x, _vec * m_y, _vec * m_z) / m_fScale;
         }
                 
         Vec transformTo(const Vec &_vec) const {
@@ -224,7 +224,7 @@ namespace CORE
         }
                 
         Vec rotateFrom(const Vec &_vec) const {
-            return _vec.x() * m_x + _vec.y() * m_y + _vec.z() * m_z;
+            return (_vec.x() * m_x + _vec.y() * m_y + _vec.z() * m_z) * m_fScale;
         }
         
         Vec transformFrom(const Vec &_vec) const {
@@ -349,7 +349,7 @@ namespace CORE
 
 
     // rotate axis aligned box and create a new axis aligned box
-    inline Bounds rotateBounds(const Bounds &_bounds, const Axis &_axis) {
+    inline Bounds transformBoundsFrom(const Bounds &_bounds, const Axis &_axis) {
         auto cuboid = boundsCuboid(_bounds);
         for (auto &p : cuboid) {
             p = _axis.transformFrom(p);

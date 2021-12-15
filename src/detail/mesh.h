@@ -353,8 +353,7 @@ namespace DETAIL
         }
     };
     
-
 };  // namespace DETAIL
 
-#endif  // #ifndef DETAIL_TRIANGLE_H
+#endif  // #ifndef DETAIL_MESH_H
 

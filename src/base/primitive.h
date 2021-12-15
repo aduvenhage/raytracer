@@ -103,6 +103,7 @@ namespace BASE
         /* move instance */
         virtual void move(const CORE::Vec &_origin) {
             m_axis.m_origin = _origin;
+            m_bDirtyBounds = true;
         }
         
         /*
@@ -113,15 +114,16 @@ namespace BASE
          */
         void rotateEulerZYX(float _fAlpha, float _fBeta, float _fGamma) {
             m_axis = axisEulerZYX(_fAlpha, _fBeta, _fGamma, m_axis.m_origin);
+            m_bDirtyBounds = true;
         }
         
         /* return axis aligned bounding volume */
         const CORE::Bounds &bounds() const {
             if (m_bDirtyBounds == true) {
-                std::lock_guard<std::mutex> lock(m_mutex);
+                std::lock_guard<std::mutex> lock(m_mutex);  // lock, since multiple render jobs access this
                 
                 if (m_bDirtyBounds == true) {
-                    m_bounds = rotateBounds(m_pTarget->bounds(), m_axis);
+                    m_bounds = transformBoundsFrom(m_pTarget->bounds(), m_axis);
                     m_bDirtyBounds = false;
                 }
             }

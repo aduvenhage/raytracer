@@ -1,6 +1,7 @@
 PROJECT(detail)
 
 SET(INCL_SRC
+    assimp_mesh.h
     box.h
     basic_materials.h
     example_scenes.h

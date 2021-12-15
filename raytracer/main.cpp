@@ -33,7 +33,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
 		m_iNumWorkers(std::thread::hardware_concurrency() + 2),
-		m_iMaxSamplesPerPixel(64),
+		m_iMaxSamplesPerPixel(500),
 		m_iMaxTraceDepth(32),
 		m_uRandSeed(1)
 	{
@@ -116,16 +116,8 @@ class MainWindow : public QMainWindow
 };
 
 
-
-bool test(int i) { return false; }
-bool test(void* p) { return false; }
-bool test(nullptr_t) { return true;  }
-
-
 int main(int argc, char *argv[])
 {
-    test(nullptr);
-
     auto pLoader = std::make_unique<LoaderDefaultScene>();
 
     // start app
