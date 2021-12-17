@@ -32,8 +32,8 @@ class MainWindow : public QMainWindow
          m_bFrameDone(false),
          m_iWidth(1024),
          m_iHeight(768),
-		m_iNumWorkers(std::thread::hardware_concurrency() + 2),
-		m_iMaxSamplesPerPixel(500),
+		m_iNumWorkers(std::thread::hardware_concurrency() / 2),
+		m_iMaxSamplesPerPixel(1024),
 		m_iMaxTraceDepth(32),
 		m_uRandSeed(1)
 	{
@@ -118,7 +118,7 @@ class MainWindow : public QMainWindow
 
 int main(int argc, char *argv[])
 {
-    auto pLoader = std::make_unique<LoaderDefaultScene>();
+    auto pLoader = std::make_unique<LoaderDragonScene>();
 
     // start app
     QApplication app(argc, argv);

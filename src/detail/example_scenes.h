@@ -126,6 +126,40 @@ namespace DETAIL
     };
 
 
+    class LoaderDragonScene : public BASE::Loader
+    {
+    public:
+        virtual std::string& name() const override {
+            static std::string name = "dragon_scene";
+            return name;
+        }
+
+        virtual std::string& description() const override {
+            static std::string desc = "Dragon model loaded";
+            return desc;
+        }
+
+        virtual std::unique_ptr<BASE::Scene> loadScene() const override {
+            auto pScene = std::make_unique<SimpleSceneBvh>(CORE::Color(0.1f, 0.1f, 0.1f));
+            auto pDiffuse = BASE::createMaterial<Diffuse>(pScene, CORE::Color(0.9f, 0.9f, 0.9f));
+            auto pDiffuseFloor = BASE::createMaterial<DiffuseCheckered>(pScene, CORE::Color(0.8f, 0.8f, 0.1f), CORE::Color(0.8f, 0.1f, 0.1f), 2);
+            auto pLight = BASE::createMaterial<Light>(pScene, CORE::Color(50.0f, 50.0f, 50.0f));
+            auto pAssimpMesh = BASE::createPrimitive<AssimpMesh>(pScene, "models/dragon_1.obj", pDiffuse);
+
+            BASE::createPrimitiveInstance<Disc>(pScene, CORE::axisIdentity(), 500.0f, pDiffuseFloor);
+            BASE::createPrimitiveInstance<Sphere>(pScene, CORE::axisTranslation(CORE::Vec(0, 100, 0)), 8.0f, pLight, true);
+            BASE::createPrimitiveInstance(pScene, CORE::axisEulerZYX(0, 0.7f, -pif / 2, CORE::Vec(0, 30, 0), 0.5f), pAssimpMesh);
+
+            pScene->build();   // build BVH
+            return pScene;
+        }
+
+        virtual std::unique_ptr<BASE::Camera> loadCamera() const override {
+            return std::make_unique<SimpleCamera>(CORE::Vec(0, 40, 120), CORE::Vec(0, 1, 0), CORE::Vec(0, 10, 0), deg2rad(60), 0.2f, 100.0f);
+        }
+    };
+
+
     class LoaderGlassSphereScene  : public BASE::Loader
     {
      public:
@@ -645,6 +679,7 @@ namespace DETAIL
     auto getSceneList() {
         return std::vector<std::shared_ptr<BASE::Loader>>{
             std::make_shared<LoaderDefaultScene>(),
+            std::make_shared<LoaderDragonScene>(),
             std::make_shared<LoaderGlassSphereScene>(),
             std::make_shared<LoaderMandleBulbZoom>(),
             std::make_shared<LoaderRaymarchingBlobs>(),
