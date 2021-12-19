@@ -258,7 +258,7 @@ namespace DETAIL
         /* build acceleration structures etc. */
         void buildBvh() {
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            m_bvhRoot = CORE::buildBvhRoot<2>(trianglePtrs, 32);
+            m_bvhRoot = CORE::buildBvhRoot<1>(trianglePtrs, 128);
         }
 
      protected:

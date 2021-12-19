@@ -33,7 +33,7 @@ class MainWindow : public QMainWindow
          m_iWidth(1024),
          m_iHeight(768),
 		m_iNumWorkers(std::thread::hardware_concurrency() / 2),
-		m_iMaxSamplesPerPixel(1024),
+		m_iMaxSamplesPerPixel(16),
 		m_iMaxTraceDepth(32),
 		m_uRandSeed(1)
 	{

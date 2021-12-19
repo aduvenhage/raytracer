@@ -64,9 +64,9 @@ constexpr float maxf(float _a, float _b) {
 }
 
 
-constexpr int signf(float _value)
+constexpr float signf(float _value)
 {
-	return (_value > 0) - (_value < 0);
+	return (_value > 0.0f) - (_value < 0.0f);
 }
 
 
