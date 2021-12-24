@@ -1,5 +1,4 @@
-#ifndef CORE_RANDOM_H
-#define CORE_RANDOM_H
+#pragma once
 
 #include <random>
 #include <thread>
@@ -34,5 +33,3 @@ namespace CORE
 };  // namespace CORE
 
 
-
-#endif  // #ifndef CORE_RANDOM_H

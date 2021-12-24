@@ -1,5 +1,4 @@
-#ifndef DETAIL_BOX_H
-#define DETAIL_BOX_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/ray.h"
@@ -88,6 +87,4 @@ namespace DETAIL
 
 
 };  // namespace DETAIL
-
-#endif  // #ifndef DETAIL_BOX_H
 

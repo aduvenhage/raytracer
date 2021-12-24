@@ -1,5 +1,4 @@
-#ifndef SYSTEMS_JOBS_H
-#define SYSTEMS_JOBS_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/memory.h"
@@ -19,7 +18,7 @@ namespace SYSTEMS
     class Job
     {
      public:
-        MANAGE_MEMORY(MEM_POOL::JOB_SYSTEM)
+        MANAGE_MEMORY('JOBS')
         virtual ~Job() = default;
         
         // do the work -- blocks until completed
@@ -38,7 +37,7 @@ namespace SYSTEMS
     class Worker
     {
      public:
-        MANAGE_MEMORY(MEM_POOL::JOB_SYSTEM)
+        MANAGE_MEMORY('WRKR')
         Worker(JobQueue *_pJobs, int _iJobChunkSize)
             :m_pJobs(_pJobs),
              m_iJobChunkSize(_iJobChunkSize),
@@ -145,5 +144,3 @@ namespace SYSTEMS
 
 };  // namespace SYSTEMS
 
-
-#endif  // #ifndef SYSTEMS_JOBS_H

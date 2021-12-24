@@ -1,5 +1,4 @@
-#ifndef CORE_CONSTANTS_H
-#define CORE_CONSTANTS_H
+#pragma once
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -70,4 +69,3 @@ constexpr float signf(float _value)
 }
 
 
-#endif  // #ifndef CORE_CONSTANTS_H

@@ -1,6 +1,4 @@
-#ifndef DETAIL_EXAMPLE_SCENES_H
-#define DETAIL_EXAMPLE_SCENES_H
-
+#pragma once
 
 #include "core/color.h"
 #include "core/vec3.h"
@@ -701,7 +699,4 @@ namespace DETAIL
 
     
 };  // namespace DETAIL
-
-
-#endif  // #ifndef DETAIL_EXAMPLE_SCENES_H
 

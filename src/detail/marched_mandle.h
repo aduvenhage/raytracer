@@ -1,5 +1,4 @@
-#ifndef DETAIL_MARCHED_MANDLE_H
-#define DETAIL_MARCHED_MANDLE_H
+#pragma once
 
 #include "core/uv.h"
 #include "core/vec3.h"
@@ -86,5 +85,4 @@ namespace DETAIL
 };  // namespace DETAIL
 
 
-#endif  // #ifndef DETAIL_MARCHED_MANDLE_H
 

@@ -1,6 +1,5 @@
 
-#ifndef BASE_SCENE_H
-#define BASE_SCENE_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/ray.h"
@@ -98,7 +97,4 @@ namespace BASE
     
 
 };  // namespace BASE
-
-
-#endif  // #ifndef BASE_SCENE_H
 

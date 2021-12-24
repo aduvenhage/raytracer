@@ -58,6 +58,7 @@ List of implemented features:s
 
 Todo:
 * triangle mesh loading (see https://github.com/assimp/assimp)
+* procedural content using noise (https://github.com/Auburn/FastNoiseLite)
 * replace axis-math with matrix math
 * add shadow rays
 * optisation through importance sampling (for lights)

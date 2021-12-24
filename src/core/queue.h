@@ -1,6 +1,5 @@
 
-#ifndef CORE_QUEUE_H
-#define CORE_QUEUE_H
+#pragma once
 
 #include "constants.h"
 #include "random.h"
@@ -244,8 +243,8 @@ namespace CORE
     class Stack
     {
      public:
-        Stack() noexcept
-            :m_items(16, {}),
+        Stack(size_t _uReservedSize = 16) noexcept
+            :m_items(_uReservedSize, {}),
              m_uSize(0)
         {}
         
@@ -290,4 +289,3 @@ namespace CORE
 };  // namespace CORE
 
 
-#endif // #ifndef CORE_QUEUE_H

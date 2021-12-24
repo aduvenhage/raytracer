@@ -1,5 +1,4 @@
-#ifndef DETAIL_MARCHED_SPHERE_H
-#define DETAIL_MARCHED_SPHERE_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/uv.h"
@@ -78,7 +77,4 @@ namespace DETAIL
     };
 
 };  // namespace DETAIL
-
-
-#endif  // #ifndef DETAIL_MARCHED_SPHERE_H
 

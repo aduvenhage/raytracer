@@ -1,6 +1,4 @@
-#ifndef CORE_IMAGE_H
-#define CORE_IMAGE_H
-
+#pragma once
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -62,4 +60,3 @@ namespace CORE
 };
 
 
-#endif  // #define CORE_IMAGE_H

@@ -39,7 +39,7 @@ class MainWindow : public QMainWindow
 	{
         resize(m_iWidth, m_iHeight);
         setWindowTitle(QApplication::translate("windowlayout", "Raytracer"));
-        startTimer(0, Qt::CoarseTimer);
+        startTimer(20, Qt::CoarseTimer);
         
         m_pCamera = _pLoader->loadCamera();
         m_pScene = _pLoader->loadScene();
@@ -119,6 +119,7 @@ class MainWindow : public QMainWindow
 int main(int argc, char *argv[])
 {
     auto pLoader = std::make_unique<LoaderDragonScene>();
+    int i = 'abcd';
 
     // start app
     QApplication app(argc, argv);

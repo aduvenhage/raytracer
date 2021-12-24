@@ -1,7 +1,5 @@
 
-#ifndef SYSTEMS_FRAME_H
-#define SYSTEMS_FRAME_H
-
+#pragma once
 
 #include "core/constants.h"
 #include "core/image.h"
@@ -381,5 +379,3 @@ namespace SYSTEMS
     
 };  // namespace SYSTEMS
 
-
-#endif  // #ifndef SYSTEMS_FRAME_H

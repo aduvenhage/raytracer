@@ -1,5 +1,4 @@
-#ifndef BASE_CAMERA_H
-#define BASE_CAMERA_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/vec3.h"
@@ -41,6 +40,4 @@ namespace BASE
 
 
 };  // namespace BASE
-
-#endif  // #ifndef BASE_CAMERA_H
 

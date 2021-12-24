@@ -1,5 +1,4 @@
-#ifndef CORE_COLOR_H
-#define CORE_COLOR_H
+#pragma once
 
 #include "constants.h"
 #include "stats.h"
@@ -198,6 +197,4 @@ namespace CORE
 
 
 };  // namespace CORE
-
-#endif  // #ifndef CORE_COLOR_H
 

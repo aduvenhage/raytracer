@@ -1,5 +1,4 @@
-#ifndef UTILS_MANDLEBROT_H
-#define UTILS_MANDLEBROT_H
+#pragma once
 
 #include <vector>
 
@@ -100,6 +99,4 @@ namespace UTILS
 
 
 };  // namespace UTILS
-
-#endif  // #ifndef UTILS_MANDLEBROT_H
 

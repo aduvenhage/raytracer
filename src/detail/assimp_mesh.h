@@ -1,5 +1,4 @@
-#ifndef DETAIL_ASSIMP_H
-#define DETAIL_ASSIMP_H
+#pragma once
 
 #include "core/bvh.h"
 #include "core/constants.h"
@@ -85,7 +84,4 @@ namespace DETAIL
     };
 
 };  // namespace DETAIL
-
-
-#endif  // #ifndef DETAIL_ASSIMP_H
 

@@ -1,5 +1,4 @@
-#ifndef CORE_SCATTERED_RAY_H
-#define CORE_SCATTERED_RAY_H
+#pragma once
 
 #include "color.h"
 #include "ray.h"
@@ -26,6 +25,4 @@ namespace CORE
 
 };  // namespace CORE
 
-
-#endif  // #ifndef CORE_SCATTERED_RAY_H
 

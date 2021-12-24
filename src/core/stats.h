@@ -1,5 +1,4 @@
-#ifndef CORE_STATS_H
-#define CORE_STATS_H
+#pragma once
 
 #include "constants.h"
 #include <cmath>
@@ -56,5 +55,3 @@ namespace CORE
 };  // namespace CORE
 
 
-
-#endif  // #ifndef CORE_STATS_H

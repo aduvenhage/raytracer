@@ -1,5 +1,4 @@
-#ifndef CORE_MEMORY_H
-#define CORE_MEMORY_H
+#pragma once
 
 #include "constants.h"
 
@@ -20,7 +19,7 @@ namespace CORE
     class MemoryManager
     {
      private:
-        const static size_t     DEFAULT_POOL_SIZE = 1024 * 256;     // 256KB
+        const static size_t     DEFAULT_POOL_SIZE = 1024 * 1024 * 700;     // 700MB
         
      public:
         ~MemoryManager() {
@@ -110,7 +109,7 @@ namespace CORE
 };  // namespace CORE
 
 
-#define USE_MEMORY_POOLS    0
+#define USE_MEMORY_POOLS    1
 
 
 // add to a class to overload memory operators
@@ -126,12 +125,4 @@ namespace CORE
 #else
     #define MANAGE_MEMORY(poolIndex)
 #endif
-
-// some default memory manager IDs
-enum class MEM_POOL {
-    SCENE = 1,
-    JOB_SYSTEM = 2
-};
-
-#endif  // #ifndef CORE_MEMORY_H
 

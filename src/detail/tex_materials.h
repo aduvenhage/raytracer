@@ -1,7 +1,5 @@
 
-#ifndef DETAIL_TEX_MATERIALS_H
-#define DETAIL_TEX_MATERIALS_H
-
+#pragma once
 
 #include "core/constants.h"
 #include "core/color.h"
@@ -128,5 +126,3 @@ namespace DETAIL
 
 };  // namespace DETAIL
 
-
-#endif  // #ifndef DETAIL_TEX_MATERIALS_H

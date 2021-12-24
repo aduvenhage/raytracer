@@ -1,5 +1,4 @@
-#ifndef BASE_NODE_H
-#define BASE_NODE_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/ray.h"
@@ -144,7 +143,4 @@ namespace BASE
 
 
 };  // namespace BASE
-
-
-#endif  // #ifndef BASE_NODE_H
 

@@ -1,6 +1,5 @@
 
-#ifndef CORE_STRUTIL_H
-#define CORE_STRUTIL_H
+#pragma once
 
 namespace CORE
 {
@@ -34,7 +33,7 @@ namespace CORE
     template <class... T>
     std::string getString(T... t)
     {
-        static thread_local std::vector<char> buffer(1024);
+        std::vector<char> buffer(1024);
         for (;;) {
             int n = snprintf(buffer.data(), buffer.size(), detail::cparam<T>::str(t) ...) + 1;
             if (n > buffer.size()) {
@@ -50,5 +49,3 @@ namespace CORE
 
 };  // namespace CORE
 
-
-#endif // #ifndef CORE_STRUTIL_H

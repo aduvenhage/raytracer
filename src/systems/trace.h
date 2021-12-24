@@ -1,5 +1,4 @@
-#ifndef SYSTEMS_TRACE_H
-#define SYSTEMS_TRACE_H
+#pragma once
 
 #include "core/color.h"
 #include "core/constants.h"
@@ -156,6 +155,4 @@ namespace SYSTEMS
     
 
 };  // namespace SYSTEMS
-
-#endif  // #ifndef SYSTEMS_TRACE_H
 

@@ -1,6 +1,4 @@
-#ifndef DETAIL_SIMPLE_CAMERA_H
-#define DETAIL_SIMPLE_CAMERA_H
-
+#pragma once
 
 #include "base/camera.h"
 #include "core/constants.h"
@@ -71,6 +69,4 @@ namespace DETAIL
     
 
 };  // namespace DETAIL
-
-#endif  // #ifndef DETAIL_SIMPLE_CAMERA_H
 

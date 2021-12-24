@@ -1,5 +1,4 @@
-#ifndef DETAIL_SIMPLE_SCENE_H
-#define DETAIL_SIMPLE_SCENE_H
+#pragma once
 
 #include "core/bvh.h"
 #include "core/color.h"
@@ -84,8 +83,7 @@ namespace DETAIL
             
         // Checks for an intersect with a scene object (could be accessed by multiple worker threads concurrently).
         virtual bool hit(BASE::Intersect &_hit) const override {
-            return checkBvhHitI(_hit);
-            //return checkBvhHitR(_hit, m_root);
+            return checkBvhHit(_hit);
         }
 
         // Build acceleration structures
@@ -95,75 +93,35 @@ namespace DETAIL
                 rawObjects[i] = m_objects[i].get();
             }
 
-            m_root = CORE::buildBvhRoot<2>(rawObjects, 16);
+            m_pBvhRoot = CORE::buildBvhRoot<2>(rawObjects, 32,
+                                               [](){
+                                                return new CORE::BvhNode<BASE::PrimitiveInstance>();
+                                               });
         }
 
      private:
         // Search for best hit through BVHs (iterative)
-        bool checkBvhHitI(BASE::Intersect &_hit) const
+        bool checkBvhHit(BASE::Intersect &_hit) const
         {
-            thread_local static CORE::Stack<CORE::BvhNode<BASE::PrimitiveInstance>*> nodes;
-            assert(m_root != nullptr);  // check that we built the BVH tree
-            nodes.push(m_root.get());
-                    
-            while (nodes.empty() == false) {
-                // get last node
-                auto pNode = nodes.pop();
-                
-                // check node hits (finding closest hit)
-                for (const auto &pObj : pNode->m_primitives) {
-                    if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
-                    {
-                        _hit = nh;
-                    }
-                }
-                
-                // go down tree
-                if ( (pNode->m_right != nullptr) &&
-                     (pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
-                    nodes.push(pNode->m_right.get());
-                }
+            CORE::checkBvhHit(m_pBvhRoot, _hit.m_viewRay,
+                              [&](const CORE::BvhNode<BASE::PrimitiveInstance> *_pNode, const CORE::Ray _ray){
+                                if (_pNode->empty() == false) {
+                                    for (const auto &pObj : _pNode->m_primitives) {
+                                        if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                                        {
+                                            _hit = nh;
+                                        }
+                                    }
+                                }
+                              });
 
-                if ( (pNode->m_left != nullptr) &&
-                     (pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
-                    nodes.push(pNode->m_left.get());
-                }
-            }
-            
             return _hit;
         }
 
-        // Search for best hit through BVHs (recursive)
-        bool checkBvhHitR(BASE::Intersect &_hit, const std::unique_ptr<CORE::BvhNode<BASE::PrimitiveInstance>> &_pNode) const
-        {
-            if (_pNode->empty() == false) {
-                for (const auto &pObj : _pNode->m_primitives) {
-                    if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
-                    {
-                        _hit = nh;
-                    }
-                }
-            }
-
-            if ( (_pNode->m_left != nullptr) &&
-                 (_pNode->m_left->intersect(_hit.m_viewRay) == true) ) {
-                checkBvhHitR(_hit, _pNode->m_left);
-            }
-            
-            if ( (_pNode->m_right != nullptr) &&
-                 (_pNode->m_right->intersect(_hit.m_viewRay) == true) ) {
-                checkBvhHitR(_hit, _pNode->m_right);
-            }
-            
-            return _hit;
-        }
-        
      private:
-        std::unique_ptr<CORE::BvhNode<BASE::PrimitiveInstance>>      m_root;
+        CORE::BvhNode<BASE::PrimitiveInstance>      *m_pBvhRoot;
     };
 
 
 };      // namespace DETAIL
 
-
-#endif  // #ifndef DETAIL_SIMPLE_SCENE_H

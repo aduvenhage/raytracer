@@ -1,5 +1,4 @@
-#ifndef UTILS_SDF_H
-#define UTILS_SDF_H
+#pragma once
 
 #include "core/vec3.h"
 #include "core/constants.h"
@@ -90,7 +89,4 @@ namespace UTILS
 
 
 };  // namespace UTILS
-
-
-#endif  // #ifndef UTILS_SDF_H
 

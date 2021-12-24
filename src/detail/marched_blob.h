@@ -1,5 +1,4 @@
-#ifndef DETAIL_MARCHED_BLOB_H
-#define DETAIL_MARCHED_BLOB_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/uv.h"
@@ -96,6 +95,4 @@ namespace DETAIL
 
 };  // namespace DETAIL
 
-
-#endif  // #ifndef DETAIL_MARCHED_BLOB_H
 

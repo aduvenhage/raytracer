@@ -1,5 +1,4 @@
-#ifndef BASE_INTERSECT_H
-#define BASE_INTERSECT_H
+#pragma once
 
 #include "core/constants.h"
 #include "core/ray.h"
@@ -49,7 +48,4 @@ namespace BASE
 
 
 };  // namespace SYSTEMS
-
-
-#endif  // #ifndef SYSTEMS_INTERSECT_H
 

@@ -1,6 +1,5 @@
 
-#ifndef CORE_VEC3_H
-#define CORE_VEC3_H
+#pragma once
 
 #include <array>
 #include <vector>
@@ -316,22 +315,23 @@ namespace CORE
 
 
     // finds min/max bounds from input points
-    template <typename container_type>
-    Bounds findBounds(const container_type &_points) {
+    template <typename container_type, typename bounds_func>
+    Bounds findBounds(const container_type &_items, const bounds_func &_bounds) {
         Bounds bounds;
         
-        if (_points.empty() == false) {
-            bounds.m_min = _points[0];
-            bounds.m_max = _points[0];
+        if (_items.empty() == false) {
+            bounds = _bounds(_items[0]);
 
-            for (auto &p : _points) {
-                bounds.m_min = perElementMin(bounds.m_min, p);
-                bounds.m_max = perElementMax(bounds.m_max, p);
+            for (const auto &item : _items) {
+                const Bounds ib = _bounds(item);
+                bounds.m_min = perElementMin(bounds.m_min, ib.m_min);
+                bounds.m_max = perElementMax(bounds.m_max, ib.m_max);
             }
         }
 
         return bounds;
     }
+
 
     // construct cuboid from bounds
     inline std::array<Vec, 8> boundsCuboid(const Bounds &_bounds) {
@@ -350,12 +350,19 @@ namespace CORE
 
     // rotate axis aligned box and create a new axis aligned box
     inline Bounds transformBoundsFrom(const Bounds &_bounds, const Axis &_axis) {
-        auto cuboid = boundsCuboid(_bounds);
-        for (auto &p : cuboid) {
-            p = _axis.transformFrom(p);
-        }
+        Bounds bounds;
+        std::array<Vec, 8> cuboid = boundsCuboid(_bounds);
+        cuboid[0] = _axis.transformFrom(cuboid[0]);
+        bounds.m_min = cuboid[0];
+        bounds.m_max = cuboid[0];
         
-        return findBounds(cuboid);
+        for (size_t i = 1; i < 8; i++) {
+            cuboid[i] = _axis.transformFrom(cuboid[i]);
+            bounds.m_min = perElementMin(bounds.m_min, cuboid[i]);
+            bounds.m_max = perElementMax(bounds.m_max, cuboid[i]);
+        }
+
+        return bounds;
     }
 
 
@@ -409,6 +416,23 @@ namespace CORE
         return (_boxA.m_min.x() <= _boxB.m_max.x()) && (_boxA.m_max.x() >= _boxB.m_min.x()) &&
                (_boxA.m_min.y() <= _boxB.m_max.y()) && (_boxA.m_max.y() >= _boxB.m_min.y()) &&
                (_boxA.m_min.z() <= _boxB.m_max.z()) && (_boxA.m_max.z() >= _boxB.m_min.z());
+    }
+
+
+    // split items into 'left' or 'right' groups (using left as default if an item intersects with both)
+    template <typename container_type, typename bounds_func>
+    void splitItemsByBounds(container_type &_left, container_type &_right, const container_type &_items,
+                    const Bounds &_boundsLeft, const Bounds &_boundsRight,
+                    const bounds_func &_bounds)
+    {
+        for (auto &item : _items) {
+            if (Bounds ib = _bounds(item); aaboxIntersectCheck(ib, _boundsLeft) == true) {
+                _left.push_back(item);
+            }
+            else if (aaboxIntersectCheck(ib, _boundsRight) == true) {
+                _right.push_back(item);
+            }
+        }
     }
 
 
@@ -598,6 +622,4 @@ namespace CORE
 
 
 };  // namespace CORE
-
-#endif  // #ifndef CORE_VEC3_H
 

@@ -1,6 +1,4 @@
-#ifndef CORE_UV_H
-#define CORE_UV_H
-
+#pragma once
 
 #include "vec3.h"
 #include "constants.h"
@@ -69,6 +67,4 @@ namespace CORE
     }
 
 };  // namespace CORE
-
-#endif  // #ifndef CORE_UV_H
 

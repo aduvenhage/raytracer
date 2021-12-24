@@ -1,6 +1,4 @@
-
-#ifndef CORE_PROFILE_H
-#define CORE_PROFILE_H
+#pragma once
 
 #include <chrono>
 
@@ -32,4 +30,3 @@ namespace CORE
 };
 
 
-#endif  // #ifndef CORE_PROFILE_H

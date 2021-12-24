@@ -1,5 +1,4 @@
-#ifndef BASE_RESOURCE_H
-#define BASE_RESOURCE_H
+#pragma once
 
 #include "core/memory.h"
 
@@ -11,9 +10,8 @@ namespace BASE
      public:
         virtual ~Resource() = default;
         
-        MANAGE_MEMORY(MEM_POOL::SCENE)
+        MANAGE_MEMORY('RSCN')
     };
 
 };  // namespace BASE
 
-#endif // #ifndef BASE_RESOURCE_H

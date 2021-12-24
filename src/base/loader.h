@@ -1,5 +1,4 @@
-#ifndef BASE_LOADER_H
-#define BASE_LOADER_H
+#pragma once
 
 #include "scene.h"
 #include "camera.h"
@@ -23,5 +22,3 @@ namespace BASE
 
 };  // namespace BASE
 
-
-#endif  // #ifndef BASE_LOADER_H

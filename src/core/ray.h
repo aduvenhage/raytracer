@@ -1,5 +1,4 @@
-#ifndef CORE_RAY_H
-#define CORE_RAY_H
+#pragma once
 
 #include "constants.h"
 #include "vec3.h"
@@ -119,6 +118,4 @@ namespace CORE
 
 };  // namespace CORE
 
-
-#endif  // #ifndef CORE_RAY_H
 

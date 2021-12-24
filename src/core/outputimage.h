@@ -1,5 +1,4 @@
-#ifndef CORE_OUTPUT_IMAGE_H
-#define CORE_OUTPUT_IMAGE_H
+#pragma once
 
 #include "constants.h"
 
@@ -51,6 +50,4 @@ namespace CORE
 
 };  // namespace CORE
 
-
-#endif  // #ifndef CORE_OUTPUT_IMAGE_H
 

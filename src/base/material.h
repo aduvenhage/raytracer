@@ -1,5 +1,4 @@
-#ifndef BASE_MATERIAL_H
-#define BASE_MATERIAL_H
+#pragma once
 
 #include "core/color.h"
 #include "core/scattered_ray.h"
@@ -49,6 +48,4 @@ namespace BASE
 
 };  // namespace BASE
 
-
-#endif  // #ifndef BASE_MATERIAL_H
 

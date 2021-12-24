@@ -1,5 +1,4 @@
-#ifndef DETAIL_MESH_H
-#define DETAIL_MESH_H
+#pragma once
 
 #include "core/bvh.h"
 #include "core/constants.h"
@@ -85,13 +84,13 @@ namespace DETAIL
             int hitIndex = 0;
             CORE::Uv hitUv;
 
-            if (checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_bvhRoot, _hit.m_priRay) == true) {
+            if (checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_pBvhRoot, _hit.m_priRay) == true) {
                 _hit.m_fPositionOnRay = fPositionOnRay;
                 _hit.m_uTriangleIndex = hitIndex;
                 _hit.m_uv = hitUv;
                 return true;
             }
-
+            
             return false;
         }
 
@@ -120,26 +119,19 @@ namespace DETAIL
         
         /* Search for best hit through BVH */
         bool checkBvhHit(float &_fPositionOnRay, int &_hitIndex, CORE::Uv &_hitUv,
-                         const std::unique_ptr<CORE::BvhNode<Triangle>> &_pNode,
-                         const CORE::Ray &_ray) const {
+                         const CORE::BvhNode<Triangle> *_pNode,
+                         const CORE::Ray &_ray) const
+        {
             bool bHit = false;
-            
-            if (_pNode->empty() == false) {
-                for (const auto &pTriangle : _pNode->m_primitives) {
-                    bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, pTriangle, _ray);
-                }
-            }
+            CORE::checkBvhHit(_pNode, _ray,
+                              [&](const CORE::BvhNode<Triangle> *_pNode, const CORE::Ray &_ray){
+                                if (_pNode->empty() == false) {
+                                    for (const auto &pTriangle : _pNode->m_primitives) {
+                                        bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, pTriangle, _ray);
+                                    }
+                                }
+                              });
 
-            if ( (_pNode->m_left != nullptr) &&
-                 (_pNode->m_left->intersect(_ray) == true) ) {
-                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_left, _ray);
-            }
-            
-            if ( (_pNode->m_right != nullptr) &&
-                 (_pNode->m_right->intersect(_ray) == true) ) {
-                bHit |= checkBvhHit(_fPositionOnRay, _hitIndex, _hitUv, _pNode->m_right, _ray);
-            }
-            
             return bHit;
         }
 
@@ -258,7 +250,11 @@ namespace DETAIL
         /* build acceleration structures etc. */
         void buildBvh() {
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            m_bvhRoot = CORE::buildBvhRoot<1>(trianglePtrs, 128);
+            m_pBvhRoot = CORE::buildBvhRoot<1>(trianglePtrs, 128,
+                                               [&](){
+                                                 m_memory.push_back(std::make_unique<CORE::BvhNode<Triangle>>());
+                                                 return m_memory.back().get();
+                                               });
         }
 
      protected:
@@ -280,13 +276,14 @@ namespace DETAIL
         }
 
      private:
-        std::vector<Vertex>                       m_vertices;
-        std::vector<Triangle>                     m_triangles;
-        CORE::Bounds                              m_bounds;
-        const BASE::Material                      *m_pMaterial;
-        bool                                      m_bBoundsInit;
-        bool                                      m_bUseVertexNormals;
-        std::unique_ptr<CORE::BvhNode<Triangle>>  m_bvhRoot;
+        std::vector<Vertex> m_vertices;
+        std::vector<Triangle> m_triangles;
+        CORE::Bounds m_bounds;
+        const BASE::Material *m_pMaterial;
+        bool m_bBoundsInit;
+        bool m_bUseVertexNormals;
+        CORE::BvhNode<Triangle> *m_pBvhRoot;
+        std::vector<std::unique_ptr<CORE::BvhNode<Triangle>>> m_memory;
     };
 
 
@@ -354,6 +351,4 @@ namespace DETAIL
     };
     
 };  // namespace DETAIL
-
-#endif  // #ifndef DETAIL_MESH_H
 

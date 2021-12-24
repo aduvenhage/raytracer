@@ -1,5 +1,4 @@
-#ifndef CORE_VIEWPORT_H
-#define CORE_VIEWPORT_H
+#pragma once
 
 #include "constants.h"
 
@@ -37,6 +36,4 @@ namespace CORE
     
 
 };  // namespace CORE
-
-#endif  // #ifndef CORE_VIEWPORT_H
 

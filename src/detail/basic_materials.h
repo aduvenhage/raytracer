@@ -1,7 +1,5 @@
 
-#ifndef DETAIL_BASIC_MATERIALS_H
-#define DETAIL_BASIC_MATERIALS_H
-
+#pragma once
 
 #include "core/color.h"
 #include "core/ray.h"
@@ -142,5 +140,3 @@ namespace DETAIL
 
 };  // namespace DETAIL
 
-
-#endif  // #ifndef DETAIL_BASIC_MATERIALS_H
