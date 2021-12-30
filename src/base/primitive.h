@@ -73,17 +73,13 @@ namespace BASE
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(Intersect &_hit) const {
-            // check AA bounding volume first
-            if (aaboxIntersectCheck(bounds(), _hit.m_viewRay) == true)
-            {
-                // transform ray for primitive hit
-                _hit.m_priRay = transformRayTo(_hit.m_viewRay, m_axis);
-                
-                // check hit
-                if (m_pTarget->hit(_hit) == true) {
-                    _hit.m_pPrimitive = this;
-                    return true;
-                }
+            // transform ray for primitive hit
+            _hit.m_priRay = transformRayTo(_hit.m_viewRay, m_axis);
+            
+            // check hit
+            if (m_pTarget->hit(_hit) == true) {
+                _hit.m_pPrimitive = this;
+                return true;
             }
     
             return false;

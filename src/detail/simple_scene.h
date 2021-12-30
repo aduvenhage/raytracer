@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/bvh.h"
+#include "base/bvh.h"
 #include "core/color.h"
 #include "core/queue.h"
 #include "base/intersect.h"
@@ -31,9 +31,13 @@ namespace DETAIL
          */
         virtual bool hit(BASE::Intersect &_hit) const override {
             for (const auto &pObj : m_objects) {
-                if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                // check AA bounding volume first
+                if (auto i = aaboxIntersect(pObj->bounds(), _hit.m_viewRay); i.intersect() == true)
                 {
-                    _hit = nh;
+                    if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                    {
+                        _hit = nh;
+                    }
                 }
             }
             
@@ -93,25 +97,22 @@ namespace DETAIL
                 rawObjects[i] = m_objects[i].get();
             }
 
-            m_pBvhRoot = CORE::buildBvhRoot<2>(rawObjects, 32,
-                                               [](){
-                                                return new CORE::BvhNode<BASE::PrimitiveInstance>();
-                                               });
+            m_pBvhRoot = BASE::buildBvhRoot(rawObjects,
+                                            [](){
+                                                // TODO: keep track of memory so we can clean up later
+                                                return new BASE::BvhNode<BASE::PrimitiveInstance>();
+                                            });
         }
 
      private:
         // Search for best hit through BVHs (iterative)
         bool checkBvhHit(BASE::Intersect &_hit) const
         {
-            CORE::checkBvhHit(m_pBvhRoot, _hit.m_viewRay,
-                              [&](const CORE::BvhNode<BASE::PrimitiveInstance> *_pNode, const CORE::Ray _ray){
-                                if (_pNode->empty() == false) {
-                                    for (const auto &pObj : _pNode->m_primitives) {
-                                        if (BASE::Intersect nh(_hit); (pObj->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
-                                        {
-                                            _hit = nh;
-                                        }
-                                    }
+            BASE::checkBvhHit(m_pBvhRoot, _hit.m_viewRay,
+                              [&](const BASE::PrimitiveInstance *_pPrimitive, const CORE::Ray _ray){
+                                if (BASE::Intersect nh(_hit); (_pPrimitive->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                                {
+                                    _hit = nh;
                                 }
                               });
 
@@ -119,7 +120,7 @@ namespace DETAIL
         }
 
      private:
-        CORE::BvhNode<BASE::PrimitiveInstance>      *m_pBvhRoot;
+        BASE::BvhNode<BASE::PrimitiveInstance>      *m_pBvhRoot;
     };
 
 

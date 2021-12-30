@@ -32,8 +32,8 @@ namespace DETAIL
 
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(BASE::Intersect &_hit) const override {
-            auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
-            if (bi.m_intersect == true) {
+            const auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
+            if (bi.intersect() == true) {
                 // try to hit surface inside (using raymarching)
                 bool is_hit = SYSTEMS::check_marched_hit(_hit,
                                                          bi.m_tmax,

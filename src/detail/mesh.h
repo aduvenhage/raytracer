@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/bvh.h"
 #include "core/constants.h"
 #include "core/vec3.h"
 #include "core/uv.h"
+#include "base/bvh.h"
 #include "base/primitive.h"
 #include "base/material.h"
 
@@ -119,17 +119,13 @@ namespace DETAIL
         
         /* Search for best hit through BVH */
         bool checkBvhHit(float &_fPositionOnRay, int &_hitIndex, CORE::Uv &_hitUv,
-                         const CORE::BvhNode<Triangle> *_pNode,
+                         const BASE::BvhNode<Triangle> *_pNode,
                          const CORE::Ray &_ray) const
         {
             bool bHit = false;
-            CORE::checkBvhHit(_pNode, _ray,
-                              [&](const CORE::BvhNode<Triangle> *_pNode, const CORE::Ray &_ray){
-                                if (_pNode->empty() == false) {
-                                    for (const auto &pTriangle : _pNode->m_primitives) {
-                                        bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, pTriangle, _ray);
-                                    }
-                                }
+            BASE::checkBvhHit(_pNode, _ray,
+                              [&](const Triangle *_pTriangle, const CORE::Ray &_ray){
+                                bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, _pTriangle, _ray);
                               });
 
             return bHit;
@@ -250,11 +246,11 @@ namespace DETAIL
         /* build acceleration structures etc. */
         void buildBvh() {
             std::vector<const Triangle*> trianglePtrs = getTrianglePtrs();
-            m_pBvhRoot = CORE::buildBvhRoot<1>(trianglePtrs, 128,
-                                               [&](){
-                                                 m_memory.push_back(std::make_unique<CORE::BvhNode<Triangle>>());
+            m_pBvhRoot = BASE::buildBvhRoot(trianglePtrs,
+                                            [&](){
+                                                 m_memory.push_back(std::make_unique<BASE::BvhNode<Triangle>>());
                                                  return m_memory.back().get();
-                                               });
+                                            });
         }
 
      protected:
@@ -282,8 +278,8 @@ namespace DETAIL
         const BASE::Material *m_pMaterial;
         bool m_bBoundsInit;
         bool m_bUseVertexNormals;
-        CORE::BvhNode<Triangle> *m_pBvhRoot;
-        std::vector<std::unique_ptr<CORE::BvhNode<Triangle>>> m_memory;
+        BASE::BvhNode<Triangle> *m_pBvhRoot;
+        std::vector<std::unique_ptr<BASE::BvhNode<Triangle>>> m_memory;
     };
 
 

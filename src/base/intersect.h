@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/constants.h"
+#include "core/memory.h"
 #include "core/ray.h"
 #include "core/vec3.h"
 #include "core/uv.h"
@@ -17,6 +18,8 @@ namespace BASE
      */
     struct Intersect
     {
+        MANAGE_MEMORY('RSCN')
+
         Intersect() noexcept = default;
 
         Intersect(const CORE::Ray &_viewRay) noexcept

@@ -93,12 +93,6 @@ namespace CORE
 
 
     /* ray-box intersection (_invDir = 1 / ray_direction) */
-    inline bool aaboxIntersectCheck(const Bounds &_box, const Ray &_ray) {
-        return aaboxIntersectCheck(_box, _ray.m_origin, _ray.m_invDirection);
-    }
-
-
-    /* ray-box intersection (_invDir = 1 / ray_direction) */
     inline AABoxItersect aaboxIntersect(const Bounds &_box, const Ray &_ray) {
         return aaboxIntersect(_box, _ray.m_origin, _ray.m_invDirection);
     }

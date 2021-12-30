@@ -36,12 +36,12 @@ namespace DETAIL
         
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(BASE::Intersect &_hit) const override {
-            auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
-            if (bi.m_intersect == true) {
-                auto t = bi.m_inside ? bi.m_tmax : bi.m_tmin;
+            const auto bi = aaboxIntersect(m_bounds, _hit.m_priRay);
+            if (bi.intersect() == true) {
+                auto t = bi.inside() ? bi.m_tmax : bi.m_tmin;
                 if (_hit.m_priRay.inside(t) == true) {
                     _hit.m_fPositionOnRay = t;
-                    _hit.m_bInside = bi.m_inside;
+                    _hit.m_bInside = bi.inside();
 
                     return true;
                 }

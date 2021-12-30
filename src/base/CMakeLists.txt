@@ -1,8 +1,14 @@
 PROJECT(base)
 
 SET(INCL_SRC
+    bvh.h
     camera.h
-    intersect.h    loader.h    material.h    primitive.h    resource.h    scene.h
+    intersect.h
+    loader.h
+    material.h
+    primitive.h
+    resource.h
+    scene.h
 )
 
 SET(LIB_SRC

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/bvh.h"
 #include "core/constants.h"
 #include "core/vec3.h"
 #include "core/uv.h"

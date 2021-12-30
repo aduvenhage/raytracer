@@ -119,7 +119,6 @@ class MainWindow : public QMainWindow
 int main(int argc, char *argv[])
 {
     auto pLoader = std::make_unique<LoaderDragonScene>();
-    int i = 'abcd';
 
     // start app
     QApplication app(argc, argv);

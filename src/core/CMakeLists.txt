@@ -1,7 +1,6 @@
 PROJECT(core)
 
 SET(INCL_SRC
-    bvh.h
     color.h
     constants.h
     image.h

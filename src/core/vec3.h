@@ -299,14 +299,15 @@ namespace CORE
 
 
     // combine bounds into one
-    Bounds combineBoxes(std::vector<Bounds> &_bounds) {
+    Bounds combineBoxes(const std::vector<Bounds> &_bounds) {
         Bounds bounds;
-
         if (_bounds.empty() == false) {
-            bounds = _bounds[0];
+            bounds.m_min = _bounds[0].m_min;
+            bounds.m_max = _bounds[0].m_max;
 
-            for (auto &b : _bounds) {
-                bounds = combineBoxes(bounds, b);
+            for (size_t i = 1; i < _bounds.size(); i++) {
+                bounds.m_min = perElementMin(bounds.m_min, _bounds[i].m_min);
+                bounds.m_max = perElementMax(bounds.m_max, _bounds[i].m_max);
             }
         }
 
@@ -365,31 +366,17 @@ namespace CORE
         return bounds;
     }
 
-
-    // ray-box intersection (_invDir = 1 / ray_direction)
-    inline bool aaboxIntersectCheck(const Bounds &_box, const Vec &_origin, const Vec &_invDir) {
-        auto t1 = perElementScale(_box.m_min, _origin, _invDir);
-        auto t2 = perElementScale(_box.m_max, _origin, _invDir);
-        
-        auto tmn = perElementMin(t1, t2);
-        auto tmx = perElementMax(t1, t2);
-        
-        auto tmin = maxElement(tmn);
-        auto tmax = minElement(tmx);
-        
-        return tmin < tmax;
-    }
-
-
     // aaboxIntersect return
     struct AABoxItersect
     {
         AABoxItersect() noexcept = default;
         
+        bool intersect() const {return m_tmin < m_tmax;}
+        bool inside() const {return intersect() && (m_tmin < 0) && (m_tmax > 0);}
+        float position() const {return m_tmin >= 0 ? m_tmin : m_tmax;}
+        
         float   m_tmin = 0;
         float   m_tmax = 0;
-        bool    m_intersect = false;
-        bool    m_inside = false;
     };
 
 
@@ -404,8 +391,6 @@ namespace CORE
         
         ret.m_tmin = maxElement(tmn);
         ret.m_tmax = minElement(tmx);
-        ret.m_intersect = ret.m_tmin < ret.m_tmax;
-        ret.m_inside = ret.m_intersect && (ret.m_tmin < 0) && (ret.m_tmax > 0);
 
         return ret;
     }
@@ -420,11 +405,31 @@ namespace CORE
 
 
     // split items into 'left' or 'right' groups (using left as default if an item intersects with both)
+    template <typename container_type>
+    void splitItems(container_type &_left, container_type &_right, const container_type &_items)
+    {
+        size_t count = 0;
+        _left.clear();
+        _right.clear();
+
+        for (auto &item : _items) {
+            if (count & 0x1) _left.push_back(item);
+            else _right.push_back(item);
+
+            count++;
+        }
+    }
+
+
+    // split items into 'left' or 'right' groups (using left as default if an item intersects with both)
     template <typename container_type, typename bounds_func>
     void splitItemsByBounds(container_type &_left, container_type &_right, const container_type &_items,
                     const Bounds &_boundsLeft, const Bounds &_boundsRight,
                     const bounds_func &_bounds)
     {
+        _left.clear();
+        _right.clear();
+
         for (auto &item : _items) {
             if (Bounds ib = _bounds(item); aaboxIntersectCheck(ib, _boundsLeft) == true) {
                 _left.push_back(item);
