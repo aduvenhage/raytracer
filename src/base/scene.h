@@ -28,6 +28,11 @@ namespace BASE
         virtual bool hit(Intersect &_hit) const = 0;
         
         /*
+            Build scene (BVH, etc.).
+         */
+        virtual void build() = 0;
+
+        /*
          Checks for the background color (miss handler).
          Could be accessed by multiple worker threads concurrently.
          */

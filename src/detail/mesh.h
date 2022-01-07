@@ -81,54 +81,37 @@ namespace DETAIL
         /* Quick node hit check (populates at least node and time properties of intercept) */
         virtual bool hit(BASE::Intersect &_hit) const override {
             float fPositionOnRay = -1;
-            int hitIndex = 0;
             CORE::Uv hitUv;
+            const Triangle *pHitTriangle = nullptr;
 
-            if (checkBvhHit(fPositionOnRay, hitIndex, hitUv, m_pBvhRoot, _hit.m_priRay) == true) {
+            BASE::checkBvhHit(m_pBvhRoot, _hit.m_priRay,
+                              [&](const Triangle *_pTriangle, const CORE::Ray &_ray){
+                                    float p = 0;
+                                    CORE::Uv uv;
+
+                                    const auto &v0 = m_vertices[_pTriangle->m_v[0]];
+                                    const auto &v1 = m_vertices[_pTriangle->m_v[1]];
+                                    const auto &v2 = m_vertices[_pTriangle->m_v[2]];
+
+                                    if (triangleIntersect(p, uv, _ray, v0.m_v, v1.m_v, v2.m_v) == true) {
+                                        if ( (fPositionOnRay < 0) ||
+                                             (p < fPositionOnRay) )
+                                        {
+                                            fPositionOnRay = p;
+                                            hitUv = uv;
+                                            pHitTriangle = _pTriangle;
+                                        }
+                                    }
+                              });
+
+            if (fPositionOnRay >= 0) {
                 _hit.m_fPositionOnRay = fPositionOnRay;
-                _hit.m_uTriangleIndex = hitIndex;
+                _hit.m_uTriangleIndex = getIndex(pHitTriangle);
                 _hit.m_uv = hitUv;
                 return true;
             }
             
             return false;
-        }
-
-        /* Triangle intersect check */
-        bool checkTriangleHit(float &_fPositionOnRay, int &_hitIndex, CORE::Uv &_hitUv, const Triangle *_pTriangle, const CORE::Ray &_ray) const {
-            const auto &v0 = m_vertices[_pTriangle->m_v[0]];
-            const auto &v1 = m_vertices[_pTriangle->m_v[1]];
-            const auto &v2 = m_vertices[_pTriangle->m_v[2]];
-            
-            float p = 0;
-            CORE::Uv uv;
-            
-            if (triangleIntersect(p, uv, _ray, v0.m_v, v1.m_v, v2.m_v) == true) {
-                if ( (_fPositionOnRay < 0) ||
-                     (p < _fPositionOnRay) )
-                {
-                    _fPositionOnRay = p;
-                    _hitUv = uv;
-                    _hitIndex = getIndex(_pTriangle);
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-        
-        /* Search for best hit through BVH */
-        bool checkBvhHit(float &_fPositionOnRay, int &_hitIndex, CORE::Uv &_hitUv,
-                         const BASE::BvhNode<Triangle> *_pNode,
-                         const CORE::Ray &_ray) const
-        {
-            bool bHit = false;
-            BASE::checkBvhHit(_pNode, _ray,
-                              [&](const Triangle *_pTriangle, const CORE::Ray &_ray){
-                                bHit |= checkTriangleHit(_fPositionOnRay, _hitIndex, _hitUv, _pTriangle, _ray);
-                              });
-
-            return bHit;
         }
 
         /* Completes the node intersect properties. */

@@ -5,7 +5,6 @@
 #include "core/vec3.h"
 #include "core/ray.h"
 #include "core/queue.h"
-#include "base/intersect.h"
 
 #include <algorithm>
 #include <vector>
@@ -23,16 +22,16 @@ namespace BASE
         BvhNode() noexcept = default;
         
         template <typename hit_func>
-        bool intersect(const CORE::Ray &_ray, const hit_func &_hit) const {
+        float intersect(const CORE::Ray &_ray, const hit_func &_hit) const {
             if (auto i = aaboxIntersect(m_bounds, _ray); i.intersect() == true) {
                 if (m_pPrimitive != nullptr) {
                     _hit(m_pPrimitive, _ray);
                 }
 
-                return true;
+                return i.m_tmin >= 0 ? i.m_tmin : 0;
             }
             
-            return false;
+            return -1;
         }
 
         CORE::Bounds m_bounds;
@@ -150,7 +149,7 @@ namespace BASE
         while (nodes.empty() == false) {
             const auto &pNode = nodes.pop();
             if ( (pNode != nullptr) &&
-                 (pNode->intersect(_ray, _hit) == true) )
+                 (pNode->intersect(_ray, _hit) >= 0) )
             {
                 if (pNode->m_pLeft != nullptr){
                     nodes.push(pNode->m_pLeft);

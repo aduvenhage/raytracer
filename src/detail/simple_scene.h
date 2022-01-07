@@ -43,7 +43,14 @@ namespace DETAIL
             
             return _hit;
         }
-        
+
+        /*
+            Build scene (BVH, etc.).
+         */
+        virtual void build() override {
+            // do nothing
+        }
+
         /*
          Checks for the background color (miss handler).
          Could be accessed by multiple worker threads concurrently.
@@ -91,16 +98,16 @@ namespace DETAIL
         }
 
         // Build acceleration structures
-        void build() {
+        virtual void build() override {
             std::vector<const BASE::PrimitiveInstance*> rawObjects(m_objects.size(), nullptr);
             for (size_t i = 0; i < m_objects.size(); i++) {
                 rawObjects[i] = m_objects[i].get();
             }
 
             m_pBvhRoot = BASE::buildBvhRoot(rawObjects,
-                                            [](){
-                                                // TODO: keep track of memory so we can clean up later
-                                                return new BASE::BvhNode<BASE::PrimitiveInstance>();
+                                            [&](){
+                                                 m_memory.push_back(std::make_unique<BASE::BvhNode<BASE::PrimitiveInstance>>());
+                                                 return m_memory.back().get();
                                             });
         }
 
@@ -120,7 +127,8 @@ namespace DETAIL
         }
 
      private:
-        BASE::BvhNode<BASE::PrimitiveInstance>      *m_pBvhRoot;
+        BASE::BvhNode<BASE::PrimitiveInstance> *m_pBvhRoot;
+        std::vector<std::unique_ptr<BASE::BvhNode<BASE::PrimitiveInstance>>> m_memory;
     };
 
 
