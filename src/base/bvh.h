@@ -21,13 +21,8 @@ namespace BASE
         MANAGE_MEMORY('BVHN');
         BvhNode() noexcept = default;
         
-        template <typename hit_func>
-        float intersect(const CORE::Ray &_ray, const hit_func &_hit) const {
+        float intersect(const CORE::Ray &_ray) const {
             if (auto i = aaboxIntersect(m_bounds, _ray); i.intersect() == true) {
-                if (m_pPrimitive != nullptr) {
-                    _hit(m_pPrimitive, _ray);
-                }
-
                 return i.m_tmin >= 0 ? i.m_tmin : 0;
             }
             
@@ -137,9 +132,10 @@ namespace BASE
 
     /* Search for best hit through BVH */
     template <typename primitive_type, typename hit_func>
-    void checkBvhHit(const BvhNode<primitive_type> *_pRoot, const CORE::Ray &_ray, const hit_func &_hit)
+    uint32_t checkBvhHit(const BvhNode<primitive_type> *_pRoot, const CORE::Ray &_ray, const hit_func &_hit)
     {
         CORE::Stack<BvhNode<primitive_type>*> nodes(32);
+        uint32_t boxHits = 0;
         
         // start with root
         nodes.push(_pRoot->m_pLeft);
@@ -149,17 +145,26 @@ namespace BASE
         while (nodes.empty() == false) {
             const auto &pNode = nodes.pop();
             if ( (pNode != nullptr) &&
-                 (pNode->intersect(_ray, _hit) >= 0) )
+                 (pNode->intersect(_ray) >= 0) )
             {
-                if (pNode->m_pLeft != nullptr){
-                    nodes.push(pNode->m_pLeft);
+                boxHits++;
+                
+                if (pNode->m_pPrimitive != nullptr) {
+                    _hit(pNode->m_pPrimitive, _ray);
                 }
-                    
-                if (pNode->m_pRight != nullptr){
-                    nodes.push(pNode->m_pRight);
+                else {
+                    if (pNode->m_pLeft != nullptr){
+                        nodes.push(pNode->m_pLeft);
+                    }
+                        
+                    if (pNode->m_pRight != nullptr){
+                        nodes.push(pNode->m_pRight);
+                    }
                 }
             }
         }
+        
+        return boxHits;
     }
 
 

@@ -117,7 +117,7 @@ namespace DETAIL
         {
             BASE::checkBvhHit(m_pBvhRoot, _hit.m_viewRay,
                               [&](const BASE::PrimitiveInstance *_pPrimitive, const CORE::Ray _ray){
-                                if (BASE::Intersect nh(_hit); (_pPrimitive->hit(nh) == true) && ( (_hit == false) || (nh.m_fPositionOnRay < _hit.m_fPositionOnRay)) )
+                                if (BASE::Intersect nh(_hit); (_pPrimitive->hit(nh) == true) && ( (_hit == false) || (nh < _hit)) )
                                 {
                                     _hit = nh;
                                 }

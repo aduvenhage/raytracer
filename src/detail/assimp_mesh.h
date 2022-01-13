@@ -28,12 +28,12 @@ namespace DETAIL
              if (pScene->HasMeshes() == true) {
                  // load first mesh
                  const aiMesh *pMesh = pScene->mMeshes[0];
-                 std::vector<Mesh::Vertex> vertices;
+                 std::vector<MeshVertex> vertices;
                  vertices.reserve(pMesh->mNumVertices);
 
                  // load mesh vertices
                  for (int i = 0; i < (int)pMesh->mNumVertices; i++) {
-                     Mesh::Vertex vertex;
+                     MeshVertex vertex;
                      if (pMesh->HasPositions() == true) {
                          const aiVector3D &aiVertex = pMesh->mVertices[i];
                          vertex.m_v = CORE::Vec(aiVertex.x, aiVertex.y, aiVertex.z);
@@ -55,11 +55,11 @@ namespace DETAIL
                  setVertices(vertices);
 
                  // load indices
-                 std::vector<Mesh::Triangle> triangles;
+                 std::vector<MeshTriangle> triangles;
                  triangles.reserve(pMesh->mNumFaces);
 
                  for (int i = 0; i < (int)pMesh->mNumFaces; i++) {
-                     Mesh::Triangle triangle;
+                     MeshTriangle triangle;
                      const aiFace &face = pMesh->mFaces[i];
                      triangle.m_v[0] = face.mIndices[0];
                      triangle.m_v[1] = face.mIndices[1];
